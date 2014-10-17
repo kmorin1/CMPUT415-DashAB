@@ -6,6 +6,10 @@ options {
   ASTLabelType = CommonTree;
 }
 
+tokens {
+  GENERATOR;
+}
+
 @header
 {
   package dash;
@@ -63,21 +67,109 @@ streamstate
   ;
 
 declaration
-  : specifier* type Identifier SemiColon
-  | specifier* type Identifier Equals expr SemiColon
+  : specifier* type+ Identifier SemiColon
+  | specifier* type+ Identifier Equals expr SemiColon
   ;
 
 type
   : Boolean
   | Integer
+  | Matrix
+  | Interval
+  | String
+  | Vector
+  | Real
+  | Character
   ;
 
 specifier
   : Const
+  | Var
   ;
 
 expr
-  :
+  : vectorOperation
+  | orExpr
+  ;
+  
+orExpr
+  : xorExpr ((Bar Bar)^ xorExpr)*
+  ;
+  
+xorExpr
+  : andExpr ((Xor | Or)^ andExpr)*
+  ;
+  
+andExpr
+  : equExpr ((And)^ equExpr)*
+  ;
+  
+equExpr
+  : relExpr ((Equals | NEquals)^ relExpr)*
+  ;
+
+relExpr
+  : byExpr ((LThan | GThan | LThanE | GThanE)^ byExpr)* 
+  ;
+  
+byExpr
+  : addExpr ((By)^ addExpr)*
+  ;
+  
+addExpr
+  : mulExpr ((Plus | Minus)^ mulExpr)*
+  ;
+  
+mulExpr
+  : powExpr ((Multiply | Divide | Mod)^ powExpr)*
+  ;
+
+powExpr
+  : unaryExpr ((Exponent)^ unaryExpr)*
+  ;
+  
+unaryExpr
+  : Plus rangeExpr
+  | Minus rangeExpr
+  | Not rangeExpr
+  | rangeExpr
+  ;
+  
+rangeExpr
+  : (indexExpr Range)=> indexExpr Range^ indexExpr
+  | indexExpr
+  ;
+  
+indexExpr
+  : atom (index^)
+  ;
+
+index
+  : (LBracket expr)=> LBracket expr RBracket
+  | LBracket atom RBracket
+  ;   
+  
+atom
+  : Number
+  | Identifier
+  | filter
+  | generator
+  | LParen expr RParen
+  ;
+
+filter
+  : Filter LParen Identifier In vector=expr Bar condition=expr RParen -> ^(Filter Identifier $vector $condition)        
+  ;
+  
+generator
+  : LBracket Identifier In vector=expr Bar apply=expr RBracket -> ^(GENERATOR Identifier $vector $apply)   
+  ;
+
+vectorOperation
+  : 'length' LParen Identifier RParen
+//  | expr Bar Bar expr
+//  | expr Multiply Multiply expr
+//  | expr By expr
   ;
   
 // DashAB Keywords
@@ -120,16 +212,20 @@ Tuple     : 'tuple';
 Stream    : 'stream_state';
 Reverse   :  'reverse';
 
+Character : 'character';
+
 // Extra Characters
 Comment   : '//';
 LBComment : '/*';
 RBComment : '*/';
 LArrow    : '<-';
 RArrow    : '->';
-Add       : '+';
-Subtract  : '-';
+Plus      : '+';
+Minus     : '-';
 Multiply  : '*';
 Divide    : '/';
+Mod       : '%';
+Exponent  : '^';
 Equals    : '==';
 NEquals   : '!=';
 GThan     : '>';
