@@ -4,6 +4,8 @@ options {
   language = Java;
   output = AST;
   ASTLabelType = CommonTree;
+  backtrack = true;
+  memoize = true;
 }
 
 tokens {
@@ -41,7 +43,16 @@ program
   ;
   
 mainblock
-  : 
+  : statement*
+  ;
+  
+statement
+  : comment
+  | declaration
+  | assignment
+  | ifstatement
+  | loopstatement
+  | block
   ;
   
 comment
@@ -68,9 +79,26 @@ streamstate
 
 declaration
   : specifier* type+ Identifier SemiColon
-  | specifier* type+ Identifier Equals expr SemiColon
+  | specifier* type+ Identifier Assign expr SemiColon
   ;
 
+block
+  : LBrace statement+ RBrace
+  ;
+  
+assignment
+  : Identifier Equals expr SemiColon
+  ;
+  
+ifstatement
+  : If expr (block|statement) (Else block|statement)?
+  ;
+  
+loopstatement
+  : Loop While expr (block|statement)
+  | Loop expr (block|statement) While expr
+  ;
+  
 type
   : Boolean
   | Integer
@@ -136,12 +164,11 @@ unaryExpr
   ;
   
 rangeExpr
-  : (indexExpr Range)=> indexExpr Range^ indexExpr
-  | indexExpr
+  : indexExpr (Range^ indexExpr)?  
   ;
   
 indexExpr
-  : atom (index^)
+  : atom (index^)?
   ;
 
 index
@@ -236,6 +263,8 @@ LParen    : '(';
 RParen    : ')';
 LBracket  : '[';
 RBracket  : ']';
+LBrace    : '{';
+RBrace    : '}';
 Assign    : '=';
 SemiColon : ';';
 Range     : '..';
