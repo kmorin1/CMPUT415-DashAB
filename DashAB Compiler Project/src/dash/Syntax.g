@@ -76,7 +76,7 @@ streamstate
 
 declaration
   : specifier* type+ Identifier SemiColon -> ^(DECL specifier* type+ Identifier)
-  | specifier* type+ Identifier Assign expr SemiColon -> ^(DECL specifier* type+ ^(Equals Identifier expr))
+  | specifier* type+ Identifier Assign expr SemiColon -> ^(DECL specifier* type+ ^(Assign Identifier expr))
   ;
 
 block
