@@ -158,9 +158,9 @@ powExpr
   ;
   
 unaryExpr
-  : Plus rangeExpr
-  | Minus rangeExpr
-  | Not rangeExpr
+  : Plus^ rangeExpr
+  | Minus^ rangeExpr
+  | Not^ rangeExpr
   | rangeExpr
   ;
   
