@@ -11,19 +11,21 @@ import org.antlr.runtime.RecognitionException;
 import org.antlr.runtime.TokenStream;
 import org.antlr.runtime.tree.CommonTree;
 import org.antlr.runtime.tree.CommonTreeNodeStream;
+import org.antlr.runtime.tree.DOTTreeGenerator;
+import org.antlr.stringtemplate.StringTemplate;
 import org.antlr.stringtemplate.StringTemplateGroup;
 
 public class DashAB_Test {
 	public static void main(String[] args) throws RecognitionException {
-		if (args.length != 2) {
+		/*if (args.length != 2) {
 			System.err.print("Insufficient arguments: ");
 			System.err.println(Arrays.toString(args));
 			System.exit(1);
-		}
+		}*/
 
 		ANTLRFileStream input = null;
 		try {
-			input = new ANTLRFileStream(args[0]);
+			input = new ANTLRFileStream("test.ds");
 		} catch (IOException e) {
 			System.err.print("Invalid program filename: ");
 			System.err.println(args[0]);
@@ -36,6 +38,9 @@ public class DashAB_Test {
 			SyntaxParser parser = new SyntaxParser(tokenStream);
 			SyntaxParser.program_return entry = parser.program();
 			CommonTree ast = (CommonTree)entry.getTree();
+			DOTTreeGenerator gen = new DOTTreeGenerator();
+			StringTemplate st = gen.toDOT(ast);
+			System.out.println(st);
 
 			/*SymbolTable symtab = new SymbolTable();
 			
