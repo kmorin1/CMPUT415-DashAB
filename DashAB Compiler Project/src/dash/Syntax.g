@@ -10,6 +10,9 @@ options {
 
 tokens {
   GENERATOR;
+  DECL;
+  PROGRAM;
+  BLOCK;
 }
 
 @header
@@ -39,7 +42,7 @@ tokens {
 
 
 program
-  : mainblock EOF -> mainblock
+  : mainblock EOF -> ^(PROGRAM mainblock)
   ;
   
 mainblock
@@ -47,17 +50,11 @@ mainblock
   ;
   
 statement
-  : comment
-  | declaration
+  : declaration
   | assignment
   | ifstatement
   | loopstatement
   | block
-  ;
-  
-comment
-  : LBComment .* RBComment
-  | Comment .* Newline
   ;
   
 stream
@@ -66,11 +63,11 @@ stream
   ;
 
 outputstream
-  : expr RArrow Out SemiColon
+  : expr RArrow Out SemiColon -> ^(RArrow expr)
   ;
 
 inputstream
-  : Identifier LArrow Inp SemiColon
+  : Identifier LArrow Inp SemiColon -> ^(LArrow Identifier)
   ;
 
 streamstate
@@ -78,27 +75,31 @@ streamstate
   ;
 
 declaration
-  : specifier* type+ Identifier SemiColon
-  | specifier* type+ Identifier Assign expr SemiColon
+  : specifier* type+ Identifier SemiColon -> ^(DECL specifier* type+ Identifier)
+  | specifier* type+ Identifier Assign expr SemiColon -> ^(DECL specifier* type+ ^(Equals Identifier expr))
   ;
 
 block
-  : LBrace statement+ RBrace
+  : LBrace statement+ RBrace -> ^(BLOCK statement+)
   ;
   
 assignment
-  : Identifier Equals expr SemiColon
+  : Identifier Assign expr SemiColon -> ^(Assign Identifier expr)
   ;
   
 ifstatement
-  : If expr (block|statement) (Else block|statement)?
+  : If expr slist Else slist -> ^(If expr slist ^(Else slist))
+  | If expr slist -> ^(If expr slist)
   ;
   
 loopstatement
-  : Loop While expr (block|statement)
-  | Loop expr (block|statement) While expr
+  : Loop While expr slist -> ^(Loop ^(While expr) slist)
+  | Loop slist While expr -> ^(Loop slist ^(While expr))
   ;
-  
+slist
+  : block
+  | statement
+  ;
 type
   : Boolean
   | Integer
@@ -281,13 +282,11 @@ Identifier
 fragment Digit
   : '0'..'9'
   ;
-  
+MULTILINE_COMMENT : '/*' .* '*/' {$channel = HIDDEN;} ;
+COMMENT : '//' .* ('\n'|'\r') {$channel = HIDDEN;};
 Space
   : (' ' 
   | '\t' 
+  | '\n'
   | '\r') {$channel = HIDDEN;}
-  ;
-  
-Newline
-  : '\n' 
   ;
