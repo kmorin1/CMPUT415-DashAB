@@ -51,6 +51,8 @@ mainblock
   
 statement
   : declaration
+  | outputstream
+  | inputstream
   | assignment
   | ifstatement
   | loopstatement
