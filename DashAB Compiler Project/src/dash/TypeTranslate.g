@@ -103,14 +103,14 @@ slist
   ;
   
 type
-  : id=Identifier {$id.text.equals("Boolean")}? -> Boolean
-  | id=Identifier {$id.text.equals("integer")}? -> Integer
-  | id=Identifier {$id.text.equals("matrix")}? -> Matrix
-  | id=Identifier {$id.text.equals("interval")}? -> Interval
-  | id=Identifier {$id.text.equals("string")}? -> String
-  | id=Identifier {$id.text.equals("vector")}? -> Vector
-  | id=Identifier {$id.text.equals("real")}? -> Real
-  | id=Identifier {$id.text.equals("character")}? -> Character
+  : id=Identifier {$id.text.equals("Boolean")}? -> Boolean["boolean"]
+  | id=Identifier {$id.text.equals("integer")}? -> Integer["integer"]
+  | id=Identifier {$id.text.equals("matrix")}? -> Matrix["matrix"]
+  | id=Identifier {$id.text.equals("interval")}? -> Interval["interval"]
+  | id=Identifier {$id.text.equals("string")}? -> String["string"]
+  | id=Identifier {$id.text.equals("vector")}? -> Vector["vector"]
+  | id=Identifier {$id.text.equals("real")}? -> Real["real"]
+  | id=Identifier {$id.text.equals("character")}? -> Character["character"]
  // | id=Identifier {$id.test.equals("tuple");} -> ^(Tuple $type+)
   | Identifier
   | Boolean
