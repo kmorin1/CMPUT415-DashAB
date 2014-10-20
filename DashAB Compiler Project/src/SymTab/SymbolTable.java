@@ -13,6 +13,7 @@ public class SymbolTable {
     public Scope globals;
     Map<String, Symbol> resnames;
     Map<String, BuiltInTypeSymbol> types;
+    Map<String, BuiltInTypeSymbol> specs;
     Map<String, FunctionSymbol> funcsyms;
 	Map<String, ProcedureSymbol> procsyms;
     
@@ -22,6 +23,7 @@ public class SymbolTable {
     	this.types = new HashMap<String, BuiltInTypeSymbol>();
     	this.funcsyms = new HashMap<String, FunctionSymbol>();
     	this.procsyms = new HashMap<String, ProcedureSymbol>();
+    	this.specs = new HashMap<String, BuiltInTypeSymbol>();
     	initTypeSystem(); 
     }
     protected void initTypeSystem() {
@@ -91,6 +93,7 @@ public class SymbolTable {
     	procsyms.put(sym.getName(), sym);
     }
     public Symbol resolve(String name) { return globals.resolve(name); }
+    public BuiltInTypeSymbol resolveSpec(String name) {return specs.get(name);}
     public BuiltInTypeSymbol resolveType(String name) {return types.get(name); }
     public FunctionSymbol resolveFunction(String name) {return funcsyms.get(name); }
     public ProcedureSymbol resolveProcedure(String name) {return procsyms.get(name); }

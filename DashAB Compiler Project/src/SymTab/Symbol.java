@@ -1,5 +1,8 @@
 package SymTab;
 
+import java.util.List;
+
+
 /***
  * Excerpted from "Language Implementation Patterns",
  * published by The Pragmatic Bookshelf.
@@ -10,14 +13,21 @@ package SymTab;
 ***/
 public class Symbol { // A generic programming language symbol
     String name;      // All symbols at least have a name
-    Type type;
+    List<Type> types;
+    List<Type> specs;
     public Symbol(String name) { this.name = name; }
-    public Symbol(String name, Type type) {this(name); this.type = type;}
-    public String getName() { return name; }
-    public String getTypeName() { return type.toString(); }
-    public Type getType() { return type; }
-    public String toString() {
-        if ( type!=null ) return '<'+getName()+":"+type+'>';
-        return getName();
+    public Symbol(String name, List<Type> types) {this(name); this.types = types; }
+    public Symbol(String name, List<Type> types, List<Type> specs) {
+    	this(name); 
+    	this.types = types;
+    	this.specs = specs;
     }
+    
+    public String getName() { return name; }
+    //public String getTypeName() { return type.toString(); }
+    public List getTypes() { return types; }
+    public List getSpecs() { return specs; }
+    public Type getSpec(int index) {return specs.get(index);}
+    public Type getType(int index) {return (Type) types.get(index);}
+    
 }

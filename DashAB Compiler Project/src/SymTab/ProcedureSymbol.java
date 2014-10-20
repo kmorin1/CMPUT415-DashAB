@@ -5,10 +5,10 @@ import java.util.List;
 
 public class ProcedureSymbol extends Symbol{
 	List<Symbol> params;
-	public ProcedureSymbol(String name, Type type) {
+public ProcedureSymbol(String name, List<Type> type) {
 		super(name, type);
 	}
-	public ProcedureSymbol(String name, Type type, List<Symbol> params) {
+	public ProcedureSymbol(String name, List<Type> type, List<Symbol> params) {
 		super(name, type);
 		if (params != null)
 			this.params = params;
