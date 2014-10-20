@@ -51,6 +51,7 @@ mainblock
   
 statement
   : declaration
+  | typedef
   | outputstream
   | inputstream
   | assignment
@@ -80,6 +81,10 @@ declaration
   : specifier* type+ Identifier SemiColon -> ^(DECL specifier* type+ Identifier)
   | specifier* type+ Identifier Assign expr SemiColon -> ^(DECL specifier* type+ ^(Assign Identifier expr))
   ;
+  
+typedef
+  : Typedef type Identifier SemiColon -> ^(Typedef type Identifier)
+  ;
 
 block
   : LBrace statement+ RBrace -> ^(BLOCK statement+)
@@ -97,6 +102,7 @@ ifstatement
 loopstatement
   : Loop While expr slist -> ^(Loop ^(While expr) slist)
   | Loop slist While expr -> ^(Loop slist ^(While expr))
+  | Loop slist -> ^(Loop slist)
   ;
 slist
   : block
@@ -111,6 +117,12 @@ type
   | Vector
   | Real
   | Character
+  | tuple
+  | Identifier
+  ;
+  
+tuple
+  : Tuple^ LParen! type (Comma! type)+ RParen!
   ;
 
 specifier
@@ -185,6 +197,7 @@ atom
   | filter
   | generator
   | LParen expr RParen
+  | As^ LThan! type GThan! LParen! expr RParen!
   ;
 
 filter
@@ -270,6 +283,7 @@ LBrace    : '{';
 RBrace    : '}';
 Assign    : '=';
 SemiColon : ';';
+Comma     : ',';
 Range     : '..';
 Bar       : '|';
 
