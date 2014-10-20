@@ -189,7 +189,7 @@ expr returns [String type]
     VariableSymbol vs = (VariableSymbol) s;
     $type = vs.getType(0).getName();
   } -> Identifier[$type] Identifier[$id.text]
-  | Number -> Integer["integer"] Number
-  | FPNumber -> Real["real"] FPNumber
+  | Number -> Identifier["integer"] Number
+  | FPNumber -> Identifier["real"] FPNumber
   ;
   

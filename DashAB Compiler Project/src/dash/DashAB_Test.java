@@ -1,6 +1,7 @@
 package dash;
 
 import java.io.FileNotFoundException;
+import SymTab.*;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Arrays;
@@ -32,12 +33,26 @@ public class DashAB_Test {
 			System.exit(1);
 		}
 
-		try {
+		//try {
+			SymbolTable symtab = new SymbolTable();
 			SyntaxLexer lexer = new SyntaxLexer(input);
 			TokenStream tokenStream = new CommonTokenStream(lexer);
 			SyntaxParser parser = new SyntaxParser(tokenStream);
 			SyntaxParser.program_return entry = parser.program();
 			CommonTree ast = (CommonTree)entry.getTree();
+			
+			CommonTreeNodeStream nodes = new CommonTreeNodeStream(ast);
+			nodes.setTokenStream(tokenStream);
+			TypeExpand te = new TypeExpand(nodes, symtab);
+			TypeExpand.program_return teret = te.program();
+			ast = (CommonTree) teret.getTree();
+			
+			nodes = new CommonTreeNodeStream(ast);
+			nodes.setTokenStream(tokenStream);
+			TypeTranslate tt = new TypeTranslate(nodes);
+			TypeTranslate.program_return ttret = tt.program();
+			ast = (CommonTree) ttret.getTree();
+			
 			DOTTreeGenerator gen = new DOTTreeGenerator();
 			StringTemplate st = gen.toDOT(ast);
 			System.out.println(st);
@@ -75,12 +90,13 @@ public class DashAB_Test {
 					System.out.println(templateFile);
 				}
 			}*/
-		} catch (RuntimeException e) {
+		/*} catch (RuntimeException e) {
 			System.out.println("A problem has occured with the DashAB input file: " + e.getMessage());
 			System.out.println("Please check the input file for correctness.");
+			e.printStackTrace();
 			System.exit(1);
 			
-		}
+		}*/
 	}
 	
 }
