@@ -172,7 +172,7 @@ expr
   ;
   
 orExpr
-  : xorExpr ((Bar Bar)^ xorExpr)*
+  : (xorExpr -> xorExpr) ((Bar Bar) e=xorExpr -> ^(Or $orExpr $e))*
   ;
   
 xorExpr
@@ -234,7 +234,7 @@ atom
   | Identifier
   | filter
   | generator
-  | LParen expr RParen
+  | LParen expr RParen -> expr
   | As LThan type GThan LParen expr RParen -> ^(As type expr)
   ;
 
