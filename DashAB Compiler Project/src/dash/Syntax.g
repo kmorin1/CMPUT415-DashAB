@@ -229,6 +229,7 @@ index
   
 atom
   : Number
+  | FPNumber
   | Identifier LParen expr? (Comma expr)* RParen -> ^(CALL Identifier ^(ARGLIST expr*))
   | Identifier
   | filter
@@ -327,6 +328,9 @@ Bar       : '|';
 
 Number 
   : Digit+
+  ;
+FPNumber
+  : Digit+ '.' Digit+
   ;
 
 Identifier
