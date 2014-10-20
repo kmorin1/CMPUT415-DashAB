@@ -13,6 +13,9 @@ tokens {
   DECL;
   PROGRAM;
   BLOCK;
+  PARAMLIST;
+  CALL;
+  ARGLIST;
 }
 
 @header
@@ -58,6 +61,12 @@ statement
   | ifstatement
   | loopstatement
   | block
+  | procedure
+  | function
+  | callStatement
+  | returnStatement
+  | Break SemiColon!
+  | Continue SemiColon!
   ;
   
 stream
@@ -90,6 +99,32 @@ block
   : LBrace statement+ RBrace -> ^(BLOCK statement+)
   ;
   
+procedure
+  : Procedure Identifier LParen paramlist RParen (Returns type)? (SemiColon | block)
+  -> ^(Procedure Identifier paramlist ^(Returns type)? block?)
+  ;
+  
+function
+  : Function Identifier LParen paramlist RParen Returns type ((Assign expr)? SemiColon | block)
+  -> ^(Function Identifier paramlist ^(Returns type) ^(Assign expr)? block?)
+  ;
+  
+paramlist
+  : parameter? (Comma parameter)* -> ^(PARAMLIST parameter*)
+  ;
+  
+parameter
+  : specifier? type Identifier^
+  ;
+  
+callStatement
+  : Call Identifier LParen expr? (Comma expr)* RParen SemiColon -> ^(CALL Identifier ^(ARGLIST expr*))
+  ;
+  
+returnStatement
+  : Return^ expr? SemiColon!
+  ;
+  
 assignment
   : Identifier Assign expr SemiColon -> ^(Assign Identifier expr)
   ;
@@ -101,13 +136,14 @@ ifstatement
   
 loopstatement
   : Loop While expr slist -> ^(Loop ^(While expr) slist)
-  | Loop slist While expr -> ^(Loop slist ^(While expr))
-  | Loop slist -> ^(Loop slist)
+  | Loop slist (While expr)? -> ^(Loop slist ^(While expr)?)
   ;
+  
 slist
   : block
   | statement
   ;
+  
 type
   : Boolean
   | Integer
@@ -193,11 +229,12 @@ index
   
 atom
   : Number
+  | Identifier LParen expr? (Comma expr)* RParen -> ^(CALL Identifier ^(ARGLIST expr*))
   | Identifier
   | filter
   | generator
   | LParen expr RParen
-  | As^ LThan! type GThan! LParen! expr RParen!
+  | As LThan type GThan LParen expr RParen -> ^(As type expr)
   ;
 
 filter
@@ -254,6 +291,7 @@ Inp       : 'inp';
 Tuple     : 'tuple';
 Stream    : 'stream_state';
 Reverse   :  'reverse';
+Call      : 'call';
 
 Character : 'character';
 
