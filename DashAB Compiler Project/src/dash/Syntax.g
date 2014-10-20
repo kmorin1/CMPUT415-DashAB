@@ -87,8 +87,8 @@ streamstate
   ;
 
 declaration
-  : specifier* type+ Identifier SemiColon -> ^(DECL specifier* type+ Identifier)
-  | specifier* type+ Identifier Assign expr SemiColon -> ^(DECL specifier* type+ ^(Assign Identifier expr))
+  : specifier* type* Identifier SemiColon -> ^(DECL specifier* type* Identifier)
+  | specifier* type* Identifier Assign expr SemiColon -> ^(DECL specifier* type* ^(Assign Identifier expr))
   ;
   
 typedef
