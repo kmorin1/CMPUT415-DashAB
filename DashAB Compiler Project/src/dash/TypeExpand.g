@@ -159,21 +159,21 @@ specifier returns [Type tsym]
   ;
   
 expr returns [String type]
-  : ^(Plus expr expr) -> ^(Plus Identifier["rettype"] expr expr)
-  | ^(Minus expr expr) -> ^(Minus Identifier["rettype"] expr expr)
-  | ^(Multiply expr expr) -> ^(Multiply Identifier["rettype"] expr expr)
-  | ^(Divide expr expr) -> ^(Divide Identifier["rettype"] expr expr)
-  | ^(Exponent expr expr) -> ^(Exponent Identifier["rettype"] expr expr)
-  | ^(Equals expr expr) -> ^(Equals Identifier["rettype"] expr expr)
-  | ^(NEquals expr expr) -> ^(NEquals Identifier["rettype"] expr expr)
-  | ^(GThan expr expr) -> ^(GThan Identifier["rettype"] expr expr)
-  | ^(LThan expr expr) -> ^(LThan Identifier["rettype"] expr expr)
-  | ^(GThanE expr expr) -> ^(GThanE Identifier["rettype"] expr expr)
-  | ^(LThanE expr expr) -> ^(LThanE Identifier["rettype"] expr expr)
-  | ^(Or expr expr) -> ^(Or Identifier["rettype"] expr expr)
-  | ^(Xor expr expr) -> ^(Xor Identifier["rettype"] expr expr)
-  | ^(And expr expr) -> ^(And Identifier["rettype"] expr expr)
-  | ^(By expr expr) -> ^(By Identifier["rettype"] expr expr)
+  : ^(Plus a=expr b=expr) {$type = $a.type;} -> ^(Plus Identifier[$a.type] expr expr)
+  | ^(Minus a=expr b=expr) {$type = $a.type;} -> ^(Minus Identifier[$a.type] expr expr)
+  | ^(Multiply a=expr b=expr) {$type = $a.type;} -> ^(Multiply Identifier[$a.type] expr expr)
+  | ^(Divide a=expr b=expr) {$type = $a.type;} -> ^(Divide Identifier[$a.type] expr expr)
+  | ^(Exponent a=expr b=expr) {$type = $a.type;} -> ^(Exponent Identifier[$a.type] expr expr)
+  | ^(Equals a=expr b=expr) {$type = $a.type;} -> ^(Equals Identifier[$a.type] expr expr)
+  | ^(NEquals a=expr b=expr) {$type = $a.type;} -> ^(NEquals Identifier[$a.type] expr expr)
+  | ^(GThan a=expr b=expr) {$type = $a.type;} -> ^(GThan Identifier[$a.type] expr expr)
+  | ^(LThan a=expr b=expr) {$type = $a.type;} -> ^(LThan Identifier[$a.type] expr expr)
+  | ^(GThanE a=expr b=expr) {$type = $a.type;} -> ^(GThanE Identifier[$a.type] expr expr)
+  | ^(LThanE a=expr b=expr) {$type = $a.type;} -> ^(LThanE Identifier[$a.type] expr expr)
+  | ^(Or a=expr b=expr) {$type = $a.type;} -> ^(Or Identifier[$a.type] expr expr)
+  | ^(Xor a=expr b=expr) {$type = $a.type;} -> ^(Xor Identifier[$a.type] expr expr)
+  | ^(And a=expr b=expr) {$type = $a.type;} -> ^(And Identifier[$a.type] expr expr)
+  | ^(By a=expr b=expr) {$type = $a.type;} -> ^(By Identifier[$a.type] expr expr)
   | ^(CALL id=Identifier ^(ARGLIST expr*)) {
     ProcedureSymbol ps = symtab.resolveProcedure($id.text);
     FunctionSymbol fs = symtab.resolveFunction($id.text);
