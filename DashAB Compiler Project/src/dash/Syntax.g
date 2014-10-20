@@ -53,11 +53,11 @@ mainblock
   ;
   
 statement
-  : declaration
+  : assignment 
   | typedef
   | outputstream
   | inputstream
-  | assignment
+  | declaration
   | ifstatement
   | loopstatement
   | block
