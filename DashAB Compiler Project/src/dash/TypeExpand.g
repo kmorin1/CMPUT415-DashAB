@@ -27,7 +27,7 @@ options {
 program
   : ^(PROGRAM statement*)
   ;
-  
+   
 statement
   : declaration
   | typedef
@@ -159,11 +159,66 @@ specifier returns [Type tsym]
   ;
   
 expr returns [String type]
-  : ^(Plus a=expr b=expr) {$type = $a.type;} -> ^(Plus Identifier[$type] expr expr)
-  | ^(Minus a=expr b=expr) {$type = $a.type;} -> ^(Minus Identifier[$type] expr expr)
-  | ^(Multiply a=expr b=expr) {$type = $a.type;} -> ^(Multiply Identifier[$type] expr expr)
-  | ^(Divide a=expr b=expr) {$type = $a.type;} -> ^(Divide Identifier[$type] expr expr)
-  | ^(Exponent a=expr b=expr) {$type = $a.type;} -> ^(Exponent Identifier[$type] expr expr)
+  : ^(Plus a=expr b=expr) {
+    Boolean lua = symtab.lookup($a.type, $b.type);
+    Boolean lub = symtab.lookup($b.type, $a.type);
+      
+    if (lua != null)
+      $type = $b.type;
+    else if (lub != null)
+      $type = $a.type;
+    else 
+      throw new RuntimeException("type promotion error");
+    
+  } -> ^(Plus Identifier[$type] expr expr)
+  | ^(Minus a=expr b=expr) {
+    Boolean lua = symtab.lookup($a.type, $b.type);
+    Boolean lub = symtab.lookup($b.type, $a.type);
+      
+    if (lua != null)
+      $type = $b.type;
+    else if (lub != null)
+      $type = $a.type;
+    else 
+      throw new RuntimeException("type promotion error");
+    
+  } -> ^(Minus Identifier[$type] expr expr)
+  | ^(Multiply a=expr b=expr) {
+    Boolean lua = symtab.lookup($a.type, $b.type);
+    Boolean lub = symtab.lookup($b.type, $a.type);
+      
+    if (lua != null)
+      $type = $b.type;
+    else if (lub != null)
+      $type = $a.type;
+    else 
+      throw new RuntimeException("type promotion error");
+    
+  } -> ^(Multiply Identifier[$type] expr expr)
+  | ^(Divide a=expr b=expr) {
+    Boolean lua = symtab.lookup($a.type, $b.type);
+    Boolean lub = symtab.lookup($b.type, $a.type);
+      
+    if (lua != null)
+      $type = $b.type;
+    else if (lub != null)
+      $type = $a.type;
+    else 
+      throw new RuntimeException("type promotion error");
+    
+  } -> ^(Divide Identifier[$type] expr expr)
+  | ^(Exponent a=expr b=expr) {
+    Boolean lua = symtab.lookup($a.type, $b.type);
+    Boolean lub = symtab.lookup($b.type, $a.type);
+      
+    if (lua != null)
+      $type = $b.type;
+    else if (lub != null)
+      $type = $a.type;
+    else 
+      throw new RuntimeException("type promotion error");
+    
+  } -> ^(Exponent Identifier[$type] expr expr)
   | ^(Equals a=expr b=expr) {$type = $a.type;} -> ^(Equals Identifier[$type] expr expr)
   | ^(NEquals a=expr b=expr) {$type = $a.type;} -> ^(NEquals Identifier[$type] expr expr)
   | ^(GThan a=expr b=expr) {$type = $a.type;} -> ^(GThan Identifier[$type] expr expr)
@@ -189,7 +244,7 @@ expr returns [String type]
     VariableSymbol vs = (VariableSymbol) s;
     $type = vs.getType(0).getName();
   } -> Identifier[$type] Identifier[$id.text]
-  | Number -> Identifier["integer"] Number
-  | FPNumber -> Identifier["real"] FPNumber
+  | Number {$type = "integer";} -> Identifier["integer"] Number
+  | FPNumber {$type = "real";} -> Identifier["real"] FPNumber
   ;
   
