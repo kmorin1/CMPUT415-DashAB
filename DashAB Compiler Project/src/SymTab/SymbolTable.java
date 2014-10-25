@@ -10,6 +10,7 @@ package SymTab;
 ***/
 import java.util.*;
 public class SymbolTable {
+	
     public Scope globals;
     Map<String, Symbol> resnames;
     Map<String, BuiltInTypeSymbol> types;
@@ -72,6 +73,53 @@ public class SymbolTable {
         
         defineRes("var");
         defineRes("const");
+    }
+    Boolean[][] promotelookup = {
+			{false, true, true, null, true},
+			{true, false, true, null, true},
+			{null, true, false, null, null},
+			{null, null, null, false, null},
+			{true, true, true, null, false}
+	};
+    public Boolean lookup(String st1, String st2) {
+    	Integer i1 = null;
+    	Integer i2 = null;
+    	switch (st1) {
+    	case "boolean":
+    		i1 = 0;
+    		break;
+    	case "integer":
+    		i1 = 1;
+    		break;
+    	case "real":
+    		i1 = 2;
+    		break;
+    	case "interval":
+    		i1 = 3;
+    		break;
+    	case "character":
+    		i1 = 4;
+    		break;
+    	}
+    	switch (st2) {
+    	case "boolean":
+    		i2 = 0;
+    		break;
+    	case "integer":
+    		i2 = 1;
+    		break;
+    	case "real":
+    		i2 = 2;
+    		break;
+    	case "interval":
+    		i2 = 3;
+    		break;
+    	case "character":
+    		i2 = 4;
+    		break;
+    	}
+    	
+    	return promotelookup[i1][i2];
     }
 	
     private void defineRes(String sym) {resnames.put(sym, new Symbol(sym));}
