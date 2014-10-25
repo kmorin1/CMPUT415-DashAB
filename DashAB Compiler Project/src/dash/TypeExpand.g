@@ -158,94 +158,94 @@ specifier returns [Type tsym]
   | t=Var {$tsym = (Type) symtab.resolveSpec($t.text);}
   ;
   
-expr returns [String type]
+expr returns [String stype]
   : ^(Plus a=expr b=expr) {
-    Boolean lua = symtab.lookup($a.type, $b.type);
-    Boolean lub = symtab.lookup($b.type, $a.type);
+    Boolean lua = symtab.lookup($a.stype, $b.stype);
+    Boolean lub = symtab.lookup($b.stype, $a.stype);
       
     if (lua != null)
-      $type = $b.type;
+      $stype = $b.stype;
     else if (lub != null)
-      $type = $a.type;
+      $stype = $a.stype;
     else 
       throw new RuntimeException("type promotion error");
     
-  } -> ^(Plus Identifier[$type] expr expr)
+  } -> ^(Plus Identifier[$stype] expr expr)
   | ^(Minus a=expr b=expr) {
-    Boolean lua = symtab.lookup($a.type, $b.type);
-    Boolean lub = symtab.lookup($b.type, $a.type);
+    Boolean lua = symtab.lookup($a.stype, $b.stype);
+    Boolean lub = symtab.lookup($b.stype, $a.stype);
       
     if (lua != null)
-      $type = $b.type;
+      $stype = $b.stype;
     else if (lub != null)
-      $type = $a.type;
+      $stype = $a.stype;
     else 
       throw new RuntimeException("type promotion error");
     
-  } -> ^(Minus Identifier[$type] expr expr)
+  } -> ^(Minus Identifier[$stype] expr expr)
   | ^(Multiply a=expr b=expr) {
-    Boolean lua = symtab.lookup($a.type, $b.type);
-    Boolean lub = symtab.lookup($b.type, $a.type);
+    Boolean lua = symtab.lookup($a.stype, $b.stype);
+    Boolean lub = symtab.lookup($b.stype, $a.stype);
       
     if (lua != null)
-      $type = $b.type;
+      $stype = $b.stype;
     else if (lub != null)
-      $type = $a.type;
+      $stype = $a.stype;
     else 
       throw new RuntimeException("type promotion error");
     
-  } -> ^(Multiply Identifier[$type] expr expr)
+  } -> ^(Multiply Identifier[$stype] expr expr)
   | ^(Divide a=expr b=expr) {
-    Boolean lua = symtab.lookup($a.type, $b.type);
-    Boolean lub = symtab.lookup($b.type, $a.type);
+    Boolean lua = symtab.lookup($a.stype, $b.stype);
+    Boolean lub = symtab.lookup($b.stype, $a.stype);
       
     if (lua != null)
-      $type = $b.type;
+      $stype = $b.stype;
     else if (lub != null)
-      $type = $a.type;
+      $stype = $a.stype;
     else 
       throw new RuntimeException("type promotion error");
     
-  } -> ^(Divide Identifier[$type] expr expr)
+  } -> ^(Divide Identifier[$stype] expr expr)
   | ^(Exponent a=expr b=expr) {
-    Boolean lua = symtab.lookup($a.type, $b.type);
-    Boolean lub = symtab.lookup($b.type, $a.type);
+    Boolean lua = symtab.lookup($a.stype, $b.stype);
+    Boolean lub = symtab.lookup($b.stype, $a.stype);
       
     if (lua != null)
-      $type = $b.type;
+      $stype = $b.stype;
     else if (lub != null)
-      $type = $a.type;
+      $stype = $a.stype;
     else 
       throw new RuntimeException("type promotion error");
     
-  } -> ^(Exponent Identifier[$type] expr expr)
-  | ^(Equals a=expr b=expr) {$type = $a.type;} -> ^(Equals Identifier[$type] expr expr)
-  | ^(NEquals a=expr b=expr) {$type = $a.type;} -> ^(NEquals Identifier[$type] expr expr)
-  | ^(GThan a=expr b=expr) {$type = $a.type;} -> ^(GThan Identifier[$type] expr expr)
-  | ^(LThan a=expr b=expr) {$type = $a.type;} -> ^(LThan Identifier[$type] expr expr)
-  | ^(GThanE a=expr b=expr) {$type = $a.type;} -> ^(GThanE Identifier[$type] expr expr)
-  | ^(LThanE a=expr b=expr) {$type = $a.type;} -> ^(LThanE Identifier[$type] expr expr)
-  | ^(Or a=expr b=expr) {$type = $a.type;} -> ^(Or Identifier[$type] expr expr)
-  | ^(Xor a=expr b=expr) {$type = $a.type;} -> ^(Xor Identifier[$type] expr expr)
-  | ^(And a=expr b=expr) {$type = $a.type;} -> ^(And Identifier[$type] expr expr)
-  | ^(By a=expr b=expr) {$type = $a.type;} -> ^(By Identifier[$type] expr expr)
+  } -> ^(Exponent Identifier[$stype] expr expr)
+  | ^(Equals a=expr b=expr) {$stype = $a.stype;} -> ^(Equals Identifier[$stype] expr expr)
+  | ^(NEquals a=expr b=expr) {$stype = $a.stype;} -> ^(NEquals Identifier[$stype] expr expr)
+  | ^(GThan a=expr b=expr) {$stype = $a.stype;} -> ^(GThan Identifier[$stype] expr expr)
+  | ^(LThan a=expr b=expr) {$stype = $a.stype;} -> ^(LThan Identifier[$stype] expr expr)
+  | ^(GThanE a=expr b=expr) {$stype = $a.stype;} -> ^(GThanE Identifier[$stype] expr expr)
+  | ^(LThanE a=expr b=expr) {$stype = $a.stype;} -> ^(LThanE Identifier[$stype] expr expr)
+  | ^(Or a=expr b=expr) {$stype = $a.stype;} -> ^(Or Identifier[$stype] expr expr)
+  | ^(Xor a=expr b=expr) {$stype = $a.stype;} -> ^(Xor Identifier[$stype] expr expr)
+  | ^(And a=expr b=expr) {$stype = $a.stype;} -> ^(And Identifier[$stype] expr expr)
+  | ^(By a=expr b=expr) {$stype = $a.stype;} -> ^(By Identifier[$stype] expr expr)
   | ^(CALL id=Identifier ^(ARGLIST expr*)) {
     ProcedureSymbol ps = symtab.resolveProcedure($id.text);
     FunctionSymbol fs = symtab.resolveFunction($id.text);
     if (ps != null)
-      $type = ps.getType(0).getName();
+      $stype = ps.getType(0).getName();
     if (fs != null)
-      $type = fs.getType(0).getName();
+      $stype = fs.getType(0).getName();
     else 
       throw new RuntimeException("Multiple defined error");
-  } -> ^(CALL Identifier[$type] Identifier[$id.text] ^(ARGLIST expr*))
+  } -> ^(CALL Identifier[$stype] Identifier[$id.text] ^(ARGLIST expr*))
   | id=Identifier {
     Symbol s = currentscope.resolve($id.text);
     VariableSymbol vs = (VariableSymbol) s;
-    $type = vs.getType(0).getName();
-  } -> Identifier[$type] Identifier[$id.text]
-  | ^(As type expr)
-  | Number {$type = "integer";} -> Identifier["integer"] Number
-  | FPNumber {$type = "real";} -> Identifier["real"] FPNumber
+    $stype = vs.getType(0).getName();
+  } -> Identifier[$stype] Identifier[$id.text]
+  | ^(As type expr) {$stype = $type.tsym.getName();}
+  | Number {$stype = "integer";} -> Identifier["integer"] Number
+  | FPNumber {$stype = "real";} -> Identifier["real"] FPNumber
   ;
   
