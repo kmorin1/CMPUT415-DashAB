@@ -17,7 +17,7 @@ options {
 program
   : ^(PROGRAM statement*)
   ;
-  
+   
 statement
   : declaration
   | typedef
@@ -150,6 +150,7 @@ expr
   | ^(And type expr expr)
   | ^(By type expr expr)
   | ^(CALL Identifier ^(ARGLIST expr*))
+  | ^(As a=type expr)
   | type Identifier
   | type Number
   | type FPNumber

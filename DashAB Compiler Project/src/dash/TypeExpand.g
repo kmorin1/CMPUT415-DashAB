@@ -244,6 +244,7 @@ expr returns [String type]
     VariableSymbol vs = (VariableSymbol) s;
     $type = vs.getType(0).getName();
   } -> Identifier[$type] Identifier[$id.text]
+  | ^(As type expr)
   | Number {$type = "integer";} -> Identifier["integer"] Number
   | FPNumber {$type = "real";} -> Identifier["real"] FPNumber
   ;
