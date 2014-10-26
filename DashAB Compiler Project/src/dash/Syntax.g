@@ -49,20 +49,23 @@ program
   ;
   
 mainblock
-  : statement*
+  : globalStatement*
+  ;
+  
+globalStatement
+  : declaration
+  | typedef
+  | procedure
+  | function
   ;
   
 statement
   : assignment 
-  | typedef
   | outputstream
   | inputstream
-  | declaration
   | ifstatement
   | loopstatement
   | block
-  | procedure
-  | function
   | callStatement
   | returnStatement
   | Break SemiColon!
@@ -96,7 +99,7 @@ typedef
   ;
 
 block
-  : LBrace statement+ RBrace -> ^(BLOCK statement+)
+  : LBrace declaration* statement* RBrace -> ^(BLOCK declaration* statement*)
   ;
   
 procedure

@@ -25,24 +25,27 @@ options {
 }
 
 program
-  : ^(PROGRAM statement*)
+  : ^(PROGRAM globalStatement*)
+  ;
+  
+globalStatement
+  : declaration
+  | typedef
+  | procedure
+  | function
   ;
    
 statement
-  : declaration
-  | typedef
+  : assignment 
   | outputstream
   | inputstream
-  | assignment
   | ifstatement
   | loopstatement
   | block
-  | procedure
-  | function
   | callStatement
   | returnStatement
-  | Break
-  | Continue
+  | Break SemiColon!
+  | Continue SemiColon!
   ;
   
 outputstream
@@ -71,7 +74,7 @@ typedef
   ;
 
 block
-  : ^(BLOCK statement+)
+  : ^(BLOCK declaration* statement*)
   ;
   
 procedure
