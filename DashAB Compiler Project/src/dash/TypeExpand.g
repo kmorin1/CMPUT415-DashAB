@@ -44,8 +44,8 @@ statement
   | block
   | callStatement
   | returnStatement
-  | Break
-  | Continue
+  | Break SemiColon!
+  | Continue SemiColon!
   ;
   
 outputstream
