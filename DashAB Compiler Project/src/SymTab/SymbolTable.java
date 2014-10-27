@@ -14,6 +14,7 @@ public class SymbolTable {
     public Scope globals;
     Map<String, Symbol> resnames;
     Map<String, BuiltInTypeSymbol> types;
+    Map<String, TypeDefSymbol> tdtypes;
     Map<String, BuiltInTypeSymbol> specs;
     Map<String, FunctionSymbol> funcsyms;
 	Map<String, ProcedureSymbol> procsyms;
@@ -25,6 +26,7 @@ public class SymbolTable {
     	this.funcsyms = new HashMap<String, FunctionSymbol>();
     	this.procsyms = new HashMap<String, ProcedureSymbol>();
     	this.specs = new HashMap<String, BuiltInTypeSymbol>();
+    	this.tdtypes = new HashMap<String, TypeDefSymbol>();
     	initTypeSystem(); 
     }
     protected void initTypeSystem() {
@@ -77,7 +79,7 @@ public class SymbolTable {
     Boolean[][] promotelookup = {
 			{false, true, true, null, true},
 			{true, false, true, null, true},
-			{null, null, false, null, null},
+			{null, true, false, null, null},
 			{null, null, null, false, null},
 			{true, true, true, null, false}
 	};
@@ -128,6 +130,7 @@ public class SymbolTable {
     public void define(Symbol sym) { globals.define(sym); }
     public void defineType(TypeDefSymbol sym) {
     	types.put(sym.getName(), sym);
+    	tdtypes.put(sym.getName(), sym);
     	resnames.put(sym.getName(), sym);
     }
     protected void defineType(BuiltInTypeSymbol sym) {
@@ -143,6 +146,12 @@ public class SymbolTable {
     public Symbol resolve(String name) { return globals.resolve(name); }
     public BuiltInTypeSymbol resolveSpec(String name) {return specs.get(name);}
     public BuiltInTypeSymbol resolveType(String name) {return types.get(name); }
+    public TypeDefSymbol resolveTDType(String name) {
+    	TypeDefSymbol tds = tdtypes.get(name); 
+    	if (tds != null)
+    		return tds;
+    	return new TypeDefSymbol(new BuiltInTypeSymbol("null"), "null");
+    }
     public FunctionSymbol resolveFunction(String name) {return funcsyms.get(name); }
     public ProcedureSymbol resolveProcedure(String name) {return procsyms.get(name); }
     
