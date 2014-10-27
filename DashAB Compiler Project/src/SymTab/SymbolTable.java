@@ -79,6 +79,13 @@ public class SymbolTable {
     Boolean[][] promotelookup = {
 			{false, true, true, null, true},
 			{true, false, true, null, true},
+			{null, null, false, null, null},
+			{null, null, null, false, null},
+			{true, true, true, null, false}
+	};
+    Boolean[][] expromotelookup = {
+			{false, true, true, null, true},
+			{true, false, true, null, true},
 			{null, true, false, null, null},
 			{null, null, null, false, null},
 			{true, true, true, null, false}
