@@ -28,7 +28,6 @@ options {
       int chline = input.getTokenStream().get(input.index()).getCharPositionInLine();
       return getGrammarFileName() + ">" + line + ":" + chline + ": ";
   }
-  String rname = "";
 }
 
 program
@@ -123,7 +122,6 @@ slist
   ;
   
 type
-@after {rname = "";}
   : id=Identifier 
   {
     $id.text.equals("boolean") ||
