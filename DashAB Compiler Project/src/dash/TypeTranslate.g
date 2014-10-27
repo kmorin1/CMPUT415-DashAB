@@ -129,13 +129,34 @@ type
     $id.text.equals("boolean") ||
     symtab.resolveTDType($id.text).getSourceSymbol().getName().equals("boolean")
   }? -> Boolean["boolean"]
-  | id=Identifier {$id.text.equals("integer")}? -> Integer["integer"]
-  | id=Identifier {$id.text.equals("matrix")}? -> Matrix["matrix"]
-  | id=Identifier {$id.text.equals("interval")}? -> Interval["interval"]
-  | id=Identifier {$id.text.equals("string")}? -> String["string"]
-  | id=Identifier {$id.text.equals("vector")}? -> Vector["vector"]
-  | id=Identifier {$id.text.equals("real")}? -> Real["real"]
-  | id=Identifier {$id.text.equals("character")}? -> Character["character"]
+  | id=Identifier {
+    $id.text.equals("integer") ||
+    symtab.resolveTDType($id.text).getSourceSymbol().getName().equals("integer")
+  }? -> Integer["integer"]
+  | id=Identifier {
+    $id.text.equals("matrix") ||
+    symtab.resolveTDType($id.text).getSourceSymbol().getName().equals("matrix")
+  }? -> Matrix["matrix"]
+  | id=Identifier {
+    $id.text.equals("interval") ||
+    symtab.resolveTDType($id.text).getSourceSymbol().getName().equals("interval")
+  }? -> Interval["interval"]
+  | id=Identifier {
+    $id.text.equals("string") ||
+    symtab.resolveTDType($id.text).getSourceSymbol().getName().equals("string")
+  }? -> String["string"]
+  | id=Identifier {
+    $id.text.equals("vector") ||
+    symtab.resolveTDType($id.text).getSourceSymbol().getName().equals("vector")
+  }? -> Vector["vector"]
+  | id=Identifier {
+    $id.text.equals("real") ||
+    symtab.resolveTDType($id.text).getSourceSymbol().getName().equals("real")
+  }? -> Real["real"]
+  | id=Identifier {
+    $id.text.equals("character") ||
+    symtab.resolveTDType($id.text).getSourceSymbol().getName().equals("character")
+  }? -> Character["character"]
  // | id=Identifier {$id.test.equals("tuple");} -> ^(Tuple $type+)
   | Identifier
   | Boolean
