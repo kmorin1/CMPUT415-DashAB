@@ -263,7 +263,7 @@ expr returns [String stype]
     if (fs != null)
       $stype = fs.getType(0).getName();
     else 
-      throw new RuntimeException("Multiple defined error");
+      throw new RuntimeException(getErrorHeader() + "Multiple defined error");
   } -> ^(CALL Identifier[$stype] Identifier[$id.text] ^(ARGLIST expr*))
   | id=Identifier {
     Symbol s = currentscope.resolve($id.text);
