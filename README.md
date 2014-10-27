@@ -12,7 +12,11 @@ Lyle: I'm going to use this file as a central location to share what I'm current
  Type Handling:
 	Currently working on getting the types of all expressions inserted into the symbol table, with proper promoted form
 	will add error checking after this works. 
+	all typedefs are now removed, with their corresponding built in type inserted instead
+Definition chekcing:
+	first pass is in, should work more or less
   
 Active Files:
   All SymTab
   TypeExpand.g
+  TypeTranslate.g
