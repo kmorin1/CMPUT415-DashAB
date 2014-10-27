@@ -22,6 +22,11 @@ options {
         this.symtab = symtab;
         currentscope = symtab.globals;
     }
+    private String getErrorHeader() {
+      int line = input.getTokenStream().get(input.index()).getLine(); 
+      int chline = input.getTokenStream().get(input.index()).getCharPositionInLine();
+      return getGrammarFileName() + ">" + line + ":" + chline + ": ";
+  }
 }
 
 program
@@ -70,10 +75,19 @@ declaration
   ;
   
 typedef
-  : ^(Typedef type Identifier)
+@after {
+  BuiltInTypeSymbol bits = symtab.resolveType($t.tsym.getName());
+  if (bits == null)
+    throw new RuntimeException(getErrorHeader() + "type " + bits.getName() + " doesn't exist");
+  TypeDefSymbol tds = new TypeDefSymbol(bits, $id.text);
+  symtab.defineType(tds);
+}
+  : ^(Typedef t=type id=Identifier)
   ;
 
 block
+@init {currentscope = new NestedScope("blockscope", currentscope);}
+@after {currentscope = currentscope.getEnclosingScope();}
   : ^(BLOCK declaration* statement*)
   ;
   
@@ -85,6 +99,7 @@ procedure
 @after {
   ProcedureSymbol ps = new ProcedureSymbol($id.text, type, params);
   symtab.defineProcedure(ps);
+  currentscope = currentscope.getEnclosingScope();
 }
   : ^(Procedure id=Identifier paramlist ^(Returns type) block) {type.add($type.tsym);}
   | ^(Procedure id=Identifier paramlist block)
@@ -96,19 +111,27 @@ function
   ArrayList<Type> type = new ArrayList<Type>();
 }
 @after {
-  FunctionSymbol ps = new FunctionSymbol($id.text, type, params);
-  symtab.defineFunction(ps);
+  FunctionSymbol fs = new FunctionSymbol($id.text, type, params);
+  symtab.defineFunction(fs);
+  currentscope = currentscope.getEnclosingScope();
 }
   : ^(Function id=Identifier paramlist ^(Returns type) block) {type.add($type.tsym);}
   | ^(Function id=Identifier paramlist ^(Returns type) ^(Assign expr)) {type.add($type.tsym);}
   ;
   
 paramlist
+@init {currentscope = new NestedScope("paramscope", currentscope);}
   : ^(PARAMLIST parameter*)
   ;
   
 parameter
-  : ^(Identifier type)
+@init {ArrayList<Type> type = new ArrayList<Type>();}
+@after {
+  type.add($t.tsym);
+  VariableSymbol vs = new VariableSymbol($id.text, type);
+  currentscope.define(vs);
+}
+  : ^(id=Identifier t=type)
   ;
   
 callStatement
@@ -244,11 +267,15 @@ expr returns [String stype]
   } -> ^(CALL Identifier[$stype] Identifier[$id.text] ^(ARGLIST expr*))
   | id=Identifier {
     Symbol s = currentscope.resolve($id.text);
+    if (s == null)
+      throw new RuntimeException(getErrorHeader() + $id.text + " is undefined");
     VariableSymbol vs = (VariableSymbol) s;
     $stype = vs.getType(0).getName();
   } -> Identifier[$stype] Identifier[$id.text]
   | ^(As type expr) {$stype = $type.tsym.getName();}
   | Number {$stype = "integer";} -> Identifier["integer"] Number
   | FPNumber {$stype = "real";} -> Identifier["real"] FPNumber
+  | True {$stype = "boolean";} -> Identifier["boolean"] True
+  | False {$stype = "boolean";} -> Identifier["boolean"] False
   ;
   

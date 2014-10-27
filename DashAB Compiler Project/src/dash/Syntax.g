@@ -233,6 +233,8 @@ index
 atom
   : Number
   | FPNumber
+  | True
+  | False
   | Identifier LParen expr? (Comma expr)* RParen -> ^(CALL Identifier ^(ARGLIST expr*))
   | Identifier
   | filter

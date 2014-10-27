@@ -12,6 +12,23 @@ options {
 @header
 {
   package dash; 
+  import SymTab.*;
+}
+
+@members {
+    SymbolTable symtab;
+    Scope currentscope;
+    public TypeTranslate(TreeNodeStream input, SymbolTable symtab) {
+        this(input);
+        this.symtab = symtab;
+        currentscope = symtab.globals;
+    }
+    private String getErrorHeader() {
+      int line = input.getTokenStream().get(input.index()).getLine(); 
+      int chline = input.getTokenStream().get(input.index()).getCharPositionInLine();
+      return getGrammarFileName() + ">" + line + ":" + chline + ": ";
+  }
+  String rname = "";
 }
 
 program
@@ -52,7 +69,7 @@ declaration
   ;
   
 typedef
-  : ^(Typedef type Identifier)
+  : ^(Typedef type Identifier) ->
   ;
 
 block
@@ -106,7 +123,12 @@ slist
   ;
   
 type
-  : id=Identifier {$id.text.equals("Boolean")}? -> Boolean["boolean"]
+@after {rname = "";}
+  : id=Identifier 
+  {
+    $id.text.equals("boolean") ||
+    symtab.resolveTDType($id.text).getSourceSymbol().getName().equals("boolean")
+  }? -> Boolean["boolean"]
   | id=Identifier {$id.text.equals("integer")}? -> Integer["integer"]
   | id=Identifier {$id.text.equals("matrix")}? -> Matrix["matrix"]
   | id=Identifier {$id.text.equals("interval")}? -> Interval["interval"]
@@ -157,5 +179,7 @@ expr
   | type Identifier
   | type Number
   | type FPNumber
+  | type True
+  | type False
   ;
   
