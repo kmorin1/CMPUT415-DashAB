@@ -264,9 +264,11 @@ expr returns [String stype]
   | ^(CALL id=Identifier ^(ARGLIST expr*)) {
     ProcedureSymbol ps = symtab.resolveProcedure($id.text);
     FunctionSymbol fs = symtab.resolveFunction($id.text);
-    if (ps != null)
+    if (ps == null && fs == null)
+      throw new RuntimeException(getErrorHeader() + "undefined function or procedure");
+    if (ps != null && fs == null)
       $stype = ps.getType(0).getName();
-    if (fs != null)
+    if (fs != null && ps == null)
       $stype = fs.getType(0).getName();
     else 
       throw new RuntimeException(getErrorHeader() + "Multiple defined error");
