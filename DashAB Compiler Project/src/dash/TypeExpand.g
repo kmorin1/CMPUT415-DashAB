@@ -76,7 +76,13 @@ declaration
   
 typedef
 @after {
-  BuiltInTypeSymbol bits = symtab.resolveType($t.tsym.getName());
+  String bitname = $t.tsym.getName();
+  String oldname;
+  do {
+    oldname = bitname;
+    bitname = symtab.resolveTDType(bitname).getSourceSymbol().getName();
+  } while (!bitname.equals("null"));
+  BuiltInTypeSymbol bits = symtab.resolveType(oldname);
   if (bits == null)
     throw new RuntimeException(getErrorHeader() + "type " + bits.getName() + " doesn't exist");
   TypeDefSymbol tds = new TypeDefSymbol(bits, $id.text);
