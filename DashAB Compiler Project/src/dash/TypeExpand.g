@@ -306,10 +306,10 @@ expr returns [String stype]
     }
     if (index.equals(-1))
       throw new RuntimeException(getErrorHeader() + $eid.text + " is undefined");
-  } -> ^(Dot $id Number[index.toString()]) | n=Number {
+  } -> Identifier[$stype] ^(Dot $id Number[index.toString()]) | n=Number {
     String num = $n.text;
     index = index.parseInt(num);
     $stype = ts.getFieldNames().get(index-1).type.getName();
-  } -> ^(Dot $id $n))) 
+  } -> Identifier[$stype] ^(Dot $id $n))) 
   ;
   
