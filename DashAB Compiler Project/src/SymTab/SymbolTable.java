@@ -152,7 +152,7 @@ public class SymbolTable {
     }
     public Symbol resolve(String name) { return globals.resolve(name); }
     public BuiltInTypeSymbol resolveSpec(String name) {return specs.get(name);}
-    public BuiltInTypeSymbol resolveType(String name) {return types.get(name); }
+    public Symbol resolveType(String name) {return types.get(name); }
     public TypeDefSymbol resolveTDType(String name) {
     	TypeDefSymbol tds = tdtypes.get(name); 
     	if (tds != null)

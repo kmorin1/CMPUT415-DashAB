@@ -82,7 +82,7 @@ typedef
     oldname = bitname;
     bitname = symtab.resolveTDType(bitname).getSourceSymbol().getName();
   } while (!bitname.equals("null"));
-  BuiltInTypeSymbol bits = symtab.resolveType(oldname);
+  BuiltInTypeSymbol bits = (BuiltInTypeSymbol) symtab.resolveType(oldname);
   if (bits == null)
     throw new RuntimeException(getErrorHeader() + "type " + bits.getName() + " doesn't exist");
   TypeDefSymbol tds = new TypeDefSymbol(bits, $id.text);
@@ -177,12 +177,15 @@ type returns [Type tsym]
   | t=Vector {$tsym = (Type) symtab.resolveType($t.text);}
   | t=Real {$tsym = (Type) symtab.resolveType($t.text);}
   | t=Character {$tsym = (Type) symtab.resolveType($t.text);}
-  | tuple {$tsym = (Type) symtab.resolveType("tuple");}
+  | tuple {$tsym = $tuple.ts;}
   | t=Identifier {$tsym = (Type) symtab.resolveType($t.text);}
   ;
   
-tuple
-  : ^(Tuple type+)
+tuple returns [TupleSymbol ts]
+@init {ArrayList<FieldPair> fieldnames = new ArrayList<FieldPair>();}
+@after {$ts = new TupleSymbol("tuple", fieldnames);}
+  : ^(Tuple (t=type {fieldnames.add(new FieldPair("null", $t.tsym));}
+    (id=Identifier {fieldnames.get(fieldnames.size()-1).name = $id.text;} )?)+)
   ;
 
 specifier returns [Type tsym]
@@ -191,6 +194,7 @@ specifier returns [Type tsym]
   ;
   
 expr returns [String stype]
+@init {Integer index = -1; TupleSymbol ts = null;}
   : ^(Plus a=expr b=expr) {
     Boolean lua = symtab.lookup($a.stype, $b.stype);
     Boolean lub = symtab.lookup($b.stype, $a.stype);
@@ -286,5 +290,26 @@ expr returns [String stype]
   | True {$stype = "boolean";} -> Identifier["boolean"] True
   | False {$stype = "boolean";} -> Identifier["boolean"] False
   | ^(TUPLEEX expr+) {$stype = "tuple";}
+  | ^(Dot id=Identifier {
+    Symbol s = currentscope.resolve($id.text);
+    if (s == null)
+      throw new RuntimeException(getErrorHeader() + $id.text + " is undefined");
+    VariableSymbol vs = (VariableSymbol) s;
+    ts = (TupleSymbol) vs.getType(0);} 
+    (eid=Identifier {
+    for (Integer i=0; i<ts.getFieldNames().size(); i++) {
+      if ($eid.text.equals(ts.getFieldNames().get(i).name)) {
+        index = i+1; 
+        $stype = ts.getFieldNames().get(i).type.getName();
+        break;
+      }
+    }
+    if (index.equals(-1))
+      throw new RuntimeException(getErrorHeader() + $eid.text + " is undefined");
+  } -> ^(Dot $id Number[index.toString()]) | n=Number {
+    String num = $n.text;
+    index = index.parseInt(num);
+    $stype = ts.getFieldNames().get(index-1).type.getName();
+  } -> ^(Dot $id $n))) 
   ;
   

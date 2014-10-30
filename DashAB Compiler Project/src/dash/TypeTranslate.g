@@ -201,5 +201,6 @@ expr
   | type True
   | type False
   | ^(TUPLEEX expr+)
+  | ^(Dot Identifier expr)
   ;
   
