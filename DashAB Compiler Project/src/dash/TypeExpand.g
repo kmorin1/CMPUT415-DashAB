@@ -265,7 +265,7 @@ expr returns [String stype]
     ProcedureSymbol ps = symtab.resolveProcedure($id.text);
     FunctionSymbol fs = symtab.resolveFunction($id.text);
     if (ps == null && fs == null)
-      throw new RuntimeException(getErrorHeader() + "undefined function or procedure");
+      throw new RuntimeException(getErrorHeader() + $id.text + " is undefined function or procedure");
     if (ps != null && fs == null)
       $stype = ps.getType(0).getName();
     if (fs != null && ps == null)
