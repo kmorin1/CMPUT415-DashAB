@@ -16,6 +16,7 @@ tokens {
   PARAMLIST;
   CALL;
   ARGLIST;
+  TUPLEEX;
 }
 
 @header
@@ -235,6 +236,7 @@ atom
   | FPNumber
   | True
   | False
+  | LParen (a=expr -> expr) (Comma b=expr -> ^(TUPLEEX $a $b))+ RParen
   | Identifier LParen expr? (Comma expr)* RParen -> ^(CALL Identifier ^(ARGLIST expr*))
   | Identifier
   | filter

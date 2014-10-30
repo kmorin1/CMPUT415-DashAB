@@ -285,5 +285,6 @@ expr returns [String stype]
   | FPNumber {$stype = "real";} -> Identifier["real"] FPNumber
   | True {$stype = "boolean";} -> Identifier["boolean"] True
   | False {$stype = "boolean";} -> Identifier["boolean"] False
+  | ^(TUPLEEX expr+) {$stype = "tuple";}
   ;
   
