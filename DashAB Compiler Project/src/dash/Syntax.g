@@ -16,7 +16,6 @@ tokens {
   PARAMLIST;
   CALL;
   ARGLIST;
-  TUPLEEX;
 }
 
 @header
@@ -48,22 +47,25 @@ tokens {
 program
   : mainblock EOF -> ^(PROGRAM mainblock)
   ;
-   
+  
 mainblock
-  : statement*
+  : globalStatement*
+  ;
+  
+globalStatement
+  : declaration
+  | typedef
+  | procedure
+  | function
   ;
   
 statement
   : assignment 
-  | typedef
   | outputstream
   | inputstream
-  | declaration
   | ifstatement
   | loopstatement
   | block
-  | procedure
-  | function
   | callStatement
   | returnStatement
   | Break SemiColon!
@@ -97,7 +99,7 @@ typedef
   ;
 
 block
-  : LBrace statement+ RBrace -> ^(BLOCK statement+)
+  : LBrace declaration* statement* RBrace -> ^(BLOCK declaration* statement*)
   ;
   
 procedure
@@ -231,13 +233,14 @@ index
 atom
   : Number
   | FPNumber
-  | As LThan type GThan LParen expr RParen -> ^(As type expr)
-  | LParen (expr -> expr) (Comma e=expr -> ^(TUPLEEX $atom $e))+ RParen
+  | True
+  | False
   | Identifier LParen expr? (Comma expr)* RParen -> ^(CALL Identifier ^(ARGLIST expr*))
   | Identifier
   | filter
   | generator
   | LParen expr RParen -> expr
+  | As LThan type GThan LParen expr RParen -> ^(As type expr)
   ;
 
 filter

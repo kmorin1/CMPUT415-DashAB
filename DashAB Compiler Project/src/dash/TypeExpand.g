@@ -22,23 +22,31 @@ options {
         this.symtab = symtab;
         currentscope = symtab.globals;
     }
+    private String getErrorHeader() {
+      int line = input.getTokenStream().get(input.index()).getLine(); 
+      int chline = input.getTokenStream().get(input.index()).getCharPositionInLine();
+      return getGrammarFileName() + ">" + line + ":" + chline + ": ";
+  }
 }
 
 program
-  : ^(PROGRAM statement*)
+  : ^(PROGRAM globalStatement*)
+  ;
+  
+globalStatement
+  : declaration
+  | typedef
+  | procedure
+  | function
   ;
    
 statement
-  : declaration
-  | typedef
+  : assignment 
   | outputstream
   | inputstream
-  | assignment
   | ifstatement
   | loopstatement
   | block
-  | procedure
-  | function
   | callStatement
   | returnStatement
   | Break
@@ -67,11 +75,26 @@ declaration
   ;
   
 typedef
-  : ^(Typedef type Identifier)
+@after {
+  String bitname = $t.tsym.getName();
+  String oldname;
+  do {
+    oldname = bitname;
+    bitname = symtab.resolveTDType(bitname).getSourceSymbol().getName();
+  } while (!bitname.equals("null"));
+  BuiltInTypeSymbol bits = symtab.resolveType(oldname);
+  if (bits == null)
+    throw new RuntimeException(getErrorHeader() + "type " + bits.getName() + " doesn't exist");
+  TypeDefSymbol tds = new TypeDefSymbol(bits, $id.text);
+  symtab.defineType(tds);
+}
+  : ^(Typedef t=type id=Identifier)
   ;
 
 block
-  : ^(BLOCK statement+)
+@init {currentscope = new NestedScope("blockscope", currentscope);}
+@after {currentscope = currentscope.getEnclosingScope();}
+  : ^(BLOCK declaration* statement*)
   ;
   
 procedure
@@ -82,6 +105,7 @@ procedure
 @after {
   ProcedureSymbol ps = new ProcedureSymbol($id.text, type, params);
   symtab.defineProcedure(ps);
+  currentscope = currentscope.getEnclosingScope();
 }
   : ^(Procedure id=Identifier paramlist ^(Returns type) block) {type.add($type.tsym);}
   | ^(Procedure id=Identifier paramlist block)
@@ -93,19 +117,27 @@ function
   ArrayList<Type> type = new ArrayList<Type>();
 }
 @after {
-  FunctionSymbol ps = new FunctionSymbol($id.text, type, params);
-  symtab.defineFunction(ps);
+  FunctionSymbol fs = new FunctionSymbol($id.text, type, params);
+  symtab.defineFunction(fs);
+  currentscope = currentscope.getEnclosingScope();
 }
   : ^(Function id=Identifier paramlist ^(Returns type) block) {type.add($type.tsym);}
   | ^(Function id=Identifier paramlist ^(Returns type) ^(Assign expr)) {type.add($type.tsym);}
   ;
   
 paramlist
+@init {currentscope = new NestedScope("paramscope", currentscope);}
   : ^(PARAMLIST parameter*)
   ;
   
 parameter
-  : ^(Identifier type)
+@init {ArrayList<Type> type = new ArrayList<Type>();}
+@after {
+  type.add($t.tsym);
+  VariableSymbol vs = new VariableSymbol($id.text, type);
+  currentscope.define(vs);
+}
+  : ^(id=Identifier t=type)
   ;
   
 callStatement
@@ -232,21 +264,26 @@ expr returns [String stype]
   | ^(CALL id=Identifier ^(ARGLIST expr*)) {
     ProcedureSymbol ps = symtab.resolveProcedure($id.text);
     FunctionSymbol fs = symtab.resolveFunction($id.text);
-    if (ps != null)
+    if (ps == null && fs == null)
+      throw new RuntimeException(getErrorHeader() + "undefined function or procedure");
+    if (ps != null && fs == null)
       $stype = ps.getType(0).getName();
-    if (fs != null)
+    if (fs != null && ps == null)
       $stype = fs.getType(0).getName();
     else 
-      throw new RuntimeException("Multiple defined error");
+      throw new RuntimeException(getErrorHeader() + "Multiple defined error");
   } -> ^(CALL Identifier[$stype] Identifier[$id.text] ^(ARGLIST expr*))
   | id=Identifier {
     Symbol s = currentscope.resolve($id.text);
+    if (s == null)
+      throw new RuntimeException(getErrorHeader() + $id.text + " is undefined");
     VariableSymbol vs = (VariableSymbol) s;
     $stype = vs.getType(0).getName();
   } -> Identifier[$stype] Identifier[$id.text]
   | ^(As type expr) {$stype = $type.tsym.getName();}
   | Number {$stype = "integer";} -> Identifier["integer"] Number
   | FPNumber {$stype = "real";} -> Identifier["real"] FPNumber
-  | ^(TUPLEEX expr+) {$stype = "tuple";} -> Identifier["tuple"] ^(TUPLEEX expr+)
+  | True {$stype = "boolean";} -> Identifier["boolean"] True
+  | False {$stype = "boolean";} -> Identifier["boolean"] False
   ;
-   
+  
