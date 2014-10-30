@@ -152,5 +152,7 @@ expr
   | type FPNumber
   | type True
   | type False
+  | ^(TUPLEEX expr+)
+  | type ^(Dot Identifier Number)
   ;
   
