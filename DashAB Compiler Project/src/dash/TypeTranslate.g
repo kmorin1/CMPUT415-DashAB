@@ -155,7 +155,7 @@ type
     $id.text.equals("character") ||
     symtab.resolveTDType($id.text).getSourceSymbol().getName().equals("character")
   }? -> Character["character"]
-  | ^(id=Identifier type+) {$id.text.equals("tuple");} -> ^(Tuple["tuple"] type+)
+  | ^(id=Identifier type+) {$id.text.equals("tuple")}? -> ^(Tuple["tuple"] type+)
   | Identifier
   | Boolean
   | Integer
