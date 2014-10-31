@@ -40,7 +40,7 @@ globalStatement
   | procedure
   | function
   ;
-   
+    
 statement
   : assignment 
   | outputstream
@@ -155,7 +155,7 @@ type
     $id.text.equals("character") ||
     symtab.resolveTDType($id.text).getSourceSymbol().getName().equals("character")
   }? -> Character["character"]
- // | id=Identifier {$id.test.equals("tuple");} -> ^(Tuple $type+)
+  | ^(id=Identifier type+) {$id.text.equals("tuple");} -> ^(Tuple["tuple"] type+)
   | Identifier
   | Boolean
   | Integer

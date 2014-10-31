@@ -13,7 +13,7 @@ options {
   package dash; 
   import SymTab.*;
 }
-
+ 
 @members {
     SymbolTable symtab;
     Scope currentscope;
@@ -27,6 +27,7 @@ options {
       int chline = input.getTokenStream().get(input.index()).getCharPositionInLine();
       return getGrammarFileName() + ">" + line + ":" + chline + ": ";
   }
+  
 }
 
 program
@@ -194,7 +195,11 @@ specifier returns [Type tsym]
   ;
   
 expr returns [String stype]
-@init {Integer index = -1; TupleSymbol ts = null;}
+@init {
+  Integer index = -1; 
+  TupleSymbol ts = null; 
+  Boolean istuple = false;
+}
   : ^(Plus a=expr b=expr) {
     Boolean lua = symtab.lookup($a.stype, $b.stype);
     Boolean lub = symtab.lookup($b.stype, $a.stype);
@@ -255,15 +260,15 @@ expr returns [String stype]
       throw new RuntimeException("type promotion error");
     
   } -> ^(Exponent Identifier[$stype] expr expr)
-  | ^(Equals a=expr b=expr) {$stype = $a.stype;} -> ^(Equals Identifier[$stype] expr expr)
-  | ^(NEquals a=expr b=expr) {$stype = $a.stype;} -> ^(NEquals Identifier[$stype] expr expr)
-  | ^(GThan a=expr b=expr) {$stype = $a.stype;} -> ^(GThan Identifier[$stype] expr expr)
-  | ^(LThan a=expr b=expr) {$stype = $a.stype;} -> ^(LThan Identifier[$stype] expr expr)
-  | ^(GThanE a=expr b=expr) {$stype = $a.stype;} -> ^(GThanE Identifier[$stype] expr expr)
-  | ^(LThanE a=expr b=expr) {$stype = $a.stype;} -> ^(LThanE Identifier[$stype] expr expr)
-  | ^(Or a=expr b=expr) {$stype = $a.stype;} -> ^(Or Identifier[$stype] expr expr)
-  | ^(Xor a=expr b=expr) {$stype = $a.stype;} -> ^(Xor Identifier[$stype] expr expr)
-  | ^(And a=expr b=expr) {$stype = $a.stype;} -> ^(And Identifier[$stype] expr expr)
+  | ^(Equals a=expr b=expr) {$stype = "boolean";} -> ^(Equals Identifier[$stype] expr expr)
+  | ^(NEquals a=expr b=expr) {$stype = "boolean";} -> ^(NEquals Identifier[$stype] expr expr)
+  | ^(GThan a=expr b=expr) {$stype = "boolean";} -> ^(GThan Identifier[$stype] expr expr)
+  | ^(LThan a=expr b=expr) {$stype = "boolean";} -> ^(LThan Identifier[$stype] expr expr)
+  | ^(GThanE a=expr b=expr) {$stype = "boolean";} -> ^(GThanE Identifier[$stype] expr expr)
+  | ^(LThanE a=expr b=expr) {$stype = "boolean";} -> ^(LThanE Identifier[$stype] expr expr)
+  | ^(Or a=expr b=expr) {$stype = "boolean";} -> ^(Or Identifier[$stype] expr expr)
+  | ^(Xor a=expr b=expr) {$stype = "boolean";} -> ^(Xor Identifier[$stype] expr expr)
+  | ^(And a=expr b=expr) {$stype = "boolean";} -> ^(And Identifier[$stype] expr expr)
   | ^(By a=expr b=expr) {$stype = $a.stype;} -> ^(By Identifier[$stype] expr expr)
   | ^(CALL id=Identifier ^(ARGLIST expr*)) {
     ProcedureSymbol ps = symtab.resolveProcedure($id.text);
@@ -283,7 +288,23 @@ expr returns [String stype]
       throw new RuntimeException(getErrorHeader() + $id.text + " is undefined");
     VariableSymbol vs = (VariableSymbol) s;
     $stype = vs.getType(0).getName();
-  } -> Identifier[$stype] Identifier[$id.text]
+  } {!currentscope.resolve($id.text).getType(0).getName().equals("tuple")}?
+    -> Identifier[$stype] Identifier[$id.text] 
+  | id=Identifier {
+    Symbol s = currentscope.resolve($id.text);
+    if (s == null)
+      throw new RuntimeException(getErrorHeader() + $id.text + " is undefined");
+    VariableSymbol vs = (VariableSymbol) s;
+    $stype = vs.getType(0).getName();
+    ts = (TupleSymbol) vs.getType(0);
+    //index = 0;
+    stream_Identifier.reset();
+    for (int i=0; i<ts.getFieldNames().size(); i++) {
+      stream_Identifier.add((CommonTree) adaptor.create(Identifier, ts.getFieldNames().get(i).type.getName()));
+    }
+    stream_Identifier.nextNode();
+  } {currentscope.resolve($id.text).getType(0).getName().equals("tuple")}?
+    -> ^(Identifier[$stype] (Identifier)+) Identifier[$id.text] 
   | ^(As type expr) {$stype = $type.tsym.getName();}
   | Number {$stype = "integer";} -> Identifier["integer"] Number
   | FPNumber {$stype = "real";} -> Identifier["real"] FPNumber
@@ -295,7 +316,8 @@ expr returns [String stype]
     if (s == null)
       throw new RuntimeException(getErrorHeader() + $id.text + " is undefined");
     VariableSymbol vs = (VariableSymbol) s;
-    ts = (TupleSymbol) vs.getType(0);} 
+    ts = (TupleSymbol) vs.getType(0);
+    index = -1; } 
     (eid=Identifier {
     for (Integer i=0; i<ts.getFieldNames().size(); i++) {
       if ($eid.text.equals(ts.getFieldNames().get(i).name)) {
