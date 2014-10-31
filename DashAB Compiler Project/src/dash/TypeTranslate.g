@@ -53,7 +53,7 @@ statement
   | Break
   | Continue
   ;
-  
+   
 outputstream
   : ^(RArrow expr)
   ;
@@ -200,7 +200,7 @@ expr
   | type FPNumber
   | type True
   | type False
-  | ^(TUPLEEX expr+)
+  | ^(TUPLEEX type expr+)
   | type ^(Dot Identifier Number)
   ;
   

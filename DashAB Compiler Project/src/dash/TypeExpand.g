@@ -40,7 +40,7 @@ globalStatement
   | procedure
   | function
   ;
-   
+    
 statement
   : assignment 
   | outputstream
@@ -310,7 +310,10 @@ expr returns [String stype]
   | FPNumber {$stype = "real";} -> Identifier["real"] FPNumber
   | True {$stype = "boolean";} -> Identifier["boolean"] True
   | False {$stype = "boolean";} -> Identifier["boolean"] False
-  | ^(TUPLEEX expr+) {$stype = "tuple";}
+  | ^(TUPLEEX (e=expr {
+    stream_TUPLEEX.reset();
+    stream_TUPLEEX.add((CommonTree) adaptor.create(Identifier, $e.stype));
+  })+) {$stype = "tuple";} -> ^(TUPLEEX ^(Identifier[$stype] TUPLEEX+) expr+)
   | ^(Dot id=Identifier {
     Symbol s = currentscope.resolve($id.text);
     if (s == null)
