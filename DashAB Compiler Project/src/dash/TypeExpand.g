@@ -135,43 +135,50 @@ block
   
 procedure
 @init {
-  ArrayList<Symbol> params = new ArrayList<Symbol>();
+  //ArrayList<Symbol> params = new ArrayList<Symbol>();
   ArrayList<Type> type = new ArrayList<Type>();
 }
 @after {
-  ProcedureSymbol ps = new ProcedureSymbol($id.text, type, params);
+  ProcedureSymbol ps = new ProcedureSymbol($id.text, type, $pl.params);
   symtab.defineProcedure(ps);
   currentscope = currentscope.getEnclosingScope();
 }
-  : ^(Procedure id=Identifier paramlist ^(Returns type) block) {type.add($type.tsym);}
-  | ^(Procedure id=Identifier paramlist block)
+  : ^(Procedure id=Identifier pl=paramlist ^(Returns type) block) {type.add($type.tsym);}
+  | ^(Procedure id=Identifier pl=paramlist block)
   ;
    
 function
 @init {
-  ArrayList<Symbol> params = new ArrayList<Symbol>();
+  //ArrayList<Symbol> params = new ArrayList<Symbol>();
   ArrayList<Type> type = new ArrayList<Type>();
 }
 @after {
-  FunctionSymbol fs = new FunctionSymbol($id.text, type, params);
+  FunctionSymbol fs = new FunctionSymbol($id.text, type, $pl.params);
   symtab.defineFunction(fs);
   currentscope = currentscope.getEnclosingScope();
 }
-  : ^(Function id=Identifier paramlist ^(Returns type) block) {type.add($type.tsym);}
-  | ^(Function id=Identifier paramlist ^(Returns type) ^(Assign expr)) {type.add($type.tsym);}
+  : ^(Function id=Identifier pl=paramlist ^(Returns type) block) {type.add($type.tsym);}
+  | ^(Function id=Identifier pl=paramlist ^(Returns type) ^(Assign expr)) {type.add($type.tsym);}
   ;
   
-paramlist
-@init {currentscope = new NestedScope("paramscope", currentscope);}
-  : ^(PARAMLIST parameter*)
+paramlist returns [ArrayList<Symbol> params]
+@init {
+  ArrayList<Symbol> paramlst = new ArrayList<Symbol>();
+  currentscope = new NestedScope("paramscope", currentscope);
+}
+@after {$params = paramlst;}
+  : ^(PARAMLIST (p=parameter {paramlst.add($p.varsym);})*)
   ;
   
-parameter
+parameter returns [VariableSymbol varsym]
 @init {ArrayList<Type> type = new ArrayList<Type>();}
 @after {
   type.add($t.tsym);
-  VariableSymbol vs = new VariableSymbol($id.text, type);
+  ArrayList<Type> spec = new ArrayList<Type>();
+  spec.add(new BuiltInTypeSymbol("const"));
+  VariableSymbol vs = new VariableSymbol($id.text, type, spec);
   currentscope.define(vs);
+  $varsym = vs;
 }
   : ^(id=Identifier t=type)
   ;
@@ -246,7 +253,7 @@ expr returns [Type stype]
 @init {
   Integer index = -1; 
   TupleSymbol ts = null; 
-  Boolean istuple = false;
+  ArrayList<Type> argtypes = new ArrayList<Type>();
   String errorhead = getErrorHeader();
 }
   : ^(Plus a=expr b=expr) {
@@ -407,17 +414,34 @@ expr returns [Type stype]
     
   } -> ^(Not Identifier[$stype.getName()] expr)
   | ^(By a=expr b=expr) {$stype = $a.stype;} -> ^(By Identifier[$stype.getName()] expr expr)
-  | ^(CALL id=Identifier ^(ARGLIST expr*)) {
+  | ^(CALL id=Identifier ^(ARGLIST (e=expr {argtypes.add($e.stype);})*)) {
     ProcedureSymbol ps = symtab.resolveProcedure($id.text);
     FunctionSymbol fs = symtab.resolveFunction($id.text);
     if (ps == null && fs == null)
       throw new RuntimeException(getErrorHeader() + $id.text + " is undefined function or procedure");
-    if (ps != null && fs == null)
+    if (ps != null && fs == null) {
       $stype = ps.getType(0);
-    if (fs != null && ps == null)
+      ArrayList<Symbol> argsyms = ps.getParamList();
+      if (argsyms.size() != argtypes.size())
+        throw new RuntimeException(errorhead + ps.getName() + ": number of arguments doesn't match");
+      for (int i=0; i<argsyms.size(); i++) {
+        VariableSymbol vs = (VariableSymbol) argsyms.get(i);
+        if (!vs.getType(0).getName().equals(argtypes.get(i).getName()))
+          throw new RuntimeException(errorhead + "type mismatch, expected " +  vs.getType(0).getName() + " but got " + argtypes.get(i).getName());
+      }
+    } else if (fs != null && ps == null) {
       $stype = fs.getType(0);
-    else 
+      ArrayList<Symbol> argsyms = fs.getParamList();
+      if (argsyms.size() != argtypes.size())
+        throw new RuntimeException(errorhead + ps.getName() + ": number of arguments doesn't match");
+      for (int i=0; i<argsyms.size(); i++) {
+        VariableSymbol vs = (VariableSymbol) argsyms.get(i);
+        if (!vs.getType(0).getName().equals(argtypes.get(i).getName()))
+          throw new RuntimeException(errorhead + "type mismatch, expected " +  vs.getType(0).getName() + " but got " + argtypes.get(i).getName());
+      }
+    } else 
       throw new RuntimeException(getErrorHeader() + "Multiple defined error");
+    argtypes.clear();
   } -> ^(CALL Identifier[$stype.getName()] Identifier[$id.text] ^(ARGLIST expr*))
   | id=Identifier {
     Symbol s = currentscope.resolve($id.text);
