@@ -247,9 +247,9 @@ expr returns [Type stype]
   Integer index = -1; 
   TupleSymbol ts = null; 
   Boolean istuple = false;
-  String errorhead = "";
+  String errorhead = getErrorHeader();
 }
-  : ^(Plus {errorhead = getErrorHeader();} a=expr b=expr) {
+  : ^(Plus a=expr b=expr) {
     Boolean lua = symtab.lookup($a.stype, $b.stype);
     Boolean lub = symtab.lookup($b.stype, $a.stype);
       
@@ -258,7 +258,7 @@ expr returns [Type stype]
     else if (lub != null)
       $stype = $a.stype;
     else 
-      throw new RuntimeException("type promotion error");
+      throw new RuntimeException(errorhead + " type promotion error");
     
   } -> ^(Plus Identifier[$stype.getName()] expr expr)
   | ^(Minus a=expr b=expr) {
@@ -318,6 +318,7 @@ expr returns [Type stype]
   | ^(Or a=expr b=expr) {$stype = new BuiltInTypeSymbol("boolean");} -> ^(Or Identifier[$stype.getName()] expr expr)
   | ^(Xor a=expr b=expr) {$stype = new BuiltInTypeSymbol("boolean");} -> ^(Xor Identifier[$stype.getName()] expr expr)
   | ^(And a=expr b=expr) {$stype = new BuiltInTypeSymbol("boolean");} -> ^(And Identifier[$stype.getName()] expr expr)
+  | ^(Not e=expr) {$stype = new BuiltInTypeSymbol("boolean");} -> ^(Not Identifier[$stype.getName()] expr)
   | ^(By a=expr b=expr) {$stype = $a.stype;} -> ^(By Identifier[$stype.getName()] expr expr)
   | ^(CALL id=Identifier ^(ARGLIST expr*)) {
     ProcedureSymbol ps = symtab.resolveProcedure($id.text);

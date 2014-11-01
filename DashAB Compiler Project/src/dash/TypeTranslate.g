@@ -194,6 +194,7 @@ expr
   | ^(Or type expr expr)
   | ^(Xor type expr expr)
   | ^(And type expr expr)
+  | ^(Not type expr)
   | ^(By type expr expr)
   | ^(CALL Identifier ^(ARGLIST expr*))
   | ^(As a=type expr)
