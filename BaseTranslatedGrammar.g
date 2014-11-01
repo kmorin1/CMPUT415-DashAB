@@ -1,4 +1,4 @@
-tree grammar TypeTranslate;
+tree grammar BaseTranslatedGrammar;
 
 options {
   language = Java;
@@ -12,17 +12,9 @@ options {
 @header
 {
   package dash; 
-  import SymTab.*;
 }
 
 @members {
-    SymbolTable symtab;
-    Scope currentscope;
-    public TypeTranslate(TreeNodeStream input, SymbolTable symtab) {
-        this(input);
-        this.symtab = symtab;
-        currentscope = symtab.globals;
-    }
     private String getErrorHeader() {
       int line = input.getTokenStream().get(input.index()).getLine(); 
       int chline = input.getTokenStream().get(input.index()).getCharPositionInLine();
@@ -36,11 +28,10 @@ program
    
 globalStatement
   : declaration
-  | typedef
   | procedure
   | function
   ;
-    
+   
 statement
   : assignment 
   | outputstream
@@ -53,7 +44,7 @@ statement
   | Break
   | Continue
   ;
-   
+  
 outputstream
   : ^(RArrow expr)
   ;
@@ -67,10 +58,6 @@ declaration
   | ^(DECL specifier* type* ^(Assign Identifier expr))
   ;
   
-typedef
-  : ^(Typedef type Identifier) ->
-  ;
-
 block
   : ^(BLOCK declaration* statement*)
   ;
@@ -122,42 +109,7 @@ slist
   ;
   
 type
-  : id=Identifier 
-  {
-    $id.text.equals("boolean") ||
-    symtab.resolveTDType($id.text).getSourceSymbol().getName().equals("boolean")
-  }? -> Boolean["boolean"]
-  | id=Identifier {
-    $id.text.equals("integer") ||
-    symtab.resolveTDType($id.text).getSourceSymbol().getName().equals("integer")
-  }? -> Integer["integer"]
-  | id=Identifier {
-    $id.text.equals("matrix") ||
-    symtab.resolveTDType($id.text).getSourceSymbol().getName().equals("matrix")
-  }? -> Matrix["matrix"]
-  | id=Identifier {
-    $id.text.equals("interval") ||
-    symtab.resolveTDType($id.text).getSourceSymbol().getName().equals("interval")
-  }? -> Interval["interval"]
-  | id=Identifier {
-    $id.text.equals("string") ||
-    symtab.resolveTDType($id.text).getSourceSymbol().getName().equals("string")
-  }? -> String["string"]
-  | id=Identifier {
-    $id.text.equals("vector") ||
-    symtab.resolveTDType($id.text).getSourceSymbol().getName().equals("vector")
-  }? -> Vector["vector"]
-  | id=Identifier {
-    $id.text.equals("real") ||
-    symtab.resolveTDType($id.text).getSourceSymbol().getName().equals("real")
-  }? -> Real["real"]
-  | id=Identifier {
-    $id.text.equals("character") ||
-    symtab.resolveTDType($id.text).getSourceSymbol().getName().equals("character")
-  }? -> Character["character"]
-  | ^(id=Identifier type+) {$id.text.equals("tuple")}? -> ^(Tuple["tuple"] type+)
-  | Identifier
-  | Boolean
+  : Boolean
   | Integer
   | Matrix
   | Interval
@@ -194,13 +146,13 @@ expr
   | ^(And type expr expr)
   | ^(By type expr expr)
   | ^(CALL Identifier ^(ARGLIST expr*))
-  | ^(As a=type expr)
+  | ^(As type expr)
   | type Identifier
   | type Number
   | type FPNumber
   | type True
   | type False
-  | ^(TUPLEEX type expr+)
+  | ^(TUPLEEX expr+)
   | type ^(Dot Identifier Number)
   ;
   

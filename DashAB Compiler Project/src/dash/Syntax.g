@@ -16,6 +16,7 @@ tokens {
   PARAMLIST;
   CALL;
   ARGLIST;
+  TUPLEEX;
 }
 
 @header
@@ -161,7 +162,7 @@ type
   ;
   
 tuple
-  : Tuple^ LParen! type (Comma! type)+ RParen!
+  : Tuple^ LParen! type Identifier? (Comma! type Identifier?)+ RParen!
   ;
 
 specifier
@@ -233,6 +234,10 @@ index
 atom
   : Number
   | FPNumber
+  | True
+  | False
+  | Identifier Dot^ (Identifier|Number)
+  | LParen (a=expr -> expr) (Comma b=expr -> ^(TUPLEEX $a $b))+ RParen
   | Identifier LParen expr? (Comma expr)* RParen -> ^(CALL Identifier ^(ARGLIST expr*))
   | Identifier
   | filter
@@ -328,12 +333,13 @@ SemiColon : ';';
 Comma     : ',';
 Range     : '..';
 Bar       : '|';
+Dot       : '.';
 
 Number 
   : Digit+
   ;
 FPNumber
-  : Digit+ '.' Digit+
+  : Digit+ Dot Digit+
   ;
 
 Identifier

@@ -40,21 +40,25 @@ public class DashAB_Test {
 			SyntaxParser parser = new SyntaxParser(tokenStream);
 			SyntaxParser.program_return entry = parser.program();
 			CommonTree ast = (CommonTree)entry.getTree();
+			DOTTreeGenerator gen = new DOTTreeGenerator();
+			StringTemplate st = gen.toDOT(ast);
+			//System.out.println(st);
 			
 			CommonTreeNodeStream nodes = new CommonTreeNodeStream(ast);
 			nodes.setTokenStream(tokenStream);
 			TypeExpand te = new TypeExpand(nodes, symtab);
 			TypeExpand.program_return teret = te.program();
 			ast = (CommonTree) teret.getTree();
+			st = gen.toDOT(ast);
+			//System.out.println(st);
 			
 			nodes = new CommonTreeNodeStream(ast);
 			nodes.setTokenStream(tokenStream);
-			TypeTranslate tt = new TypeTranslate(nodes);
+			TypeTranslate tt = new TypeTranslate(nodes, symtab);
 			TypeTranslate.program_return ttret = tt.program();
 			ast = (CommonTree) ttret.getTree();
 			
-			DOTTreeGenerator gen = new DOTTreeGenerator();
-			StringTemplate st = gen.toDOT(ast);
+			st = gen.toDOT(ast);
 			System.out.println(st);
 
 			/*SymbolTable symtab = new SymbolTable();
