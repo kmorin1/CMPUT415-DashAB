@@ -270,7 +270,7 @@ expr returns [Type stype]
     else if (lub != null)
       $stype = $a.stype;
     else 
-      throw new RuntimeException("type promotion error");
+      throw new RuntimeException(errorhead + " type promotion error");
     
   } -> ^(Minus Identifier[$stype.getName()] expr expr)
   | ^(Multiply a=expr b=expr) {
@@ -282,7 +282,7 @@ expr returns [Type stype]
     else if (lub != null)
       $stype = $a.stype;
     else 
-      throw new RuntimeException("type promotion error");
+      throw new RuntimeException(errorhead + " type promotion error");
     
   } -> ^(Multiply Identifier[$stype.getName()] expr expr)
   | ^(Divide a=expr b=expr) {
@@ -294,7 +294,7 @@ expr returns [Type stype]
     else if (lub != null)
       $stype = $a.stype;
     else 
-      throw new RuntimeException("type promotion error");
+      throw new RuntimeException(errorhead + " type promotion error");
     
   } -> ^(Divide Identifier[$stype.getName()] expr expr)
   | ^(Exponent a=expr b=expr) {
@@ -306,19 +306,106 @@ expr returns [Type stype]
     else if (lub != null)
       $stype = $a.stype;
     else 
-      throw new RuntimeException("type promotion error");
+      throw new RuntimeException(errorhead + " type promotion error");
     
   } -> ^(Exponent Identifier[$stype.getName()] expr expr)
-  | ^(Equals a=expr b=expr) {$stype = new BuiltInTypeSymbol("boolean");} -> ^(Equals Identifier[$stype.getName()] expr expr)
-  | ^(NEquals a=expr b=expr) {$stype = new BuiltInTypeSymbol("boolean");} -> ^(NEquals Identifier[$stype.getName()] expr expr)
-  | ^(GThan a=expr b=expr) {$stype = new BuiltInTypeSymbol("boolean");} -> ^(GThan Identifier[$stype.getName()] expr expr)
-  | ^(LThan a=expr b=expr) {$stype = new BuiltInTypeSymbol("boolean");} -> ^(LThan Identifier[$stype.getName()] expr expr)
-  | ^(GThanE a=expr b=expr) {$stype = new BuiltInTypeSymbol("boolean");} -> ^(GThanE Identifier[$stype.getName()] expr expr)
-  | ^(LThanE a=expr b=expr) {$stype = new BuiltInTypeSymbol("boolean");} -> ^(LThanE Identifier[$stype.getName()] expr expr)
-  | ^(Or a=expr b=expr) {$stype = new BuiltInTypeSymbol("boolean");} -> ^(Or Identifier[$stype.getName()] expr expr)
-  | ^(Xor a=expr b=expr) {$stype = new BuiltInTypeSymbol("boolean");} -> ^(Xor Identifier[$stype.getName()] expr expr)
-  | ^(And a=expr b=expr) {$stype = new BuiltInTypeSymbol("boolean");} -> ^(And Identifier[$stype.getName()] expr expr)
-  | ^(Not e=expr) {$stype = new BuiltInTypeSymbol("boolean");} -> ^(Not Identifier[$stype.getName()] expr)
+  | ^(Equals a=expr b=expr) {
+    Boolean lua = symtab.lookup($a.stype, $b.stype);
+    Boolean lub = symtab.lookup($b.stype, $a.stype);
+      
+    if (lua != null || lub != null)
+      $stype = new BuiltInTypeSymbol("boolean");
+    else 
+      throw new RuntimeException(errorhead + " type promotion error");
+    
+  } -> ^(Equals Identifier[$stype.getName()] expr expr)
+  | ^(NEquals a=expr b=expr) {
+    Boolean lua = symtab.lookup($a.stype, $b.stype);
+    Boolean lub = symtab.lookup($b.stype, $a.stype);
+      
+    if (lua != null || lub != null)
+      $stype = new BuiltInTypeSymbol("boolean");
+    else 
+      throw new RuntimeException(errorhead + " type promotion error");
+    
+  } -> ^(NEquals Identifier[$stype.getName()] expr expr)
+  | ^(GThan a=expr b=expr) {
+    Boolean lua = symtab.lookup($a.stype, $b.stype);
+    Boolean lub = symtab.lookup($b.stype, $a.stype);
+      
+    if (lua != null || lub != null)
+      $stype = new BuiltInTypeSymbol("boolean");
+    else 
+      throw new RuntimeException(errorhead + " type promotion error");
+    
+  } -> ^(GThan Identifier[$stype.getName()] expr expr)
+  | ^(LThan a=expr b=expr) {
+    Boolean lua = symtab.lookup($a.stype, $b.stype);
+    Boolean lub = symtab.lookup($b.stype, $a.stype);
+      
+    if (lua != null || lub != null)
+      $stype = new BuiltInTypeSymbol("boolean");
+    else 
+      throw new RuntimeException(errorhead + " type promotion error");
+    
+  } -> ^(LThan Identifier[$stype.getName()] expr expr)
+  | ^(GThanE a=expr b=expr) {
+    Boolean lua = symtab.lookup($a.stype, $b.stype);
+    Boolean lub = symtab.lookup($b.stype, $a.stype);
+      
+    if (lua != null || lub != null)
+      $stype = new BuiltInTypeSymbol("boolean");
+    else 
+      throw new RuntimeException(errorhead + " type promotion error");
+    
+  } -> ^(GThanE Identifier[$stype.getName()] expr expr)
+  | ^(LThanE a=expr b=expr) {
+    Boolean lua = symtab.lookup($a.stype, $b.stype);
+    Boolean lub = symtab.lookup($b.stype, $a.stype);
+      
+    if (lua != null || lub != null)
+      $stype = new BuiltInTypeSymbol("boolean");
+    else 
+      throw new RuntimeException(errorhead + " type promotion error");
+    
+  } -> ^(LThanE Identifier[$stype.getName()] expr expr)
+  | ^(Or a=expr b=expr) {
+    Boolean lua = symtab.lookup($a.stype, $b.stype);
+    Boolean lub = symtab.lookup($b.stype, $a.stype);
+      
+    if (lua != null || lub != null)
+      $stype = new BuiltInTypeSymbol("boolean");
+    else 
+      throw new RuntimeException(errorhead + " type promotion error");
+    
+  } -> ^(Or Identifier[$stype.getName()] expr expr)
+  | ^(Xor a=expr b=expr) {
+    Boolean lua = symtab.lookup($a.stype, $b.stype);
+    Boolean lub = symtab.lookup($b.stype, $a.stype);
+      
+    if (lua != null || lub != null)
+      $stype = new BuiltInTypeSymbol("boolean");
+    else 
+      throw new RuntimeException(errorhead + " type promotion error");
+    
+  } -> ^(Xor Identifier[$stype.getName()] expr expr)
+  | ^(And a=expr b=expr) {
+    Boolean lua = symtab.lookup($a.stype, $b.stype);
+    Boolean lub = symtab.lookup($b.stype, $a.stype);
+      
+    if (lua != null || lub != null)
+      $stype = new BuiltInTypeSymbol("boolean");
+    else 
+      throw new RuntimeException(errorhead + " type promotion error");
+    
+  } -> ^(And Identifier[$stype.getName()] expr expr)
+  | ^(Not e=expr) {
+    if ($e.stype.getName().equals("boolean"))
+      $stype = new BuiltInTypeSymbol("boolean");
+    else 
+      throw new RuntimeException(errorhead + " type promotion error");
+    
+  } -> ^(Not Identifier[$stype.getName()] expr)
   | ^(By a=expr b=expr) {$stype = $a.stype;} -> ^(By Identifier[$stype.getName()] expr expr)
   | ^(CALL id=Identifier ^(ARGLIST expr*)) {
     ProcedureSymbol ps = symtab.resolveProcedure($id.text);
@@ -396,7 +483,17 @@ expr returns [Type stype]
     index = index.parseInt(num);
     $stype = ts.getFieldNames().get(index-1).type;
   } -> Identifier[$stype.getName()] ^(Dot $id $n))) 
-  | ^(NEG e=expr) {$stype = $e.stype;}
-  | ^(POS e=expr) {$stype = $e.stype;}
+  | ^(NEG e=expr) {
+    if (!$e.stype.getName().equals("integer") || !$e.stype.getName().equals("real")) 
+      throw new RuntimeException(errorhead + " type error");
+    else
+      $stype = $e.stype;
+  }
+  | ^(POS e=expr) {
+    if (!$e.stype.getName().equals("integer") || !$e.stype.getName().equals("real")) 
+      throw new RuntimeException(errorhead + " type error");
+    else
+      $stype = $e.stype;
+  }
   ;
   
