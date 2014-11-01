@@ -75,6 +75,8 @@ public class SymbolTable {
         defineRes("stream_state");
         defineRes("reverse");
         
+        defineSpec(new BuiltInTypeSymbol("var"));
+        defineSpec(new BuiltInTypeSymbol("const"));
         defineRes("var");
         defineRes("const");
     }
@@ -189,6 +191,9 @@ public class SymbolTable {
     protected void defineType(BuiltInTypeSymbol sym) {
     	types.put(sym.getName(), sym); 
     	resnames.put(sym.getName(), sym);
+    }
+    protected void defineSpec(BuiltInTypeSymbol sym) {
+    	specs.put(sym.getName(), sym);
     }
     public void defineFunction(FunctionSymbol sym) {
     	funcsyms.put(sym.getName(), sym);
