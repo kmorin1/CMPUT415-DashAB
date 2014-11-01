@@ -106,33 +106,32 @@ declaration
   
   currentscope.define(vs);
 }
-  : ^(DECL (s=specifier {specs.add($s.tsym);})* (t=type {types.add($t.tsym);})* id=Identifier)
+  : ^(DECL (s=specifier {specs.add($s.tsym);})* (t=type {types.add($t.tsym);})* id=Identifier) {
+    if (specs.size() != 0) {
+        throw new RuntimeException("cannot have specifiers without assigning a variable");
+    }
+  } -> ^(DECL type* $id)
   | ^(DECL (s=specifier {specs.add($s.tsym);})* (t=type {types.add($t.tsym);})* ^(Assign id=Identifier e=expr)) {
     if (types.size() > 0 && symtab.lookup($e.stype, types.get(0)) == null)
       throw new RuntimeException("assignment type error, expected " + types.get(0).getName() + " but got " + $e.stype.getName());
-      stream_DECL.reset();
+      
+    stream_DECL.reset();
   
-      if (new VariableSymbol($id.text, types, specs).isVar()) {
-        types.clear();
-        types.add($e.stype);
-        for (int j=0; j<specs.size(); j++) {
-          if (specs.get(j).getName().equals("var"))
-            specs.remove(j);
-        }
-      }
-      stream_specifier = new RewriteRuleSubtreeStream(adaptor,"rule specifier");
-      for (int i=0; i<specs.size(); i++) {
-        if (specs.get(i).getName().equals("const"))
-          stream_specifier.add((CommonTree) adaptor.create(Const, specs.get(i).getName()));
-      }
-      for (int i=0; i<types.size(); i++) {
-        stream_DECL.add((CommonTree) adaptor.create(Identifier, types.get(i).getName()));
-      }
-      //stream_DECL.nextNode();
-  
-  } -> ^(DECL specifier* DECL+ ^(Assign $id $e))
-  | ^(DECL (s=specifier {specs.add($s.tsym);})* ^(Assign id=Identifier StdInput {types.add((Type) symtab.resolveType("std_input"));}))
+    if (new VariableSymbol($id.text, types, specs).isVar()) {
+      types.clear();
+      types.add($e.stype);
+        
+    }
+      
+    for (int i=0; i<types.size(); i++) {
+      stream_DECL.add((CommonTree) adaptor.create(Identifier, types.get(i).getName()));
+    }
+    
+  } -> ^(DECL DECL+ ^(Assign $id $e))
+  | ^(DECL (s=specifier {specs.add($s.tsym);})* ^(Assign id=Identifier StdInput {types.add((Type) symtab.resolveType("std_input"));})) 
+    -> ^(DECL StdInput["std_input"] ^(Assign StdInput))
   | ^(DECL (s=specifier {specs.add($s.tsym);})* ^(Assign id=Identifier StdOutput {types.add((Type) symtab.resolveType("std_output"));}))
+    -> ^(DECL StdOutput["std_output"] ^(Assign StdOutput))
   ;
   
 typedef
@@ -225,6 +224,8 @@ assignment
       throw new RuntimeException($var.text + " is undefined");
       
     VariableSymbol varVS = (VariableSymbol) varSymbol;
+    if (varVS.isConst())
+      throw new RuntimeException("Cannot reassign a variable to a const");
     
     String varType = varVS.getType(0).getName();
     

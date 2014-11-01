@@ -167,6 +167,8 @@ type
   | Vector
   | Real
   | Character
+  | StdInput
+  | StdOutput
   | tuple
   ;
   
