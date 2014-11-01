@@ -144,10 +144,15 @@ expr
   | ^(Or expr expr)
   | ^(Xor expr expr)
   | ^(And expr expr)
+  | ^(Not expr)
   | ^(By expr expr)
   | ^(CALL Identifier ^(ARGLIST expr*))
   | Identifier
   | Number
   | FPNumber
+  | True
+  | False
+  | ^(TUPLEEX expr)
+  | ^(Dot Identifier)
   ;
   
