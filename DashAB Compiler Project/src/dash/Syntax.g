@@ -17,6 +17,8 @@ tokens {
   CALL;
   ARGLIST;
   TUPLEEX;
+  POS;
+  NEG;
 }
 
 @header
@@ -177,7 +179,7 @@ expr
   ;
   
 orExpr
-  : (xorExpr -> xorExpr) ((Bar Bar) e=xorExpr -> ^(Or $orExpr $e))*
+  : (x=xorExpr -> $x) ((Bar Bar) y=orExpr -> ^(Or $x $y))*
   ;
   
 xorExpr
@@ -209,13 +211,13 @@ mulExpr
   ;
 
 powExpr
-  : unaryExpr ((Exponent)^ unaryExpr)*
+  : (x=unaryExpr -> $x) ((Exponent) y=unaryExpr -> ^(Exponent $x $y))*
   ;
   
 unaryExpr
-  : Plus^ rangeExpr
-  | Minus^ rangeExpr
-  | Not^ rangeExpr
+  : Plus x=unaryExpr -> ^(POS $x)
+  | Minus x=unaryExpr -> ^(NEG $x)
+  | Not x=unaryExpr -> ^(Not $x)
   | rangeExpr
   ;
   
