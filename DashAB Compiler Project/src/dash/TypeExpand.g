@@ -99,13 +99,38 @@ declaration
 @init {
   ArrayList<Type> specs = new ArrayList<Type>();
   ArrayList<Type> types = new ArrayList<Type>(); 
+  VariableSymbol vs = null;
 }
 @after {
-  VariableSymbol vs = new VariableSymbol($id.text, types, specs);
+  vs = new VariableSymbol($id.text, types, specs);
+  
   currentscope.define(vs);
 }
   : ^(DECL (s=specifier {specs.add($s.tsym);})* (t=type {types.add($t.tsym);})* id=Identifier)
-  | ^(DECL (s=specifier {specs.add($s.tsym);})* (t=type {types.add($t.tsym);})* ^(Assign id=Identifier expr))
+  | ^(DECL (s=specifier {specs.add($s.tsym);})* (t=type {types.add($t.tsym);})* ^(Assign id=Identifier e=expr)) {
+    if (types.size() > 0 && symtab.lookup($e.stype, types.get(0)) == null)
+      throw new RuntimeException("assignment type error, expected " + types.get(0).getName() + " but got " + $e.stype.getName());
+      stream_DECL.reset();
+  
+      if (new VariableSymbol($id.text, types, specs).isVar()) {
+        types.clear();
+        types.add($e.stype);
+        for (int j=0; j<specs.size(); j++) {
+          if (specs.get(j).getName().equals("var"))
+            specs.remove(j);
+        }
+      }
+      stream_specifier = new RewriteRuleSubtreeStream(adaptor,"rule specifier");
+      for (int i=0; i<specs.size(); i++) {
+        if (specs.get(i).getName().equals("const"))
+          stream_specifier.add((CommonTree) adaptor.create(Const, specs.get(i).getName()));
+      }
+      for (int i=0; i<types.size(); i++) {
+        stream_DECL.add((CommonTree) adaptor.create(Identifier, types.get(i).getName()));
+      }
+      //stream_DECL.nextNode();
+  
+  } -> ^(DECL specifier* DECL+ ^(Assign $id $e))
   | ^(DECL (s=specifier {specs.add($s.tsym);})* ^(Assign id=Identifier StdInput {types.add((Type) symtab.resolveType("std_input"));}))
   | ^(DECL (s=specifier {specs.add($s.tsym);})* ^(Assign id=Identifier StdOutput {types.add((Type) symtab.resolveType("std_output"));}))
   ;
@@ -192,7 +217,7 @@ returnStatement
   ;
   
 assignment
-  : ^(Assign var=Identifier expr)
+  : ^(Assign var=Identifier e=expr)
   {
     Symbol varSymbol = currentscope.resolve($var.text);
     
@@ -203,8 +228,12 @@ assignment
     
     String varType = varVS.getType(0).getName();
     
-    if (varType == "std_input" || varType == "std_output")
+    if (varType.equals("std_input") || varType.equals("std_output"))
       throw new RuntimeException("Cannot assign to stream " + $var.text);
+      
+    if (symtab.lookup($e.stype, varVS.getType(0)) == null)
+      throw new RuntimeException("assignment type error, expected " + varType + " but got " + $e.stype.getName());
+    
   }
   ;
   
