@@ -92,9 +92,11 @@ public class SymbolTable {
 			{null, null, null, false, null},
 			{true, true, true, null, false}
 	};
-    public Boolean lookup(String st1, String st2) {
+    public Boolean lookup(Type tst1, Type tst2) {
     	Integer i1 = null;
     	Integer i2 = null;
+    	String st1 = tst1.getName();
+    	String st2 = tst2.getName();
     	switch (st1) {
     	case "boolean":
     		i1 = 0;

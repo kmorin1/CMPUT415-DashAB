@@ -64,7 +64,7 @@ outputstream
     VariableSymbol vs = (VariableSymbol) s;
     
     String stype = vs.getType(0).getName();
-    if (stype != "std_output")
+    if (!stype.equals("std_output"))
       throw new RuntimeException($stream.text + " is not an output stream");
   }
   ;
@@ -85,9 +85,9 @@ inputstream
     
     String streamType = streamVS.getType(0).getName();
     String varType = varVS.getType(0).getName();
-    if (streamType != "std_input")
+    if (!streamType.equals("std_input"))
       throw new RuntimeException($stream.text + " is not an input stream");
-    else if (varType == "std_input" || varType == "std_output")
+    else if (varType.equals("std_input") || varType.equals("std_output"))
       throw new RuntimeException("Cannot put input into stream " + $var.text);
   }
   ;
@@ -239,7 +239,7 @@ specifier returns [Type tsym]
   | t=Var {$tsym = (Type) symtab.resolveSpec($t.text);}
   ;
   
-expr returns [String stype]
+expr returns [Type stype]
 @init {
   Integer index = -1; 
   TupleSymbol ts = null; 
@@ -256,7 +256,7 @@ expr returns [String stype]
     else 
       throw new RuntimeException("type promotion error");
     
-  } -> ^(Plus Identifier[$stype] expr expr)
+  } -> ^(Plus Identifier[$stype.getName()] expr expr)
   | ^(Minus a=expr b=expr) {
     Boolean lua = symtab.lookup($a.stype, $b.stype);
     Boolean lub = symtab.lookup($b.stype, $a.stype);
@@ -268,7 +268,7 @@ expr returns [String stype]
     else 
       throw new RuntimeException("type promotion error");
     
-  } -> ^(Minus Identifier[$stype] expr expr)
+  } -> ^(Minus Identifier[$stype.getName()] expr expr)
   | ^(Multiply a=expr b=expr) {
     Boolean lua = symtab.lookup($a.stype, $b.stype);
     Boolean lub = symtab.lookup($b.stype, $a.stype);
@@ -280,7 +280,7 @@ expr returns [String stype]
     else 
       throw new RuntimeException("type promotion error");
     
-  } -> ^(Multiply Identifier[$stype] expr expr)
+  } -> ^(Multiply Identifier[$stype.getName()] expr expr)
   | ^(Divide a=expr b=expr) {
     Boolean lua = symtab.lookup($a.stype, $b.stype);
     Boolean lub = symtab.lookup($b.stype, $a.stype);
@@ -292,7 +292,7 @@ expr returns [String stype]
     else 
       throw new RuntimeException("type promotion error");
     
-  } -> ^(Divide Identifier[$stype] expr expr)
+  } -> ^(Divide Identifier[$stype.getName()] expr expr)
   | ^(Exponent a=expr b=expr) {
     Boolean lua = symtab.lookup($a.stype, $b.stype);
     Boolean lub = symtab.lookup($b.stype, $a.stype);
@@ -304,47 +304,47 @@ expr returns [String stype]
     else 
       throw new RuntimeException("type promotion error");
     
-  } -> ^(Exponent Identifier[$stype] expr expr)
-  | ^(Equals a=expr b=expr) {$stype = "boolean";} -> ^(Equals Identifier[$stype] expr expr)
-  | ^(NEquals a=expr b=expr) {$stype = "boolean";} -> ^(NEquals Identifier[$stype] expr expr)
-  | ^(GThan a=expr b=expr) {$stype = "boolean";} -> ^(GThan Identifier[$stype] expr expr)
-  | ^(LThan a=expr b=expr) {$stype = "boolean";} -> ^(LThan Identifier[$stype] expr expr)
-  | ^(GThanE a=expr b=expr) {$stype = "boolean";} -> ^(GThanE Identifier[$stype] expr expr)
-  | ^(LThanE a=expr b=expr) {$stype = "boolean";} -> ^(LThanE Identifier[$stype] expr expr)
-  | ^(Or a=expr b=expr) {$stype = "boolean";} -> ^(Or Identifier[$stype] expr expr)
-  | ^(Xor a=expr b=expr) {$stype = "boolean";} -> ^(Xor Identifier[$stype] expr expr)
-  | ^(And a=expr b=expr) {$stype = "boolean";} -> ^(And Identifier[$stype] expr expr)
-  | ^(By a=expr b=expr) {$stype = $a.stype;} -> ^(By Identifier[$stype] expr expr)
+  } -> ^(Exponent Identifier[$stype.getName()] expr expr)
+  | ^(Equals a=expr b=expr) {$stype = new BuiltInTypeSymbol("boolean");} -> ^(Equals Identifier[$stype.getName()] expr expr)
+  | ^(NEquals a=expr b=expr) {$stype = new BuiltInTypeSymbol("boolean");} -> ^(NEquals Identifier[$stype.getName()] expr expr)
+  | ^(GThan a=expr b=expr) {$stype = new BuiltInTypeSymbol("boolean");} -> ^(GThan Identifier[$stype.getName()] expr expr)
+  | ^(LThan a=expr b=expr) {$stype = new BuiltInTypeSymbol("boolean");} -> ^(LThan Identifier[$stype.getName()] expr expr)
+  | ^(GThanE a=expr b=expr) {$stype = new BuiltInTypeSymbol("boolean");} -> ^(GThanE Identifier[$stype.getName()] expr expr)
+  | ^(LThanE a=expr b=expr) {$stype = new BuiltInTypeSymbol("boolean");} -> ^(LThanE Identifier[$stype.getName()] expr expr)
+  | ^(Or a=expr b=expr) {$stype = new BuiltInTypeSymbol("boolean");} -> ^(Or Identifier[$stype.getName()] expr expr)
+  | ^(Xor a=expr b=expr) {$stype = new BuiltInTypeSymbol("boolean");} -> ^(Xor Identifier[$stype.getName()] expr expr)
+  | ^(And a=expr b=expr) {$stype = new BuiltInTypeSymbol("boolean");} -> ^(And Identifier[$stype.getName()] expr expr)
+  | ^(By a=expr b=expr) {$stype = $a.stype;} -> ^(By Identifier[$stype.getName()] expr expr)
   | ^(CALL id=Identifier ^(ARGLIST expr*)) {
     ProcedureSymbol ps = symtab.resolveProcedure($id.text);
     FunctionSymbol fs = symtab.resolveFunction($id.text);
     if (ps == null && fs == null)
       throw new RuntimeException(getErrorHeader() + $id.text + " is undefined function or procedure");
     if (ps != null && fs == null)
-      $stype = ps.getType(0).getName();
+      $stype = ps.getType(0);
     if (fs != null && ps == null)
-      $stype = fs.getType(0).getName();
+      $stype = fs.getType(0);
     else 
       throw new RuntimeException(getErrorHeader() + "Multiple defined error");
-  } -> ^(CALL Identifier[$stype] Identifier[$id.text] ^(ARGLIST expr*))
+  } -> ^(CALL Identifier[$stype.getName()] Identifier[$id.text] ^(ARGLIST expr*))
   | id=Identifier {
     Symbol s = currentscope.resolve($id.text);
     if (s == null)
       throw new RuntimeException(getErrorHeader() + $id.text + " is undefined");
     VariableSymbol vs = (VariableSymbol) s;
     
-    $stype = vs.getType(0).getName();
-    if ($stype == "std_input" || $stype == "std_output")
+    $stype = vs.getType(0);
+    if ($stype.getName().equals("std_input") || $stype.getName().equals("std_output"))
       throw new RuntimeException("stream " + $id.text + " cannot occur in an expression");
   } {!currentscope.resolve($id.text).getType(0).getName().equals("tuple")}?
-    -> Identifier[$stype] Identifier[$id.text] 
+    -> Identifier[$stype.getName()] Identifier[$id.text] 
   | id=Identifier {
     Symbol s = currentscope.resolve($id.text);
     if (s == null)
       throw new RuntimeException(getErrorHeader() + $id.text + " is undefined");
     VariableSymbol vs = (VariableSymbol) s;
-    $stype = vs.getType(0).getName();
-    if ($stype == "std_input" || $stype == "std_output")
+    $stype = vs.getType(0);
+    if ($stype.getName().equals("std_input") || $stype.getName().equals("std_output"))
       throw new RuntimeException("stream " + $id.text + " cannot occur in an expression");
     ts = (TupleSymbol) vs.getType(0);
     //index = 0;
@@ -354,16 +354,16 @@ expr returns [String stype]
     }
     stream_Identifier.nextNode();
   } {currentscope.resolve($id.text).getType(0).getName().equals("tuple")}?
-    -> ^(Identifier[$stype] (Identifier)+) Identifier[$id.text] 
-  | ^(As type expr) {$stype = $type.tsym.getName();}
-  | Number {$stype = "integer";} -> Identifier["integer"] Number
-  | FPNumber {$stype = "real";} -> Identifier["real"] FPNumber
-  | True {$stype = "boolean";} -> Identifier["boolean"] True
-  | False {$stype = "boolean";} -> Identifier["boolean"] False
+    -> ^(Identifier[$stype.getName()] (Identifier)+) Identifier[$id.text] 
+  | ^(As type expr) {$stype = $type.tsym;}
+  | Number {$stype = new BuiltInTypeSymbol("integer");} -> Identifier["integer"] Number
+  | FPNumber {$stype = new BuiltInTypeSymbol("real");} -> Identifier["real"] FPNumber
+  | True {$stype = new BuiltInTypeSymbol("boolean");} -> Identifier["boolean"] True
+  | False {$stype = new BuiltInTypeSymbol("boolean");} -> Identifier["boolean"] False
   | ^(TUPLEEX (e=expr {
     stream_TUPLEEX.reset();
-    stream_TUPLEEX.add((CommonTree) adaptor.create(Identifier, $e.stype));
-  })+) {$stype = "tuple";} -> ^(TUPLEEX ^(Identifier[$stype] TUPLEEX+) expr+)
+    stream_TUPLEEX.add((CommonTree) adaptor.create(Identifier, $e.stype.getName()));
+  })+) {$stype = new BuiltInTypeSymbol("tuple");} -> ^(TUPLEEX ^(Identifier[$stype.getName()] TUPLEEX+) expr+)
   | ^(Dot id=Identifier {
     Symbol s = currentscope.resolve($id.text);
     if (s == null)
@@ -375,16 +375,16 @@ expr returns [String stype]
     for (Integer i=0; i<ts.getFieldNames().size(); i++) {
       if ($eid.text.equals(ts.getFieldNames().get(i).name)) {
         index = i+1; 
-        $stype = ts.getFieldNames().get(i).type.getName();
+        $stype = ts.getFieldNames().get(i).type;
         break;
       }
     }
     if (index.equals(-1))
       throw new RuntimeException(getErrorHeader() + $eid.text + " is undefined");
-  } -> Identifier[$stype] ^(Dot $id Number[index.toString()]) | n=Number {
+  } -> Identifier[$stype.getName()] ^(Dot $id Number[index.toString()]) | n=Number {
     String num = $n.text;
     index = index.parseInt(num);
-    $stype = ts.getFieldNames().get(index-1).type.getName();
-  } -> Identifier[$stype] ^(Dot $id $n))) 
+    $stype = ts.getFieldNames().get(index-1).type;
+  } -> Identifier[$stype.getName()] ^(Dot $id $n))) 
   ;
   
