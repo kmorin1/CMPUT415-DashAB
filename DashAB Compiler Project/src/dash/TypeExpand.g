@@ -23,6 +23,7 @@ options {
         currentscope = symtab.globals;
     }
     private String getErrorHeader() {
+      
       int line = input.getTokenStream().get(input.index()).getLine(); 
       int chline = input.getTokenStream().get(input.index()).getCharPositionInLine();
       return getGrammarFileName() + ">" + line + ":" + chline + ": ";
@@ -244,8 +245,9 @@ expr returns [Type stype]
   Integer index = -1; 
   TupleSymbol ts = null; 
   Boolean istuple = false;
+  String errorhead = "";
 }
-  : ^(Plus a=expr b=expr) {
+  : ^(Plus {errorhead = getErrorHeader();} a=expr b=expr) {
     Boolean lua = symtab.lookup($a.stype, $b.stype);
     Boolean lub = symtab.lookup($b.stype, $a.stype);
       
@@ -355,7 +357,12 @@ expr returns [Type stype]
     stream_Identifier.nextNode();
   } {currentscope.resolve($id.text).getType(0).getName().equals("tuple")}?
     -> ^(Identifier[$stype.getName()] (Identifier)+) Identifier[$id.text] 
-  | ^(As type expr) {$stype = $type.tsym;}
+  | ^(As type e=expr) {
+    Boolean exlu = symtab.exLookup($type.tsym, $e.stype);
+    if (exlu == null)
+      throw new RuntimeException(errorhead + " expression cannot be cast to " + $type.tsym.getName());
+    $stype = $type.tsym;
+  }
   | Number {$stype = new BuiltInTypeSymbol("integer");} -> Identifier["integer"] Number
   | FPNumber {$stype = new BuiltInTypeSymbol("real");} -> Identifier["real"] FPNumber
   | True {$stype = new BuiltInTypeSymbol("boolean");} -> Identifier["boolean"] True
@@ -386,5 +393,7 @@ expr returns [Type stype]
     index = index.parseInt(num);
     $stype = ts.getFieldNames().get(index-1).type;
   } -> Identifier[$stype.getName()] ^(Dot $id $n))) 
+  | ^(NEG e=expr) {$stype = $e.stype;}
+  | ^(POS e=expr) {$stype = $e.stype;}
   ;
   

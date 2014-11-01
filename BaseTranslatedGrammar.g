@@ -156,5 +156,7 @@ expr
   | type False
   | ^(TUPLEEX expr+)
   | type ^(Dot Identifier Number)
+  | ^(NEG expr)
+  | ^(POS expr)
   ;
   
