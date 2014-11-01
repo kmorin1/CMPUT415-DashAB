@@ -55,11 +55,41 @@ statement
   ;
   
 outputstream
-  : ^(RArrow expr)
+  : ^(RArrow expr stream=Identifier)
+  {
+    Symbol s = currentscope.resolve($stream.text);
+    
+    if (s == null)
+      throw new RuntimeException($stream.text + " is undefined");
+    VariableSymbol vs = (VariableSymbol) s;
+    
+    String stype = vs.getType(0).getName();
+    if (stype != "std_output")
+      throw new RuntimeException($stream.text + " is not an output stream");
+  }
   ;
 
 inputstream
-  : ^(LArrow Identifier)
+  : ^(LArrow var=Identifier stream=Identifier)
+  {
+    Symbol streamSymbol = currentscope.resolve($stream.text);
+    Symbol varSymbol = currentscope.resolve($var.text);
+    
+    if (streamSymbol == null)
+      throw new RuntimeException($stream.text + " is undefined");
+    else if (varSymbol == null)
+      throw new RuntimeException($var.text + " is undefined");
+      
+    VariableSymbol streamVS = (VariableSymbol) streamSymbol;
+    VariableSymbol varVS = (VariableSymbol) varSymbol;
+    
+    String streamType = streamVS.getType(0).getName();
+    String varType = varVS.getType(0).getName();
+    if (streamType != "std_input")
+      throw new RuntimeException($stream.text + " is not an input stream");
+    else if (varType == "std_input" || varType == "std_output")
+      throw new RuntimeException("Cannot put input into stream " + $var.text);
+  }
   ;
 
 declaration
@@ -73,6 +103,8 @@ declaration
 }
   : ^(DECL (s=specifier {specs.add($s.tsym);})* (t=type {types.add($t.tsym);})* id=Identifier)
   | ^(DECL (s=specifier {specs.add($s.tsym);})* (t=type {types.add($t.tsym);})* ^(Assign id=Identifier expr))
+  | ^(DECL (s=specifier {specs.add($s.tsym);})* ^(Assign id=Identifier StdInput {types.add((Type) symtab.resolveType("std_input"));}))
+  | ^(DECL (s=specifier {specs.add($s.tsym);})* ^(Assign id=Identifier StdOutput {types.add((Type) symtab.resolveType("std_output"));}))
   ;
   
 typedef
@@ -150,7 +182,20 @@ returnStatement
   ;
   
 assignment
-  : ^(Assign Identifier expr)
+  : ^(Assign var=Identifier expr)
+  {
+    Symbol varSymbol = currentscope.resolve($var.text);
+    
+    if (varSymbol == null)
+      throw new RuntimeException($var.text + " is undefined");
+      
+    VariableSymbol varVS = (VariableSymbol) varSymbol;
+    
+    String varType = varVS.getType(0).getName();
+    
+    if (varType == "std_input" || varType == "std_output")
+      throw new RuntimeException("Cannot assign to stream " + $var.text);
+  }
   ;
   
 ifstatement
@@ -287,7 +332,10 @@ expr returns [String stype]
     if (s == null)
       throw new RuntimeException(getErrorHeader() + $id.text + " is undefined");
     VariableSymbol vs = (VariableSymbol) s;
+    
     $stype = vs.getType(0).getName();
+    if ($stype == "std_input" || $stype == "std_output")
+      throw new RuntimeException("stream " + $id.text + " cannot occur in an expression");
   } {!currentscope.resolve($id.text).getType(0).getName().equals("tuple")}?
     -> Identifier[$stype] Identifier[$id.text] 
   | id=Identifier {
@@ -296,6 +344,8 @@ expr returns [String stype]
       throw new RuntimeException(getErrorHeader() + $id.text + " is undefined");
     VariableSymbol vs = (VariableSymbol) s;
     $stype = vs.getType(0).getName();
+    if ($stype == "std_input" || $stype == "std_output")
+      throw new RuntimeException("stream " + $id.text + " cannot occur in an expression");
     ts = (TupleSymbol) vs.getType(0);
     //index = 0;
     stream_Identifier.reset();

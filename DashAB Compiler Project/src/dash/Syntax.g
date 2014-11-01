@@ -73,26 +73,27 @@ statement
   | Continue SemiColon!
   ;
   
-stream
-  : Var Out Equals 'std_output()' SemiColon
-  | Var Inp Equals 'std_input()' SemiColon
+streamDecl
+  : specifier Identifier Assign (StdOutput|StdInput) LParen RParen SemiColon
+  -> ^(DECL specifier ^(Assign Identifier StdOutput? StdInput?))
   ;
 
 outputstream
-  : expr RArrow Out SemiColon -> ^(RArrow expr)
+  : expr RArrow stream=Identifier SemiColon -> ^(RArrow expr $stream)
   ;
 
 inputstream
-  : Identifier LArrow Inp SemiColon -> ^(LArrow Identifier)
+  : var=Identifier LArrow stream=Identifier SemiColon -> ^(LArrow $var $stream)
   ;
 
 streamstate
-  : Stream LParen Inp RParen SemiColon
+  : Stream LParen Identifier RParen SemiColon
   ;
 
 declaration
   : specifier* type* Identifier SemiColon -> ^(DECL specifier* type* Identifier)
   | specifier* type* Identifier Assign expr SemiColon -> ^(DECL specifier* type* ^(Assign Identifier expr))
+  | streamDecl
   ;
   
 typedef
@@ -295,12 +296,12 @@ Xor       : 'xor';
 Rows      : 'rows';
 Columns   : 'columns';
 Length    : 'length';
-Out       : 'out';
-Inp       : 'inp';
 Tuple     : 'tuple';
 Stream    : 'stream_state';
-Reverse   :  'reverse';
+Reverse   : 'reverse';
 Call      : 'call';
+StdInput  : 'std_input';
+StdOutput : 'std_output';
 
 Character : 'character';
 

@@ -39,6 +39,8 @@ public class SymbolTable {
         defineType(new BuiltInTypeSymbol("matrix"));
         defineType(new BuiltInTypeSymbol("interval"));
         defineType(new BuiltInTypeSymbol("string"));
+        defineType(new BuiltInTypeSymbol("std_input"));
+        defineType(new BuiltInTypeSymbol("std_output"));
         defineRes("if");
         defineRes("function");
         defineRes("procedure");

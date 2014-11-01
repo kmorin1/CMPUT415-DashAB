@@ -55,16 +55,18 @@ statement
   ;
    
 outputstream
-  : ^(RArrow expr)
+  : ^(RArrow expr stream=Identifier)
   ;
 
 inputstream
-  : ^(LArrow Identifier)
+  : ^(LArrow var=Identifier stream=Identifier)
   ;
 
 declaration
   : ^(DECL specifier* type* Identifier)
   | ^(DECL specifier* type* ^(Assign Identifier expr))
+  | ^(DECL specifier* ^(Assign Identifier StdInput))
+  | ^(DECL specifier* ^(Assign Identifier StdOutput))
   ;
   
 typedef
