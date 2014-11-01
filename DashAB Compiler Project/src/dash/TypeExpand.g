@@ -24,8 +24,10 @@ options {
     }
     private String getErrorHeader() {
       
-      int line = input.getTokenStream().get(input.index()).getLine(); 
-      int chline = input.getTokenStream().get(input.index()).getCharPositionInLine();
+      //int line = input.getTokenStream().get(input.index()).getLine(); 
+      //int chline = input.getTokenStream().get(input.index()).getCharPositionInLine();
+      int line = 0;
+      int chline = 0;
       return getGrammarFileName() + ">" + line + ":" + chline + ": ";
   }
   
