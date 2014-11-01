@@ -211,7 +211,7 @@ mulExpr
   ;
 
 powExpr
-  : (x=unaryExpr -> $x) ((Exponent) y=unaryExpr -> ^(Exponent $x $y))*
+  : (unaryExpr -> unaryExpr) ((Exponent) y=unaryExpr -> ^(Exponent $powExpr $y))*
   ;
   
 unaryExpr
