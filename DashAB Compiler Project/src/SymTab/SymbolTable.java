@@ -79,11 +79,11 @@ public class SymbolTable {
         defineRes("const");
     }
     Boolean[][] promotelookup = {
-			{false, true, true, null, true},
-			{true, false, true, null, true},
+			{false, null, null, null, null},
+			{null, false, true, null, null},
 			{null, null, false, null, null},
 			{null, null, null, false, null},
-			{true, true, true, null, false}
+			{null, null, null, null, false}
 	};
     Boolean[][] expromotelookup = {
 			{false, true, true, null, true},
@@ -134,7 +134,49 @@ public class SymbolTable {
     	
     	return promotelookup[i1][i2];
     }
-	
+	public Boolean exLookup(Type tst1, Type tst2) {
+		Integer i1 = null;
+    	Integer i2 = null;
+    	String st1 = tst1.getName();
+    	String st2 = tst2.getName();
+    	switch (st1) {
+    	case "boolean":
+    		i1 = 0;
+    		break;
+    	case "integer":
+    		i1 = 1;
+    		break;
+    	case "real":
+    		i1 = 2;
+    		break;
+    	case "interval":
+    		i1 = 3;
+    		break;
+    	case "character":
+    		i1 = 4;
+    		break;
+    	}
+    	switch (st2) {
+    	case "boolean":
+    		i2 = 0;
+    		break;
+    	case "integer":
+    		i2 = 1;
+    		break;
+    	case "real":
+    		i2 = 2;
+    		break;
+    	case "interval":
+    		i2 = 3;
+    		break;
+    	case "character":
+    		i2 = 4;
+    		break;
+    	}
+    	
+    	return expromotelookup[i1][i2];
+	}
+    
     private void defineRes(String sym) {resnames.put(sym, new Symbol(sym));}
     public String getScopeName() { return "global"; }
     public Scope getEnclosingScope() { return null; }
