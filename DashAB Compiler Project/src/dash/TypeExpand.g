@@ -209,13 +209,25 @@ assignment
   ;
   
 ifstatement
-  : ^(If expr slist ^(Else slist))
-  | ^(If expr slist)
+  : ^(If e=expr slist ^(Else slist)) {
+    if (!$e.stype.getName().equals("boolean"))
+      throw new RuntimeException("conditional statement requires boolean, but got " + $e.stype.getName());
+  }
+  | ^(If e=expr slist) {
+    if (!$e.stype.getName().equals("boolean"))
+      throw new RuntimeException("conditional statement requires boolean, but got " + $e.stype.getName());
+  }
   ;
   
 loopstatement
-  : ^(Loop ^(While expr) slist)
-  | ^(Loop slist ^(While expr))
+  : ^(Loop ^(While e=expr) slist) {
+    if (!$e.stype.getName().equals("boolean"))
+      throw new RuntimeException("conditional statement requires boolean, but got " + $e.stype.getName());
+  }
+  | ^(Loop slist ^(While e=expr)) {
+    if (!$e.stype.getName().equals("boolean"))
+      throw new RuntimeException("conditional statement requires boolean, but got " + $e.stype.getName());
+  }
   | ^(Loop slist)
   ;
   
