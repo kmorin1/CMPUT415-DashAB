@@ -105,6 +105,20 @@ declaration
   VariableSymbol vs = null;
 }
 @after {
+  Symbol sym = null;
+  if (currentscope instanceof NestedScope) {
+    NestedScope ns = (NestedScope)currentscope;
+    sym = ns.symbols.get($id.text);
+  }
+  else if (currentscope instanceof GlobalScope) {
+    GlobalScope gs = (GlobalScope)currentscope;
+    sym = gs.symbols.get($id.text);
+  }
+  
+  if (sym != null) {
+    throw new RuntimeException("variable " + $id.text + " defined more than once in same scope");
+  }
+
   vs = new VariableSymbol($id.text, types, specs);
   
   if (!vs.isConst() && currentscope.getScopeName() == "global") {
