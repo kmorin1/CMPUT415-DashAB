@@ -58,13 +58,16 @@ statement
   ;
   
 outputstream
-  : ^(RArrow expr stream=Identifier)
+  : ^(RArrow e=expr stream=Identifier)
   {
     Symbol s = currentscope.resolve($stream.text);
     
     if (s == null)
       throw new RuntimeException($stream.text + " is undefined");
     VariableSymbol vs = (VariableSymbol) s;
+    
+    if ($e.stype.getName().equals("tuple"))
+      throw new RuntimeException("cannot send tuples to streams");
     
     String stype = vs.getType(0).getName();
     if (!stype.equals("std_output"))
@@ -90,8 +93,8 @@ inputstream
     String varType = varVS.getType(0).getName();
     if (!streamType.equals("std_input"))
       throw new RuntimeException($stream.text + " is not an input stream");
-    else if (varType.equals("std_input") || varType.equals("std_output"))
-      throw new RuntimeException("Cannot put input into stream " + $var.text);
+    else if (varType.equals("std_input") || varType.equals("std_output") || varType.equals("tuple"))
+      throw new RuntimeException("invalid type for input stream to variable " + $var.text);
   }
   ;
 
