@@ -41,6 +41,8 @@ public class SymbolTable {
         defineType(new BuiltInTypeSymbol("string"));
         defineType(new BuiltInTypeSymbol("std_input"));
         defineType(new BuiltInTypeSymbol("std_output"));
+        defineType(new BuiltInTypeSymbol("null"));
+        defineType(new BuiltInTypeSymbol("identity"));
         defineRes("if");
         defineRes("function");
         defineRes("procedure");

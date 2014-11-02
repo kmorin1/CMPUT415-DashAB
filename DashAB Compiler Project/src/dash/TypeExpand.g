@@ -123,6 +123,10 @@ declaration
       throw new RuntimeException("assignment type error, expected " + types.get(0).getName() + " but got " + $e.stype.getName());
       
     stream_DECL.reset();
+    
+    if (types.size() == 0 && ($e.stype.getName() == "null" || $e.stype.getName() == "identity")) {
+      throw new RuntimeException("cannot infer type for variable " + $id.text);
+    }
   
     if (new VariableSymbol($id.text, types, specs).isVar()) {
       types.clear();
