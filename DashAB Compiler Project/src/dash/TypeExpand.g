@@ -31,6 +31,14 @@ options {
       return getGrammarFileName() + ">" + line + ":" + chline + ": ";
   }
   
+    private void checkGlobalName(String symbolName) {
+      ProcedureSymbol ps = symtab.resolveProcedure(symbolName);
+      FunctionSymbol fs = symtab.resolveFunction(symbolName);
+      Symbol type = symtab.resolveType(symbolName);
+      if (ps != null || fs != null || type != null) {
+        throw new RuntimeException(symbolName + " is defined multiple times in global scope");
+      }
+    }
 }
 
 program
@@ -111,13 +119,14 @@ declaration
     sym = ns.symbols.get($id.text);
   }
   else if (currentscope instanceof GlobalScope) {
+    checkGlobalName($id.text);
     GlobalScope gs = (GlobalScope)currentscope;
     sym = gs.symbols.get($id.text);
   }
   
   if (sym != null) {
     throw new RuntimeException("variable " + $id.text + " defined more than once in same scope");
-  }
+  }  
 
   vs = new VariableSymbol($id.text, types, specs);
   
@@ -160,6 +169,9 @@ declaration
   
 typedef
 @after {
+
+  checkGlobalName($id.text);
+
   String bitname = $t.tsym.getName();
   String oldname;
   do {
@@ -187,6 +199,9 @@ procedure
   ArrayList<Type> type = new ArrayList<Type>();
 }
 @after {
+
+  checkGlobalName($id.text);
+
   ProcedureSymbol ps = new ProcedureSymbol($id.text, type, $pl.params);
   symtab.defineProcedure(ps);
   currentscope = currentscope.getEnclosingScope();
@@ -201,6 +216,9 @@ function
   ArrayList<Type> type = new ArrayList<Type>();
 }
 @after {
+
+  checkGlobalName($id.text);
+
   FunctionSymbol fs = new FunctionSymbol($id.text, type, $pl.params);
   symtab.defineFunction(fs);
   currentscope = currentscope.getEnclosingScope();
