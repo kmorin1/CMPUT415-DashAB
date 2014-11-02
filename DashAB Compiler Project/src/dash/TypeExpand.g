@@ -12,6 +12,7 @@ options {
 @header {
   package dash; 
   import SymTab.*;
+  import java.util.LinkedList;
 }
  
 @members {
@@ -23,6 +24,8 @@ options {
         this(input);
         this.symtab = symtab;
         currentscope = symtab.globals;
+        ret_type_stack = new LinkedList<Type>();
+        ret_type_stack.push(new BuiltInTypeSymbol("N/A"));
     }
     private String getErrorHeader() {
       
@@ -41,6 +44,8 @@ options {
         throw new RuntimeException(symbolName + " is defined multiple times in global scope");
       }
     }
+    
+    LinkedList<Type> ret_type_stack;
 }
 
 program
@@ -207,21 +212,23 @@ procedure
   ArrayList<Type> type = new ArrayList<Type>();
 }
 @after {
-
+  ret_type_stack.pop();
   checkGlobalName($id.text);
 
   ProcedureSymbol ps = new ProcedureSymbol($id.text, type, $pl.params);
   symtab.defineProcedure(ps);
   currentscope = currentscope.getEnclosingScope();
+  ret_type_stack.pop();
 }
-  : ^(Procedure id=Identifier pl=paramlist ^(Returns type) block) {type.add($type.tsym);}
-  | ^(Procedure id=Identifier pl=paramlist block)
+  : ^(Procedure id=Identifier pl=paramlist ^(Returns type {ret_type_stack.push($type.tsym);}) block) {type.add($type.tsym);}
+  | ^(Procedure id=Identifier pl=paramlist {ret_type_stack.push(new BuiltInTypeSymbol("void"));} block)
   ;
    
 function
 @init {
   //ArrayList<Symbol> params = new ArrayList<Symbol>();
   ArrayList<Type> type = new ArrayList<Type>();
+  //currentscope = new NestedScope("funcscope", currentscope);
 }
 @after {
 
@@ -230,15 +237,20 @@ function
   FunctionSymbol fs = new FunctionSymbol($id.text, type, $pl.params);
   symtab.defineFunction(fs);
   currentscope = currentscope.getEnclosingScope();
+  ret_type_stack.pop();
 }
-  : ^(Function id=Identifier pl=paramlist ^(Returns type) {inFunction = true;}block {inFunction = false;}) {type.add($type.tsym);}
-  | ^(Function id=Identifier pl=paramlist ^(Returns type) {inFunction = true;}^(Assign expr) {inFunction = false;}) {type.add($type.tsym);}
+  : ^(Function id=Identifier pl=paramlist ^(Returns type {ret_type_stack.push($type.tsym);}) {inFunction = true;}block {inFunction = false;}) {type.add($type.tsym);}
+  | ^(Function id=Identifier pl=paramlist ^(Returns type {ret_type_stack.push(new BuiltInTypeSymbol("N/A"));}) {inFunction = true;} ^(Assign expr {
+    if (symtab.lookup($expr.stype, $type.tsym) == null)
+      throw new RuntimeException("type mismatch on function return");
+  }
+  ) {inFunction = false;}) {type.add($type.tsym);}
   ;
   
 paramlist returns [ArrayList<Symbol> params]
 @init {
   ArrayList<Symbol> paramlst = new ArrayList<Symbol>();
-  currentscope = new NestedScope("paramscope", currentscope);
+  //currentscope = new NestedScope("paramscope", currentscope);
 }
 @after {$params = paramlst;}
   : ^(PARAMLIST (p=parameter {paramlst.add($p.varsym);})*)
@@ -286,7 +298,20 @@ callStatement
   ;
   
 returnStatement
-  : ^(Return expr?)
+@init {
+  boolean hasexpr = false;
+  if (ret_type_stack.peek().getName().equals("N/A"))
+    throw new RuntimeException("invalid location for return statement");
+}
+@after {
+  if (!hasexpr && !ret_type_stack.peek().getName().equals("void"))
+    throw new RuntimeException("type mismatch on return statement");
+}
+  : ^(Return (e=expr {
+    if (symtab.lookup($e.stype, ret_type_stack.peek()) == null)
+      throw new RuntimeException("type mismatch on return statement");
+    hasexpr = true;
+  })?)
   ;
   
 assignment
