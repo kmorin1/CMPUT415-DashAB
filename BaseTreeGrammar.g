@@ -152,6 +152,8 @@ expr
   | FPNumber
   | True
   | False
+  | Null
+  | Identity
   | ^(TUPLEEX expr)
   | ^(Dot Identifier)
   ;
