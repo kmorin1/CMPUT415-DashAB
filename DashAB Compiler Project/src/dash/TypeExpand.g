@@ -132,9 +132,9 @@ declaration
     
   } -> ^(DECL DECL+ ^(Assign $id $e))
   | ^(DECL (s=specifier {specs.add($s.tsym);})* ^(Assign id=Identifier StdInput {types.add((Type) symtab.resolveType("std_input"));})) 
-    -> ^(DECL StdInput["std_input"] ^(Assign StdInput))
+    -> ^(DECL StdInput["std_input"] ^(Assign $id StdInput))
   | ^(DECL (s=specifier {specs.add($s.tsym);})* ^(Assign id=Identifier StdOutput {types.add((Type) symtab.resolveType("std_output"));}))
-    -> ^(DECL StdOutput["std_output"] ^(Assign StdOutput))
+    -> ^(DECL StdOutput["std_output"] ^(Assign $id StdOutput))
   ;
   
 typedef

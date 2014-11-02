@@ -65,8 +65,8 @@ inputstream
 declaration
   : ^(DECL specifier* type* Identifier)
   | ^(DECL specifier* type* ^(Assign Identifier expr))
-  | ^(DECL specifier* ^(Assign Identifier StdInput))
-  | ^(DECL specifier* ^(Assign Identifier StdOutput))
+  | ^(DECL specifier* StdInput ^(Assign Identifier StdInput))
+  | ^(DECL specifier* StdOutput ^(Assign Identifier StdOutput))
   ;
   
 typedef
