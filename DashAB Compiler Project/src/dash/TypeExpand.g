@@ -107,6 +107,10 @@ declaration
 @after {
   vs = new VariableSymbol($id.text, types, specs);
   
+  if (!vs.isConst() && currentscope.getScopeName() == "global") {
+    throw new RuntimeException("global variable " + vs.getName() + " must be const");
+  }
+  
   currentscope.define(vs);
 }
   : ^(DECL (s=specifier {specs.add($s.tsym);})* (t=type {types.add($t.tsym);})* id=Identifier) {
@@ -123,7 +127,6 @@ declaration
     if (new VariableSymbol($id.text, types, specs).isVar()) {
       types.clear();
       types.add($e.stype);
-        
     }
       
     for (int i=0; i<types.size(); i++) {
@@ -131,7 +134,7 @@ declaration
     }
     
   } -> ^(DECL DECL+ ^(Assign $id $e))
-  | ^(DECL (s=specifier {specs.add($s.tsym);})* ^(Assign id=Identifier StdInput {types.add((Type) symtab.resolveType("std_input"));})) 
+  | ^(DECL (s=specifier {specs.add($s.tsym);})* ^(Assign id=Identifier StdInput {types.add((Type) symtab.resolveType("std_input"));}))
     -> ^(DECL StdInput["std_input"] ^(Assign $id StdInput))
   | ^(DECL (s=specifier {specs.add($s.tsym);})* ^(Assign id=Identifier StdOutput {types.add((Type) symtab.resolveType("std_output"));}))
     -> ^(DECL StdOutput["std_output"] ^(Assign $id StdOutput))
