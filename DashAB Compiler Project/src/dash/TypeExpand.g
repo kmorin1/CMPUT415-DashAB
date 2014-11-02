@@ -17,6 +17,7 @@ options {
 @members {
     SymbolTable symtab;
     Scope currentscope;
+    int nestedLoop = 0;
     public TypeExpand(TreeNodeStream input, SymbolTable symtab) {
         this(input);
         this.symtab = symtab;
@@ -61,8 +62,14 @@ statement
   | block
   | callStatement
   | returnStatement
-  | Break
-  | Continue
+  | Break {
+    if (nestedLoop == 0)
+      throw new RuntimeException("break statement not in a loop");
+  }
+  | Continue {
+    if (nestedLoop == 0)
+      throw new RuntimeException("continue statement not in a loop");
+  }
   ;
   
 outputstream
@@ -292,15 +299,18 @@ ifstatement
   ;
   
 loopstatement
-  : ^(Loop ^(While e=expr) slist) {
+@after {
+  nestedLoop--;
+}
+  : ^(Loop {nestedLoop++;} ^(While e=expr) slist) {
     if (!$e.stype.getName().equals("boolean"))
       throw new RuntimeException("conditional statement requires boolean, but got " + $e.stype.getName());
   }
-  | ^(Loop slist ^(While e=expr)) {
+  | ^(Loop {nestedLoop++;} slist ^(While e=expr)) {
     if (!$e.stype.getName().equals("boolean"))
       throw new RuntimeException("conditional statement requires boolean, but got " + $e.stype.getName());
   }
-  | ^(Loop slist)
+  | ^(Loop {nestedLoop++;} slist)
   ;
   
 slist
