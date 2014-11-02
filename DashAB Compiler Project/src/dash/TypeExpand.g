@@ -529,6 +529,8 @@ expr returns [Type stype]
   | FPNumber {$stype = new BuiltInTypeSymbol("real");} -> Identifier["real"] FPNumber
   | True {$stype = new BuiltInTypeSymbol("boolean");} -> Identifier["boolean"] True
   | False {$stype = new BuiltInTypeSymbol("boolean");} -> Identifier["boolean"] False
+  | Null {$stype = new BuiltInTypeSymbol("null");} -> Identifier["null"] Null
+  | Identity {$stype = new BuiltInTypeSymbol("identity");} -> Identifier["identity"] Identity
   | ^(TUPLEEX (e=expr {
     stream_TUPLEEX.reset();
     stream_TUPLEEX.add((CommonTree) adaptor.create(Identifier, $e.stype.getName()));

@@ -157,6 +157,14 @@ type
     $id.text.equals("character") ||
     symtab.resolveTDType($id.text).getSourceSymbol().getName().equals("character")
   }? -> Character["character"]
+  | id=Identifier {
+    $id.text.equals("null") ||
+    symtab.resolveTDType($id.text).getSourceSymbol().getName().equals("null")
+  }? -> Null["null"]
+  | id=Identifier {
+    $id.text.equals("identity") ||
+    symtab.resolveTDType($id.text).getSourceSymbol().getName().equals("identity")
+  }? -> Identity["identity"]
   | ^(id=Identifier type+) {$id.text.equals("tuple")}? -> ^(Tuple["tuple"] type+)
   | Identifier
   | Boolean
@@ -169,6 +177,8 @@ type
   | Character
   | StdInput
   | StdOutput
+  | Null
+  | Identity
   | tuple
   ;
   
@@ -205,6 +215,8 @@ expr
   | type FPNumber
   | type True
   | type False
+  | type Null
+  | type Identity
   | ^(TUPLEEX type expr+)
   | type ^(Dot Identifier Number)
   | ^(NEG expr)
