@@ -18,6 +18,7 @@ options {
     SymbolTable symtab;
     Scope currentscope;
     int nestedLoop = 0;
+    boolean inFunction = false;
     public TypeExpand(TreeNodeStream input, SymbolTable symtab) {
         this(input);
         this.symtab = symtab;
@@ -230,8 +231,8 @@ function
   symtab.defineFunction(fs);
   currentscope = currentscope.getEnclosingScope();
 }
-  : ^(Function id=Identifier pl=paramlist ^(Returns type) block) {type.add($type.tsym);}
-  | ^(Function id=Identifier pl=paramlist ^(Returns type) ^(Assign expr)) {type.add($type.tsym);}
+  : ^(Function id=Identifier pl=paramlist ^(Returns type) {inFunction = true;}block {inFunction = false;}) {type.add($type.tsym);}
+  | ^(Function id=Identifier pl=paramlist ^(Returns type) {inFunction = true;}^(Assign expr) {inFunction = false;}) {type.add($type.tsym);}
   ;
   
 paramlist returns [ArrayList<Symbol> params]
@@ -257,7 +258,31 @@ parameter returns [VariableSymbol varsym]
   ;
   
 callStatement
-  : ^(CALL Identifier ^(ARGLIST expr*))
+@init {
+  ArrayList<Type> argtypes = new ArrayList<Type>();
+}
+  : ^(CALL id=Identifier ^(ARGLIST (e=expr {argtypes.add($e.stype);})*)) {
+    ProcedureSymbol ps = symtab.resolveProcedure($id.text);
+    if (ps == null) {
+      throw new RuntimeException(getErrorHeader() + $id.text + " is undefined procedure");
+    }
+    else {
+      if (inFunction) {
+        throw new RuntimeException(getErrorHeader() + ps.getName() + ": calling procedure inside a function");
+      }
+    
+    
+      ArrayList<Symbol> argsyms = ps.getParamList();
+      if (argsyms.size() != argtypes.size())
+        throw new RuntimeException(getErrorHeader() + ps.getName() + ": number of arguments doesn't match");
+      
+      for (int i=0; i<argsyms.size(); i++) {
+        VariableSymbol vs = (VariableSymbol) argsyms.get(i);
+        if (!vs.getType(0).getName().equals(argtypes.get(i).getName()))
+          throw new RuntimeException(getErrorHeader() + "type mismatch, expected " +  vs.getType(0).getName() + " but got " + argtypes.get(i).getName());
+      }
+    }
+  }
   ;
   
 returnStatement
@@ -514,6 +539,10 @@ expr returns [Type stype]
     if (ps == null && fs == null)
       throw new RuntimeException(getErrorHeader() + $id.text + " is undefined function or procedure");
     if (ps != null && fs == null) {
+      if (inFunction) {
+        throw new RuntimeException(getErrorHeader() + ps.getName() + ": calling a procedure inside a function");
+      }
+        
       $stype = ps.getType(0);
       ArrayList<Symbol> argsyms = ps.getParamList();
       if (argsyms.size() != argtypes.size())
