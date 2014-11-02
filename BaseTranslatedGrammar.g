@@ -122,6 +122,8 @@ type
   | tuple
   | StdInput
   | StdOutput
+  | Null
+  | Identity
   ;
   
 tuple
@@ -152,6 +154,8 @@ expr
   | type FPNumber
   | type True
   | type False
+  | type Null
+  | type Identity
   | ^(TUPLEEX expr+)
   | type ^(Dot Identifier Number)
   | ^(NEG expr)
