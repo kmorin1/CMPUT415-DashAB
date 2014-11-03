@@ -176,9 +176,14 @@ declaration
       
     for (int i=0; i<types.size(); i++) {
       stream_DECL.add((CommonTree) adaptor.create(Identifier, types.get(i).getName()));
+      if (types.get(i).getName().equals("tuple")) {
+        TupleSymbol ts = (TupleSymbol) types.get(i);
+        for (int j=0; j<ts.getFieldNames().size(); j++)
+          stream_DECL.add((CommonTree) adaptor.create(Identifier, ts.getFieldNames().get(j).type.getName()));
+      } 
     }
     
-  } -> ^(DECL DECL+ ^(Assign $id $e))
+  } -> ^(DECL ^(DECL DECL*) ^(Assign $id $e))
   | ^(DECL (s=specifier {specs.add($s.tsym);})* ^(Assign id=Identifier StdInput {types.add((Type) symtab.resolveType("std_input"));}))
     -> ^(DECL StdInput["std_input"] ^(Assign $id StdInput))
   | ^(DECL (s=specifier {specs.add($s.tsym);})* ^(Assign id=Identifier StdOutput {types.add((Type) symtab.resolveType("std_output"));}))
