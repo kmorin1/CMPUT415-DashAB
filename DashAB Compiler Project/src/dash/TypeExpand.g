@@ -168,8 +168,8 @@ declaration
     if (types.size() == 0 && ($e.stype.getName() == "null" || $e.stype.getName() == "identity")) {
       throw new RuntimeException("cannot infer type for variable " + $id.text);
     }
-  
-    if (new VariableSymbol($id.text, types, specs).isVar()) {
+    VariableSymbol temp = new VariableSymbol($id.text, types, specs);
+    if (types.size() == 0 && (temp.isVar() || temp.isConst())) {
       types.clear();
       types.add($e.stype);
     }
@@ -408,6 +408,7 @@ expr returns [Type stype]
 @init {
   Integer index = -1; 
   TupleSymbol ts = null; 
+  ArrayList<FieldPair> tuplepairs = new ArrayList<FieldPair>();
   ArrayList<Type> argtypes = new ArrayList<Type>();
   String errorhead = getErrorHeader();
 }
@@ -643,10 +644,11 @@ expr returns [Type stype]
   | Null {$stype = new BuiltInTypeSymbol("null");} -> Identifier["null"] Null
   | Identity {$stype = new BuiltInTypeSymbol("identity");} -> Identifier["identity"] Identity
   | Char {$stype = new BuiltInTypeSymbol("character");} -> Identifier["character"] Char
-  | ^(TUPLEEX (e=expr {
+  | ^(TUPLEEX {tuplepairs = new ArrayList<FieldPair>();} (e=expr {
+    tuplepairs.add(new FieldPair("null", $e.stype));
     stream_TUPLEEX.reset();
     stream_TUPLEEX.add((CommonTree) adaptor.create(Identifier, $e.stype.getName()));
-  })+) {$stype = new BuiltInTypeSymbol("tuple");} -> ^(TUPLEEX ^(Identifier[$stype.getName()] TUPLEEX+) expr+)
+  })+) {$stype = new TupleSymbol("tuple", tuplepairs);} -> ^(TUPLEEX ^(Identifier[$stype.getName()] TUPLEEX+) expr+)
   | ^(Dot id=Identifier {
     Symbol s = currentscope.resolve($id.text);
     if (s == null)
