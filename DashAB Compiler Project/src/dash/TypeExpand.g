@@ -206,7 +206,7 @@ typedef
   ;
 
 block
-@init {currentscope = new NestedScope("blockscope", currentscope);}
+@init {currentscope = new NestedScope("blockscope", currentscope); }
 @after {currentscope = currentscope.getEnclosingScope();}
   : ^(BLOCK declaration* statement*)
   ;
@@ -305,10 +305,11 @@ callStatement
 returnStatement
 @init {
   boolean hasexpr = false;
-  if (ret_type_stack.peek().getName().equals("N/A"))
-    throw new RuntimeException("invalid location for return statement");
+  
 }
 @after {
+  if (ret_type_stack.peek().getName().equals("N/A"))
+    throw new RuntimeException("invalid location for return statement");
   if (!hasexpr && !ret_type_stack.peek().getName().equals("void"))
     throw new RuntimeException("type mismatch on return statement");
 }
