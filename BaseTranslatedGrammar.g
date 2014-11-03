@@ -156,6 +156,7 @@ expr
   | type False
   | type Null
   | type Identity
+  | type Char
   | ^(TUPLEEX expr+)
   | type ^(Dot Identifier Number)
   | ^(NEG expr)

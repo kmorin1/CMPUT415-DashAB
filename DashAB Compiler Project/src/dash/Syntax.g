@@ -93,8 +93,10 @@ streamstate
   ;
 
 declaration
-  : specifier* type* Identifier SemiColon -> ^(DECL specifier* type* Identifier)
-  | specifier* type* Identifier Assign expr SemiColon -> ^(DECL specifier* type* ^(Assign Identifier expr))
+  : specifier? type+ Identifier SemiColon -> ^(DECL specifier? type+ Identifier)
+  | specifier type* Identifier SemiColon -> ^(DECL specifier type* Identifier)
+  | specifier? type+ Identifier Assign expr SemiColon -> ^(DECL specifier? type+ ^(Assign Identifier expr))
+  | specifier type* Identifier Assign expr SemiColon -> ^(DECL specifier type* ^(Assign Identifier expr))
   | streamDecl
   ;
   
@@ -241,6 +243,7 @@ atom
   | False
   | Null
   | Identity
+  | Char
   | Identifier Dot^ (Identifier|Number)
   | LParen (a=expr -> expr) (Comma b=expr -> ^(TUPLEEX $a $b))+ RParen
   | Identifier LParen expr? (Comma expr)* RParen -> ^(CALL Identifier ^(ARGLIST expr*))
@@ -345,7 +348,15 @@ Number
   : Digit+
   ;
 FPNumber
-  : Digit+ Dot Digit+
+  : Digit* Dot Digit+
+  | Digit+ Dot? 'e' (Minus|Plus)? Digit+
+  ;
+  
+Char
+  : '\'' ('A'..'Z'|'a'..'z'|'0'..'9'|' '|'!'|'#'|'$'|'%'|'&'|'('|')'|
+          '*'|'+'|','|'-'|'.'|'/'|':'|';'|'<'|'='|'>'|'?'|'@'|'['|']'|
+          '^'|'_'|'`'|'{'|'|'|'}'|'~') '\''
+  | '\'\\' ('a'|'b'|'n'|'r'|'t'|'\\'|'\''|'\"'|'0') '\''
   ;
 
 Identifier
