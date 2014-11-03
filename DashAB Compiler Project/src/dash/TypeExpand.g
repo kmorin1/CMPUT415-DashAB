@@ -51,7 +51,7 @@ options {
 program
 @after {
   ProcedureSymbol ps = symtab.resolveProcedure("main");
-  if (ps == null)
+  //if (ps == null)
     //throw new RuntimeException("Missing main procedure");
 }
   : ^(PROGRAM globalStatement*)
