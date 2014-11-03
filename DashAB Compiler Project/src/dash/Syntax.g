@@ -349,7 +349,7 @@ FPNumber
   ;
 
 Identifier
-  : ('A'..'Z' | 'a'..'z' | '_') ('A'..'Z'| 'a'..'z'| Digit)*
+  : ('A'..'Z' | 'a'..'z' | '_') ('A'..'Z'| 'a'..'z'| '_' | Digit)*
   ;
 
 fragment Digit

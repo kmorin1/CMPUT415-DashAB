@@ -1,0 +1,247 @@
+group llvm;
+
+return(a) ::= "<a>"
+
+declare(var, expr, name) ::= <<
+;evaluating expression
+<expr>
+;storing expression into variable
+%.<var> = alloca i32, align 4
+store i32 %.<name>, i32* %.<var>
+>>
+
+llvmProgram(declarations, assignment, procedures) ::= <<
+target datalayout = "e-p:64:64:64-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:64:64-f32:32:32-f64:64:64-v64:64:64-v128:128:128-a0:0:64-s0:64:64-f80:128:128-n8:16:32:64-S128"
+target triple = "x86_64-unknown-linux-gnu"
+
+@.str = private unnamed_addr constant [4 x i8] c"%d\0A\00", align 1
+
+<declarations: { a | @.<a> = global i32 0, align 4<\n>}>
+
+define i32 @main(i32 %argc, i8** %argv) nounwind uwtable {
+
+<assignments:{ b | <b>}>
+<procedures>
+
+ret i32 0
+}
+>>
+
+declareProcedure(procName, procVars, procBody) ::= <<
+define i32 @<procName>(<procVars:{ a | i32 %<a>}; seperator=", ">) {
+entry:
+  <procBody>
+  ret i32 //?
+}
+>>
+
+outputAssi(var, expr, name, temp) ::= <<
+;start outputAssi
+<expr>
+
+store i32 %.<name>, i32* @.<var>
+;end outputAssi
+>>
+
+load_num(name, value) ::= <<
+;start load_num
+%.temp<name> = alloca i32, align 4
+store i32 <value>, i32* %.temp<name>
+%.<name> = load i32* %.temp<name>
+;end load_num
+
+>>
+
+load_var(name, var) ::= <<
+;start load_var
+%.<name> = load i32* @.<var>
+;end load_var
+
+>>
+
+print(expr, result) ::= <<
+
+>>
+
+equals(expr1, expr2, name1, name2, result) ::= <<
+;start equals
+<expr1>
+<expr2>
+
+%.bool<result> = icmp eq  i32 %.<name1>, %.<name2>
+%.<result> = select i1 %.bool<result>, i32 1, i32 0
+;end equals
+>>
+
+nEquals(expr1, expr2, name1, name2, result) ::= <<
+;start nequals
+<expr1>
+<expr2>
+
+%.bool<result> = icmp ne  i32 %.<name1>, %.<name2>
+%.<result> = select i1 %.bool<result>, i32 1, i32 0
+;end nequals
+>>
+
+lessThan(expr1, expr2, name1, name2, result) ::= <<
+;start less than
+<expr1>
+<expr2>
+
+%.bool<result> = icmp slt  i32 %.<name1>, %.<name2>
+%.<result> = select i1 %.bool<result>, i32 1, i32 0
+;end less than
+>>
+
+lessThanE(expr1, expr2, name1, name2, result) ::= <<
+;start less than or e
+<expr1>
+<expr2>
+
+%.bool<result> = icmp sle  i32 %.<name1>, %.<name2>
+%.<result> = select i1 %.bool<result>, i32 1, i32 0
+;end less than or e
+>>
+
+greaterThan(expr1, expr2, name1, name2, result) ::= <<
+;start greater than
+<expr1>
+<expr2>
+
+%.bool<result> = icmp sgt  i32 %.<name1>, %.<name2>
+%.<result> = select i1 %.bool<result>, i32 1, i32 0
+;end greater than
+>>
+
+greaterThanE(expr1, expr2, name1, name2, result) ::= <<
+;start greater than or e
+<expr1>
+<expr2>
+
+%.bool<result> = icmp sge  i32 %.<name1>, %.<name2>
+%.<result> = select i1 %.bool<result>, i32 1, i32 0
+;end greater than or e
+>>
+
+equalsFloat(expr1, expr2, name1, name2, result) ::= <<
+;start equals
+<expr1>
+<expr2>
+
+%.bool<result> = fcmp oeq  i32 %.<name1>, %.<name2>
+%.<result> = select i1 %.bool<result>, i32 1, i32 0
+;end equals
+>>
+
+nEqualsFloat(expr1, expr2, name1, name2, result) ::= <<
+;start nequals
+<expr1>
+<expr2>
+
+%.bool<result> = fcmp one  i32 %.<name1>, %.<name2>
+%.<result> = select i1 %.bool<result>, i32 1, i32 0
+;end nequals
+>>
+
+lessThanFloat(expr1, expr2, name1, name2, result) ::= <<
+;start less than
+<expr1>
+<expr2>
+
+%.bool<result> = fcmp olt  i32 %.<name1>, %.<name2>
+%.<result> = select i1 %.bool<result>, i32 1, i32 0
+;end less than
+>>
+
+lessThanEFloat(expr1, expr2, name1, name2, result) ::= <<
+;start less than or e
+<expr1>
+<expr2>
+
+%.bool<result> = icmp ole  i32 %.<name1>, %.<name2>
+%.<result> = select i1 %.bool<result>, i32 1, i32 0
+;end less than or e
+>>
+
+greaterThanFloat(expr1, expr2, name1, name2, result) ::= <<
+;start greater than
+<expr1>
+<expr2>
+
+%.bool<result> = icmp ogt  i32 %.<name1>, %.<name2>
+%.<result> = select i1 %.bool<result>, i32 1, i32 0
+;end greater than
+>>
+
+greaterThanEFloat(expr1, expr2, name1, name2, result) ::= <<
+;start greater than or e
+<expr1>
+<expr2>
+
+%.bool<result> = icmp oge  i32 %.<name1>, %.<name2>
+%.<result> = select i1 %.bool<result>, i32 1, i32 0
+;end greater than or e
+
+add(expr1, expr2, name1, name2, result) ::= <<
+;start add
+<expr1>
+<expr2>
+%.<result> = add i32 %.<name1>, %.<name2>
+;end add
+
+>>
+
+sub(expr1, expr2, name1, name2, result) ::= <<
+;start add
+<expr1>
+<expr2>
+%.<result> = sub i32 %.<name1>, %.<name2>
+;end add
+
+>>
+
+mul(expr1, expr2, name1, name2, result) ::= <<
+;start add
+<expr1>
+<expr2>
+%.<result> = mul i32 %.<name1>, %.<name2>
+;end add
+
+>>
+
+div(expr1, expr2, name1, name2, result) ::= <<
+;start add
+<expr1>
+<expr2>
+%.<result> = udiv i32 %.<name1>, %.<name2>
+;end add
+
+>>
+
+ifStatement(condition, body, name) ::= <<
+;start if conditional
+<condition>
+%.notZero<name> = icmp ne i32 %.<name>, 0
+br i1 %.notZero<name>, label %.body<name>, label %.skip<name>
+.body<name>:
+<body>
+br label %.skip<name>
+.skip<name>:
+;end if conditional
+
+>>
+
+loopStatement(condition, body, name) ::= <<
+;start loop conditional
+br label %.startloop<name>
+.startloop<name>:
+<condition>
+%.notZero<name> = icmp ne i32 %.<name>, 0
+br i1 %.notZero<name>, label %.body<name>, label %.endloop<name>
+.body<name>:
+<body>
+br label %.startloop<name>
+.endloop<name>:
+;end loop conditional
+
+>>

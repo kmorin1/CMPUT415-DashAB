@@ -1,2 +1,4 @@
 /SyntaxLexer.java
 /SyntaxParser.java
+/TypeExpand.java
+/TypeTranslate.java
