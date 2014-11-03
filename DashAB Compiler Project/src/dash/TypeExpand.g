@@ -413,6 +413,8 @@ expr returns [Type stype]
   String errorhead = getErrorHeader();
 }
   : ^(Plus a=expr b=expr) {
+    if ($a.stype.getName().equals("tuple") || $b.stype.getName().equals("tuple"))
+      throw new RuntimeException(errorhead + "can't perform this operation on a tuple");
     Boolean lua = symtab.lookup($a.stype, $b.stype);
     Boolean lub = symtab.lookup($b.stype, $a.stype);
       
@@ -425,6 +427,8 @@ expr returns [Type stype]
     
   } -> ^(Plus Identifier[$stype.getName()] expr expr)
   | ^(Minus a=expr b=expr) {
+    if ($a.stype.getName().equals("tuple") || $b.stype.getName().equals("tuple"))
+      throw new RuntimeException(errorhead + "can't perform this operation on a tuple");
     Boolean lua = symtab.lookup($a.stype, $b.stype);
     Boolean lub = symtab.lookup($b.stype, $a.stype);
       
@@ -437,6 +441,8 @@ expr returns [Type stype]
     
   } -> ^(Minus Identifier[$stype.getName()] expr expr)
   | ^(Multiply a=expr b=expr) {
+    if ($a.stype.getName().equals("tuple") || $b.stype.getName().equals("tuple"))
+      throw new RuntimeException(errorhead + "can't perform this operation on a tuple");
     Boolean lua = symtab.lookup($a.stype, $b.stype);
     Boolean lub = symtab.lookup($b.stype, $a.stype);
       
@@ -449,6 +455,8 @@ expr returns [Type stype]
     
   } -> ^(Multiply Identifier[$stype.getName()] expr expr)
   | ^(Divide a=expr b=expr) {
+    if ($a.stype.getName().equals("tuple") || $b.stype.getName().equals("tuple"))
+      throw new RuntimeException(errorhead + "can't perform this operation on a tuple");
     Boolean lua = symtab.lookup($a.stype, $b.stype);
     Boolean lub = symtab.lookup($b.stype, $a.stype);
       
@@ -461,6 +469,8 @@ expr returns [Type stype]
     
   } -> ^(Divide Identifier[$stype.getName()] expr expr)
   | ^(Exponent a=expr b=expr) {
+    if ($a.stype.getName().equals("tuple") || $b.stype.getName().equals("tuple"))
+      throw new RuntimeException(errorhead + "can't perform this operation on a tuple");
     Boolean lua = symtab.lookup($a.stype, $b.stype);
     Boolean lub = symtab.lookup($b.stype, $a.stype);
       
@@ -493,6 +503,8 @@ expr returns [Type stype]
     
   } -> ^(NEquals Identifier[$stype.getName()] expr expr)
   | ^(GThan a=expr b=expr) {
+    if ($a.stype.getName().equals("tuple") || $b.stype.getName().equals("tuple"))
+      throw new RuntimeException(errorhead + "can't perform this operation on a tuple");
     Boolean lua = symtab.lookup($a.stype, $b.stype);
     Boolean lub = symtab.lookup($b.stype, $a.stype);
       
@@ -503,6 +515,8 @@ expr returns [Type stype]
     
   } -> ^(GThan Identifier[$stype.getName()] expr expr)
   | ^(LThan a=expr b=expr) {
+    if ($a.stype.getName().equals("tuple") || $b.stype.getName().equals("tuple"))
+      throw new RuntimeException(errorhead + "can't perform this operation on a tuple");
     Boolean lua = symtab.lookup($a.stype, $b.stype);
     Boolean lub = symtab.lookup($b.stype, $a.stype);
       
@@ -513,6 +527,8 @@ expr returns [Type stype]
     
   } -> ^(LThan Identifier[$stype.getName()] expr expr)
   | ^(GThanE a=expr b=expr) {
+    if ($a.stype.getName().equals("tuple") || $b.stype.getName().equals("tuple"))
+      throw new RuntimeException(errorhead + "can't perform this operation on a tuple");
     Boolean lua = symtab.lookup($a.stype, $b.stype);
     Boolean lub = symtab.lookup($b.stype, $a.stype);
       
@@ -523,6 +539,8 @@ expr returns [Type stype]
     
   } -> ^(GThanE Identifier[$stype.getName()] expr expr)
   | ^(LThanE a=expr b=expr) {
+    if ($a.stype.getName().equals("tuple") || $b.stype.getName().equals("tuple"))
+      throw new RuntimeException(errorhead + "can't perform this operation on a tuple");
     Boolean lua = symtab.lookup($a.stype, $b.stype);
     Boolean lub = symtab.lookup($b.stype, $a.stype);
       
@@ -533,6 +551,8 @@ expr returns [Type stype]
     
   } -> ^(LThanE Identifier[$stype.getName()] expr expr)
   | ^(Or a=expr b=expr) {
+    if ($a.stype.getName().equals("tuple") || $b.stype.getName().equals("tuple"))
+      throw new RuntimeException(errorhead + "can't perform this operation on a tuple");
     Boolean lua = symtab.lookup($a.stype, $b.stype);
     Boolean lub = symtab.lookup($b.stype, $a.stype);
       
@@ -543,6 +563,8 @@ expr returns [Type stype]
     
   } -> ^(Or Identifier[$stype.getName()] expr expr)
   | ^(Xor a=expr b=expr) {
+    if ($a.stype.getName().equals("tuple") || $b.stype.getName().equals("tuple"))
+      throw new RuntimeException(errorhead + "can't perform this operation on a tuple");
     Boolean lua = symtab.lookup($a.stype, $b.stype);
     Boolean lub = symtab.lookup($b.stype, $a.stype);
       
@@ -553,6 +575,8 @@ expr returns [Type stype]
     
   } -> ^(Xor Identifier[$stype.getName()] expr expr)
   | ^(And a=expr b=expr) {
+    if ($a.stype.getName().equals("tuple") || $b.stype.getName().equals("tuple"))
+      throw new RuntimeException(errorhead + "can't perform this operation on a tuple");
     Boolean lua = symtab.lookup($a.stype, $b.stype);
     Boolean lub = symtab.lookup($b.stype, $a.stype);
       
@@ -654,6 +678,8 @@ expr returns [Type stype]
     if (s == null)
       throw new RuntimeException(errorhead+ $id.text + " is undefined");
     VariableSymbol vs = (VariableSymbol) s;
+    if (!vs.getType(0).getName().equals("tuple"))
+      throw new RuntimeException(errorhead + ". operator must be used on a tuple");
     ts = (TupleSymbol) vs.getType(0);
     index = -1; } 
     (eid=Identifier {
