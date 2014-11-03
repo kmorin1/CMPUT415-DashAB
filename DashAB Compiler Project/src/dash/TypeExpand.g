@@ -631,6 +631,7 @@ expr returns [Type stype]
   | False {$stype = new BuiltInTypeSymbol("boolean");} -> Identifier["boolean"] False
   | Null {$stype = new BuiltInTypeSymbol("null");} -> Identifier["null"] Null
   | Identity {$stype = new BuiltInTypeSymbol("identity");} -> Identifier["identity"] Identity
+  | Char {$stype = new BuiltInTypeSymbol("character");} -> Identifier["character"] Char
   | ^(TUPLEEX (e=expr {
     stream_TUPLEEX.reset();
     stream_TUPLEEX.add((CommonTree) adaptor.create(Identifier, $e.stype.getName()));

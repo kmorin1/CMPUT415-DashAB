@@ -217,6 +217,7 @@ expr
   | type False
   | type Null
   | type Identity
+  | type Char
   | ^(TUPLEEX type expr+)
   | type ^(Dot Identifier Number)
   | ^(NEG expr)

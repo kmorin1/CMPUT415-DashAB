@@ -241,6 +241,7 @@ atom
   | False
   | Null
   | Identity
+  | Char
   | Identifier Dot^ (Identifier|Number)
   | LParen (a=expr -> expr) (Comma b=expr -> ^(TUPLEEX $a $b))+ RParen
   | Identifier LParen expr? (Comma expr)* RParen -> ^(CALL Identifier ^(ARGLIST expr*))
@@ -347,6 +348,11 @@ Number
 FPNumber
   : Digit* Dot Digit+
   | Digit+ Dot? 'e' (Minus|Plus)? Digit+
+  ;
+  
+Char
+  : '\'' ('A'..'Z'|'a'..'z') '\''
+  | '\'\\' ('a'|'b'|'n'|'r'|'t'|'\\'|'\''|'\"'|'0') '\''
   ;
 
 Identifier
