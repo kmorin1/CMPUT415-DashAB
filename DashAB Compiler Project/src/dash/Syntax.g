@@ -345,7 +345,8 @@ Number
   : Digit+
   ;
 FPNumber
-  : Digit+ Dot Digit+
+  : Digit* Dot Digit+
+  | Digit+ Dot? 'e' (Minus|Plus)? Digit+
   ;
 
 Identifier
