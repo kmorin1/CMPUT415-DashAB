@@ -41,7 +41,7 @@ options {
       FunctionSymbol fs = symtab.resolveFunction(symbolName);
       Symbol type = symtab.resolveType(symbolName);
       if (ps != null || fs != null || type != null) {
-        throw new RuntimeException(symbolName + " is defined multiple times in global scope");
+        throw new RuntimeException(getErrorHeader() + symbolName + " is defined multiple times in global scope");
       }
     }
     
@@ -75,11 +75,11 @@ statement
   | returnStatement
   | Break {
     if (nestedLoop == 0)
-      throw new RuntimeException("break statement not in a loop");
+      throw new RuntimeException(getErrorHeader() + "break statement not in a loop");
   }
   | Continue {
     if (nestedLoop == 0)
-      throw new RuntimeException("continue statement not in a loop");
+      throw new RuntimeException(getErrorHeader() + "continue statement not in a loop");
   }
   ;
   
@@ -89,15 +89,15 @@ outputstream
     Symbol s = currentscope.resolve($stream.text);
     
     if (s == null)
-      throw new RuntimeException($stream.text + " is undefined");
+      throw new RuntimeException(getErrorHeader() + $stream.text + " is undefined");
     VariableSymbol vs = (VariableSymbol) s;
     
     if ($e.stype.getName().equals("tuple"))
-      throw new RuntimeException("cannot send tuples to streams");
+      throw new RuntimeException(getErrorHeader() + "cannot send tuples to streams");
     
     String stype = vs.getType(0).getName();
     if (!stype.equals("std_output"))
-      throw new RuntimeException($stream.text + " is not an output stream");
+      throw new RuntimeException(getErrorHeader() + $stream.text + " is not an output stream");
   }
   ;
 
@@ -108,9 +108,9 @@ inputstream
     Symbol varSymbol = currentscope.resolve($var.text);
     
     if (streamSymbol == null)
-      throw new RuntimeException($stream.text + " is undefined");
+      throw new RuntimeException(getErrorHeader() + $stream.text + " is undefined");
     else if (varSymbol == null)
-      throw new RuntimeException($var.text + " is undefined");
+      throw new RuntimeException(getErrorHeader() + $var.text + " is undefined");
       
     VariableSymbol streamVS = (VariableSymbol) streamSymbol;
     VariableSymbol varVS = (VariableSymbol) varSymbol;
@@ -118,9 +118,9 @@ inputstream
     String streamType = streamVS.getType(0).getName();
     String varType = varVS.getType(0).getName();
     if (!streamType.equals("std_input"))
-      throw new RuntimeException($stream.text + " is not an input stream");
+      throw new RuntimeException(getErrorHeader() + $stream.text + " is not an input stream");
     else if (varType.equals("std_input") || varType.equals("std_output") || varType.equals("tuple"))
-      throw new RuntimeException("invalid type for input stream to variable " + $var.text);
+      throw new RuntimeException(getErrorHeader() + "invalid type for input stream to variable " + $var.text);
   }
   ;
 
@@ -143,30 +143,30 @@ declaration
   }
   
   if (sym != null) {
-    throw new RuntimeException("variable " + $id.text + " defined more than once in same scope");
+    throw new RuntimeException(getErrorHeader() + "variable " + $id.text + " defined more than once in same scope");
   }  
 
   vs = new VariableSymbol($id.text, types, specs);
   
   if (!vs.isConst() && currentscope.getScopeName() == "global") {
-    throw new RuntimeException("global variable " + vs.getName() + " must be const");
+    throw new RuntimeException(getErrorHeader() + "global variable " + vs.getName() + " must be const");
   }
   
   currentscope.define(vs);
 }
   : ^(DECL (s=specifier {specs.add($s.tsym);})* (t=type {types.add($t.tsym);})* id=Identifier) {
     if (specs.size() != 0) {
-        throw new RuntimeException("cannot have specifiers without assigning a variable");
+        throw new RuntimeException(getErrorHeader() + "cannot have specifiers without assigning a variable");
     }
   } -> ^(DECL type* $id)
   | ^(DECL (s=specifier {specs.add($s.tsym);})* (t=type {types.add($t.tsym);})* ^(Assign id=Identifier e=expr)) {
     if (types.size() > 0 && symtab.lookup($e.stype, types.get(0)) == null)
-      throw new RuntimeException("assignment type error, expected " + types.get(0).getName() + " but got " + $e.stype.getName());
+      throw new RuntimeException(getErrorHeader() + "assignment type error, expected " + types.get(0).getName() + " but got " + $e.stype.getName());
       
     stream_DECL.reset();
     
     if (types.size() == 0 && ($e.stype.getName() == "null" || $e.stype.getName() == "identity")) {
-      throw new RuntimeException("cannot infer type for variable " + $id.text);
+      throw new RuntimeException(getErrorHeader() + "cannot infer type for variable " + $id.text);
     }
     VariableSymbol temp = new VariableSymbol($id.text, types, specs);
     if (types.size() == 0 && (temp.isVar() || temp.isConst())) {
@@ -203,7 +203,7 @@ typedef
   } while (!bitname.equals("null"));
   BuiltInTypeSymbol bits = (BuiltInTypeSymbol) symtab.resolveType(oldname);
   if (bits == null)
-    throw new RuntimeException("type " + bits.getName() + " doesn't exist");
+    throw new RuntimeException(getErrorHeader() + "type " + bits.getName() + " doesn't exist");
   TypeDefSymbol tds = new TypeDefSymbol(bits, $id.text);
   symtab.defineType(tds);
 }
@@ -252,7 +252,7 @@ function
   : ^(Function id=Identifier pl=paramlist ^(Returns type {ret_type_stack.push($type.tsym);}) {inFunction = true;}block {inFunction = false;}) {type.add($type.tsym);}
   | ^(Function id=Identifier pl=paramlist ^(Returns type {ret_type_stack.push(new BuiltInTypeSymbol("N/A"));}) {inFunction = true;} ^(Assign expr {
     if (symtab.lookup($expr.stype, $type.tsym) == null)
-      throw new RuntimeException("type mismatch on function return");
+      throw new RuntimeException(getErrorHeader() + "type mismatch on function return");
   }
   ) {inFunction = false;}) {type.add($type.tsym);}
   ;
@@ -286,22 +286,22 @@ callStatement
   : ^(CALL id=Identifier ^(ARGLIST (e=expr {argtypes.add($e.stype);})*)) {
     ProcedureSymbol ps = symtab.resolveProcedure($id.text);
     if (ps == null) {
-      throw new RuntimeException($id.text + " is undefined procedure");
+      throw new RuntimeException(getErrorHeader() + $id.text + " is undefined procedure");
     }
     else {
       if (inFunction) {
-        throw new RuntimeException(ps.getName() + ": calling procedure inside a function");
+        throw new RuntimeException(getErrorHeader() + ps.getName() + ": calling procedure inside a function");
       }
     
     
       ArrayList<Symbol> argsyms = ps.getParamList();
       if (argsyms.size() != argtypes.size())
-        throw new RuntimeException(ps.getName() + ": number of arguments doesn't match");
+        throw new RuntimeException(getErrorHeader() + ps.getName() + ": number of arguments doesn't match");
       
       for (int i=0; i<argsyms.size(); i++) {
         VariableSymbol vs = (VariableSymbol) argsyms.get(i);
         if (!vs.getType(0).getName().equals(argtypes.get(i).getName()))
-          throw new RuntimeException("type mismatch, expected " +  vs.getType(0).getName() + " but got " + argtypes.get(i).getName());
+          throw new RuntimeException(getErrorHeader() + "type mismatch, expected " +  vs.getType(0).getName() + " but got " + argtypes.get(i).getName());
       }
     }
   }
@@ -314,13 +314,13 @@ returnStatement
 }
 @after {
   if (ret_type_stack.peek().getName().equals("N/A"))
-    throw new RuntimeException("invalid location for return statement");
+    throw new RuntimeException(getErrorHeader() + "invalid location for return statement");
   if (!hasexpr && !ret_type_stack.peek().getName().equals("void"))
-    throw new RuntimeException("type mismatch on return statement");
+    throw new RuntimeException(getErrorHeader() + "type mismatch on return statement");
 }
   : ^(Return (e=expr {
     if (symtab.lookup($e.stype, ret_type_stack.peek()) == null)
-      throw new RuntimeException("type mismatch on return statement");
+      throw new RuntimeException(getErrorHeader() + "type mismatch on return statement");
     hasexpr = true;
   })?)
   ;
@@ -335,15 +335,15 @@ assignment
       
     VariableSymbol varVS = (VariableSymbol) varSymbol;
     if (varVS.isConst())
-      throw new RuntimeException("Cannot reassign a variable to a const");
+      throw new RuntimeException(getErrorHeader() + "Cannot reassign a variable to a const");
     
     String varType = varVS.getType(0).getName();
     
     if (varType.equals("std_input") || varType.equals("std_output"))
-      throw new RuntimeException("Cannot assign to stream " + $var.text);
+      throw new RuntimeException(getErrorHeader() + "Cannot assign to stream " + $var.text);
       
     if (symtab.lookup($e.stype, varVS.getType(0)) == null)
-      throw new RuntimeException("assignment type error, expected " + varType + " but got " + $e.stype.getName());
+      throw new RuntimeException(getErrorHeader() + "assignment type error, expected " + varType + " but got " + $e.stype.getName());
     
   }
   ;
@@ -351,11 +351,11 @@ assignment
 ifstatement
   : ^(If e=expr slist ^(Else slist)) {
     if (!$e.stype.getName().equals("boolean"))
-      throw new RuntimeException("conditional statement requires boolean, but got " + $e.stype.getName());
+      throw new RuntimeException(getErrorHeader() + "conditional statement requires boolean, but got " + $e.stype.getName());
   }
   | ^(If e=expr slist) {
     if (!$e.stype.getName().equals("boolean"))
-      throw new RuntimeException("conditional statement requires boolean, but got " + $e.stype.getName());
+      throw new RuntimeException(getErrorHeader() + "conditional statement requires boolean, but got " + $e.stype.getName());
   }
   ;
   
@@ -365,11 +365,11 @@ loopstatement
 }
   : ^(Loop {nestedLoop++;} ^(While e=expr) slist) {
     if (!$e.stype.getName().equals("boolean"))
-      throw new RuntimeException("conditional statement requires boolean, but got " + $e.stype.getName());
+      throw new RuntimeException(getErrorHeader() + "conditional statement requires boolean, but got " + $e.stype.getName());
   }
   | ^(Loop {nestedLoop++;} slist ^(While e=expr)) {
     if (!$e.stype.getName().equals("boolean"))
-      throw new RuntimeException("conditional statement requires boolean, but got " + $e.stype.getName());
+      throw new RuntimeException(getErrorHeader() + "conditional statement requires boolean, but got " + $e.stype.getName());
   }
   | ^(Loop {nestedLoop++;} slist)
   ;
