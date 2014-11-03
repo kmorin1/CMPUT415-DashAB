@@ -54,10 +54,10 @@ inputstream
   ;
 
 declaration
-  : ^(DECL specifier* type* Identifier)
-  | ^(DECL specifier* type* ^(Assign Identifier expr))
-  | ^(DECL specifier* ^(Assign Identifier StdInput))
-  | ^(DECL specifier* ^(Assign Identifier StdOutput))
+  : ^(DECL type* Identifier)
+  | ^(DECL type* ^(Assign Identifier expr))
+  | ^(DECL ^(Assign Identifier StdInput))
+  | ^(DECL ^(Assign Identifier StdOutput))
   ;
   
 block
@@ -120,15 +120,14 @@ type
   | Real
   | Character
   | tuple
+  | StdInput
+  | StdOutput
+  | Null
+  | Identity
   ;
   
 tuple
   : ^(Tuple type+)
-  ;
-
-specifier
-  : Const
-  | Var
   ;
   
 expr
@@ -155,6 +154,8 @@ expr
   | type FPNumber
   | type True
   | type False
+  | type Null
+  | type Identity
   | ^(TUPLEEX expr+)
   | type ^(Dot Identifier Number)
   | ^(NEG expr)

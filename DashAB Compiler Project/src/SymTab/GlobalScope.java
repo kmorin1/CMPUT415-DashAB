@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class GlobalScope implements Scope {
-	Map<String, Symbol> symbols = new HashMap<String, Symbol>();
+	public Map<String, Symbol> symbols = new HashMap<String, Symbol>();
 	
     //protected ArrayList<Scope> children = new ArrayList<Scope>();
 	

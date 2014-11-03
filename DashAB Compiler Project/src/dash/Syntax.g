@@ -239,6 +239,8 @@ atom
   | FPNumber
   | True
   | False
+  | Null
+  | Identity
   | Identifier Dot^ (Identifier|Number)
   | LParen (a=expr -> expr) (Comma b=expr -> ^(TUPLEEX $a $b))+ RParen
   | Identifier LParen expr? (Comma expr)* RParen -> ^(CALL Identifier ^(ARGLIST expr*))
@@ -304,7 +306,8 @@ Reverse   : 'reverse';
 Call      : 'call';
 StdInput  : 'std_input';
 StdOutput : 'std_output';
-
+Null      : 'null';
+Identity  : 'identity';
 Character : 'character';
 
 // Extra Characters

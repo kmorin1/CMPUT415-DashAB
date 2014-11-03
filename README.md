@@ -21,6 +21,7 @@ TO-DO:
 	to make sure in line with spec. 
 	-get tuple type promotion and translation working 
 	-do all type checking for expressions, functions etc. 
+	-do type checking on statements (return will be nasty)
 	-run tests
 		test scope for all blocks (if/loop/function etc)
 		test all type combinations for errors. 

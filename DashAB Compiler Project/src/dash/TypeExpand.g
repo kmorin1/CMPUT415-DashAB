@@ -12,15 +12,20 @@ options {
 @header {
   package dash; 
   import SymTab.*;
+  import java.util.LinkedList;
 }
  
 @members {
     SymbolTable symtab;
     Scope currentscope;
+    int nestedLoop = 0;
+    boolean inFunction = false;
     public TypeExpand(TreeNodeStream input, SymbolTable symtab) {
         this(input);
         this.symtab = symtab;
         currentscope = symtab.globals;
+        ret_type_stack = new LinkedList<Type>();
+        ret_type_stack.push(new BuiltInTypeSymbol("N/A"));
     }
     private String getErrorHeader() {
       
@@ -31,6 +36,16 @@ options {
       return getGrammarFileName() + ">" + line + ":" + chline + ": ";
   }
   
+    private void checkGlobalName(String symbolName) {
+      ProcedureSymbol ps = symtab.resolveProcedure(symbolName);
+      FunctionSymbol fs = symtab.resolveFunction(symbolName);
+      Symbol type = symtab.resolveType(symbolName);
+      if (ps != null || fs != null || type != null) {
+        throw new RuntimeException(symbolName + " is defined multiple times in global scope");
+      }
+    }
+    
+    LinkedList<Type> ret_type_stack;
 }
 
 program
@@ -53,18 +68,27 @@ statement
   | block
   | callStatement
   | returnStatement
-  | Break
-  | Continue
+  | Break {
+    if (nestedLoop == 0)
+      throw new RuntimeException("break statement not in a loop");
+  }
+  | Continue {
+    if (nestedLoop == 0)
+      throw new RuntimeException("continue statement not in a loop");
+  }
   ;
   
 outputstream
-  : ^(RArrow expr stream=Identifier)
+  : ^(RArrow e=expr stream=Identifier)
   {
     Symbol s = currentscope.resolve($stream.text);
     
     if (s == null)
       throw new RuntimeException($stream.text + " is undefined");
     VariableSymbol vs = (VariableSymbol) s;
+    
+    if ($e.stype.getName().equals("tuple"))
+      throw new RuntimeException("cannot send tuples to streams");
     
     String stype = vs.getType(0).getName();
     if (!stype.equals("std_output"))
@@ -90,8 +114,8 @@ inputstream
     String varType = varVS.getType(0).getName();
     if (!streamType.equals("std_input"))
       throw new RuntimeException($stream.text + " is not an input stream");
-    else if (varType.equals("std_input") || varType.equals("std_output"))
-      throw new RuntimeException("Cannot put input into stream " + $var.text);
+    else if (varType.equals("std_input") || varType.equals("std_output") || varType.equals("tuple"))
+      throw new RuntimeException("invalid type for input stream to variable " + $var.text);
   }
   ;
 
@@ -99,19 +123,68 @@ declaration
 @init {
   ArrayList<Type> specs = new ArrayList<Type>();
   ArrayList<Type> types = new ArrayList<Type>(); 
+  VariableSymbol vs = null;
 }
 @after {
-  VariableSymbol vs = new VariableSymbol($id.text, types, specs);
+  Symbol sym = null;
+  if (currentscope instanceof NestedScope) {
+    NestedScope ns = (NestedScope)currentscope;
+    sym = ns.symbols.get($id.text);
+  }
+  else if (currentscope instanceof GlobalScope) {
+    checkGlobalName($id.text);
+    GlobalScope gs = (GlobalScope)currentscope;
+    sym = gs.symbols.get($id.text);
+  }
+  
+  if (sym != null) {
+    throw new RuntimeException("variable " + $id.text + " defined more than once in same scope");
+  }  
+
+  vs = new VariableSymbol($id.text, types, specs);
+  
+  if (!vs.isConst() && currentscope.getScopeName() == "global") {
+    throw new RuntimeException("global variable " + vs.getName() + " must be const");
+  }
+  
   currentscope.define(vs);
 }
-  : ^(DECL (s=specifier {specs.add($s.tsym);})* (t=type {types.add($t.tsym);})* id=Identifier)
-  | ^(DECL (s=specifier {specs.add($s.tsym);})* (t=type {types.add($t.tsym);})* ^(Assign id=Identifier expr))
+  : ^(DECL (s=specifier {specs.add($s.tsym);})* (t=type {types.add($t.tsym);})* id=Identifier) {
+    if (specs.size() != 0) {
+        throw new RuntimeException("cannot have specifiers without assigning a variable");
+    }
+  } -> ^(DECL type* $id)
+  | ^(DECL (s=specifier {specs.add($s.tsym);})* (t=type {types.add($t.tsym);})* ^(Assign id=Identifier e=expr)) {
+    if (types.size() > 0 && symtab.lookup($e.stype, types.get(0)) == null)
+      throw new RuntimeException("assignment type error, expected " + types.get(0).getName() + " but got " + $e.stype.getName());
+      
+    stream_DECL.reset();
+    
+    if (types.size() == 0 && ($e.stype.getName() == "null" || $e.stype.getName() == "identity")) {
+      throw new RuntimeException("cannot infer type for variable " + $id.text);
+    }
+  
+    if (new VariableSymbol($id.text, types, specs).isVar()) {
+      types.clear();
+      types.add($e.stype);
+    }
+      
+    for (int i=0; i<types.size(); i++) {
+      stream_DECL.add((CommonTree) adaptor.create(Identifier, types.get(i).getName()));
+    }
+    
+  } -> ^(DECL DECL+ ^(Assign $id $e))
   | ^(DECL (s=specifier {specs.add($s.tsym);})* ^(Assign id=Identifier StdInput {types.add((Type) symtab.resolveType("std_input"));}))
+    -> ^(DECL StdInput["std_input"] ^(Assign $id StdInput))
   | ^(DECL (s=specifier {specs.add($s.tsym);})* ^(Assign id=Identifier StdOutput {types.add((Type) symtab.resolveType("std_output"));}))
+    -> ^(DECL StdOutput["std_output"] ^(Assign $id StdOutput))
   ;
   
 typedef
 @after {
+
+  checkGlobalName($id.text);
+
   String bitname = $t.tsym.getName();
   String oldname;
   do {
@@ -135,57 +208,114 @@ block
   
 procedure
 @init {
-  ArrayList<Symbol> params = new ArrayList<Symbol>();
+  //ArrayList<Symbol> params = new ArrayList<Symbol>();
   ArrayList<Type> type = new ArrayList<Type>();
 }
 @after {
-  ProcedureSymbol ps = new ProcedureSymbol($id.text, type, params);
+  ret_type_stack.pop();
+  checkGlobalName($id.text);
+
+  ProcedureSymbol ps = new ProcedureSymbol($id.text, type, $pl.params);
   symtab.defineProcedure(ps);
   currentscope = currentscope.getEnclosingScope();
+  ret_type_stack.pop();
 }
-  : ^(Procedure id=Identifier paramlist ^(Returns type) block) {type.add($type.tsym);}
-  | ^(Procedure id=Identifier paramlist block)
+  : ^(Procedure id=Identifier pl=paramlist ^(Returns type {ret_type_stack.push($type.tsym);}) block) {type.add($type.tsym);}
+  | ^(Procedure id=Identifier pl=paramlist {ret_type_stack.push(new BuiltInTypeSymbol("void"));} block)
   ;
    
 function
 @init {
-  ArrayList<Symbol> params = new ArrayList<Symbol>();
+  //ArrayList<Symbol> params = new ArrayList<Symbol>();
   ArrayList<Type> type = new ArrayList<Type>();
+  //currentscope = new NestedScope("funcscope", currentscope);
 }
 @after {
-  FunctionSymbol fs = new FunctionSymbol($id.text, type, params);
+
+  checkGlobalName($id.text);
+
+  FunctionSymbol fs = new FunctionSymbol($id.text, type, $pl.params);
   symtab.defineFunction(fs);
   currentscope = currentscope.getEnclosingScope();
+  ret_type_stack.pop();
 }
-  : ^(Function id=Identifier paramlist ^(Returns type) block) {type.add($type.tsym);}
-  | ^(Function id=Identifier paramlist ^(Returns type) ^(Assign expr)) {type.add($type.tsym);}
+  : ^(Function id=Identifier pl=paramlist ^(Returns type {ret_type_stack.push($type.tsym);}) {inFunction = true;}block {inFunction = false;}) {type.add($type.tsym);}
+  | ^(Function id=Identifier pl=paramlist ^(Returns type {ret_type_stack.push(new BuiltInTypeSymbol("N/A"));}) {inFunction = true;} ^(Assign expr {
+    if (symtab.lookup($expr.stype, $type.tsym) == null)
+      throw new RuntimeException("type mismatch on function return");
+  }
+  ) {inFunction = false;}) {type.add($type.tsym);}
   ;
   
-paramlist
-@init {currentscope = new NestedScope("paramscope", currentscope);}
-  : ^(PARAMLIST parameter*)
+paramlist returns [ArrayList<Symbol> params]
+@init {
+  ArrayList<Symbol> paramlst = new ArrayList<Symbol>();
+  //currentscope = new NestedScope("paramscope", currentscope);
+}
+@after {$params = paramlst;}
+  : ^(PARAMLIST (p=parameter {paramlst.add($p.varsym);})*)
   ;
   
-parameter
+parameter returns [VariableSymbol varsym]
 @init {ArrayList<Type> type = new ArrayList<Type>();}
 @after {
   type.add($t.tsym);
-  VariableSymbol vs = new VariableSymbol($id.text, type);
+  ArrayList<Type> spec = new ArrayList<Type>();
+  spec.add(new BuiltInTypeSymbol("const"));
+  VariableSymbol vs = new VariableSymbol($id.text, type, spec);
   currentscope.define(vs);
+  $varsym = vs;
 }
   : ^(id=Identifier t=type)
   ;
   
 callStatement
-  : ^(CALL Identifier ^(ARGLIST expr*))
+@init {
+  ArrayList<Type> argtypes = new ArrayList<Type>();
+}
+  : ^(CALL id=Identifier ^(ARGLIST (e=expr {argtypes.add($e.stype);})*)) {
+    ProcedureSymbol ps = symtab.resolveProcedure($id.text);
+    if (ps == null) {
+      throw new RuntimeException(getErrorHeader() + $id.text + " is undefined procedure");
+    }
+    else {
+      if (inFunction) {
+        throw new RuntimeException(getErrorHeader() + ps.getName() + ": calling procedure inside a function");
+      }
+    
+    
+      ArrayList<Symbol> argsyms = ps.getParamList();
+      if (argsyms.size() != argtypes.size())
+        throw new RuntimeException(getErrorHeader() + ps.getName() + ": number of arguments doesn't match");
+      
+      for (int i=0; i<argsyms.size(); i++) {
+        VariableSymbol vs = (VariableSymbol) argsyms.get(i);
+        if (!vs.getType(0).getName().equals(argtypes.get(i).getName()))
+          throw new RuntimeException(getErrorHeader() + "type mismatch, expected " +  vs.getType(0).getName() + " but got " + argtypes.get(i).getName());
+      }
+    }
+  }
   ;
   
 returnStatement
-  : ^(Return expr?)
+@init {
+  boolean hasexpr = false;
+  if (ret_type_stack.peek().getName().equals("N/A"))
+    throw new RuntimeException("invalid location for return statement");
+}
+@after {
+  if (!hasexpr && !ret_type_stack.peek().getName().equals("void"))
+    throw new RuntimeException("type mismatch on return statement");
+}
+  : ^(Return (e=expr {
+    if (symtab.lookup($e.stype, ret_type_stack.peek()) == null)
+      throw new RuntimeException("type mismatch on return statement");
+    hasexpr = true;
+  })?)
   ;
   
 assignment
-  : ^(Assign var=Identifier expr)
+  : ^(Assign var=Identifier e=expr)
   {
     Symbol varSymbol = currentscope.resolve($var.text);
     
@@ -193,23 +323,44 @@ assignment
       throw new RuntimeException($var.text + " is undefined");
       
     VariableSymbol varVS = (VariableSymbol) varSymbol;
+    if (varVS.isConst())
+      throw new RuntimeException("Cannot reassign a variable to a const");
     
     String varType = varVS.getType(0).getName();
     
-    if (varType == "std_input" || varType == "std_output")
+    if (varType.equals("std_input") || varType.equals("std_output"))
       throw new RuntimeException("Cannot assign to stream " + $var.text);
+      
+    if (symtab.lookup($e.stype, varVS.getType(0)) == null)
+      throw new RuntimeException("assignment type error, expected " + varType + " but got " + $e.stype.getName());
+    
   }
   ;
   
 ifstatement
-  : ^(If expr slist ^(Else slist))
-  | ^(If expr slist)
+  : ^(If e=expr slist ^(Else slist)) {
+    if (!$e.stype.getName().equals("boolean"))
+      throw new RuntimeException("conditional statement requires boolean, but got " + $e.stype.getName());
+  }
+  | ^(If e=expr slist) {
+    if (!$e.stype.getName().equals("boolean"))
+      throw new RuntimeException("conditional statement requires boolean, but got " + $e.stype.getName());
+  }
   ;
   
 loopstatement
-  : ^(Loop ^(While expr) slist)
-  | ^(Loop slist ^(While expr))
-  | ^(Loop slist)
+@after {
+  nestedLoop--;
+}
+  : ^(Loop {nestedLoop++;} ^(While e=expr) slist) {
+    if (!$e.stype.getName().equals("boolean"))
+      throw new RuntimeException("conditional statement requires boolean, but got " + $e.stype.getName());
+  }
+  | ^(Loop {nestedLoop++;} slist ^(While e=expr)) {
+    if (!$e.stype.getName().equals("boolean"))
+      throw new RuntimeException("conditional statement requires boolean, but got " + $e.stype.getName());
+  }
+  | ^(Loop {nestedLoop++;} slist)
   ;
   
 slist
@@ -246,7 +397,7 @@ expr returns [Type stype]
 @init {
   Integer index = -1; 
   TupleSymbol ts = null; 
-  Boolean istuple = false;
+  ArrayList<Type> argtypes = new ArrayList<Type>();
   String errorhead = getErrorHeader();
 }
   : ^(Plus a=expr b=expr) {
@@ -270,7 +421,7 @@ expr returns [Type stype]
     else if (lub != null)
       $stype = $a.stype;
     else 
-      throw new RuntimeException("type promotion error");
+      throw new RuntimeException(errorhead + " type promotion error");
     
   } -> ^(Minus Identifier[$stype.getName()] expr expr)
   | ^(Multiply a=expr b=expr) {
@@ -282,7 +433,7 @@ expr returns [Type stype]
     else if (lub != null)
       $stype = $a.stype;
     else 
-      throw new RuntimeException("type promotion error");
+      throw new RuntimeException(errorhead + " type promotion error");
     
   } -> ^(Multiply Identifier[$stype.getName()] expr expr)
   | ^(Divide a=expr b=expr) {
@@ -294,7 +445,7 @@ expr returns [Type stype]
     else if (lub != null)
       $stype = $a.stype;
     else 
-      throw new RuntimeException("type promotion error");
+      throw new RuntimeException(errorhead + " type promotion error");
     
   } -> ^(Divide Identifier[$stype.getName()] expr expr)
   | ^(Exponent a=expr b=expr) {
@@ -306,31 +457,139 @@ expr returns [Type stype]
     else if (lub != null)
       $stype = $a.stype;
     else 
-      throw new RuntimeException("type promotion error");
+      throw new RuntimeException(errorhead + " type promotion error");
     
   } -> ^(Exponent Identifier[$stype.getName()] expr expr)
-  | ^(Equals a=expr b=expr) {$stype = new BuiltInTypeSymbol("boolean");} -> ^(Equals Identifier[$stype.getName()] expr expr)
-  | ^(NEquals a=expr b=expr) {$stype = new BuiltInTypeSymbol("boolean");} -> ^(NEquals Identifier[$stype.getName()] expr expr)
-  | ^(GThan a=expr b=expr) {$stype = new BuiltInTypeSymbol("boolean");} -> ^(GThan Identifier[$stype.getName()] expr expr)
-  | ^(LThan a=expr b=expr) {$stype = new BuiltInTypeSymbol("boolean");} -> ^(LThan Identifier[$stype.getName()] expr expr)
-  | ^(GThanE a=expr b=expr) {$stype = new BuiltInTypeSymbol("boolean");} -> ^(GThanE Identifier[$stype.getName()] expr expr)
-  | ^(LThanE a=expr b=expr) {$stype = new BuiltInTypeSymbol("boolean");} -> ^(LThanE Identifier[$stype.getName()] expr expr)
-  | ^(Or a=expr b=expr) {$stype = new BuiltInTypeSymbol("boolean");} -> ^(Or Identifier[$stype.getName()] expr expr)
-  | ^(Xor a=expr b=expr) {$stype = new BuiltInTypeSymbol("boolean");} -> ^(Xor Identifier[$stype.getName()] expr expr)
-  | ^(And a=expr b=expr) {$stype = new BuiltInTypeSymbol("boolean");} -> ^(And Identifier[$stype.getName()] expr expr)
-  | ^(Not e=expr) {$stype = new BuiltInTypeSymbol("boolean");} -> ^(Not Identifier[$stype.getName()] expr)
+  | ^(Equals a=expr b=expr) {
+    Boolean lua = symtab.lookup($a.stype, $b.stype);
+    Boolean lub = symtab.lookup($b.stype, $a.stype);
+      
+    if (lua != null || lub != null)
+      $stype = new BuiltInTypeSymbol("boolean");
+    else 
+      throw new RuntimeException(errorhead + " type promotion error");
+    
+  } -> ^(Equals Identifier[$stype.getName()] expr expr)
+  | ^(NEquals a=expr b=expr) {
+    Boolean lua = symtab.lookup($a.stype, $b.stype);
+    Boolean lub = symtab.lookup($b.stype, $a.stype);
+      
+    if (lua != null || lub != null)
+      $stype = new BuiltInTypeSymbol("boolean");
+    else 
+      throw new RuntimeException(errorhead + " type promotion error");
+    
+  } -> ^(NEquals Identifier[$stype.getName()] expr expr)
+  | ^(GThan a=expr b=expr) {
+    Boolean lua = symtab.lookup($a.stype, $b.stype);
+    Boolean lub = symtab.lookup($b.stype, $a.stype);
+      
+    if (lua != null || lub != null)
+      $stype = new BuiltInTypeSymbol("boolean");
+    else 
+      throw new RuntimeException(errorhead + " type promotion error");
+    
+  } -> ^(GThan Identifier[$stype.getName()] expr expr)
+  | ^(LThan a=expr b=expr) {
+    Boolean lua = symtab.lookup($a.stype, $b.stype);
+    Boolean lub = symtab.lookup($b.stype, $a.stype);
+      
+    if (lua != null || lub != null)
+      $stype = new BuiltInTypeSymbol("boolean");
+    else 
+      throw new RuntimeException(errorhead + " type promotion error");
+    
+  } -> ^(LThan Identifier[$stype.getName()] expr expr)
+  | ^(GThanE a=expr b=expr) {
+    Boolean lua = symtab.lookup($a.stype, $b.stype);
+    Boolean lub = symtab.lookup($b.stype, $a.stype);
+      
+    if (lua != null || lub != null)
+      $stype = new BuiltInTypeSymbol("boolean");
+    else 
+      throw new RuntimeException(errorhead + " type promotion error");
+    
+  } -> ^(GThanE Identifier[$stype.getName()] expr expr)
+  | ^(LThanE a=expr b=expr) {
+    Boolean lua = symtab.lookup($a.stype, $b.stype);
+    Boolean lub = symtab.lookup($b.stype, $a.stype);
+      
+    if (lua != null || lub != null)
+      $stype = new BuiltInTypeSymbol("boolean");
+    else 
+      throw new RuntimeException(errorhead + " type promotion error");
+    
+  } -> ^(LThanE Identifier[$stype.getName()] expr expr)
+  | ^(Or a=expr b=expr) {
+    Boolean lua = symtab.lookup($a.stype, $b.stype);
+    Boolean lub = symtab.lookup($b.stype, $a.stype);
+      
+    if (lua != null || lub != null)
+      $stype = new BuiltInTypeSymbol("boolean");
+    else 
+      throw new RuntimeException(errorhead + " type promotion error");
+    
+  } -> ^(Or Identifier[$stype.getName()] expr expr)
+  | ^(Xor a=expr b=expr) {
+    Boolean lua = symtab.lookup($a.stype, $b.stype);
+    Boolean lub = symtab.lookup($b.stype, $a.stype);
+      
+    if (lua != null || lub != null)
+      $stype = new BuiltInTypeSymbol("boolean");
+    else 
+      throw new RuntimeException(errorhead + " type promotion error");
+    
+  } -> ^(Xor Identifier[$stype.getName()] expr expr)
+  | ^(And a=expr b=expr) {
+    Boolean lua = symtab.lookup($a.stype, $b.stype);
+    Boolean lub = symtab.lookup($b.stype, $a.stype);
+      
+    if (lua != null || lub != null)
+      $stype = new BuiltInTypeSymbol("boolean");
+    else 
+      throw new RuntimeException(errorhead + " type promotion error");
+    
+  } -> ^(And Identifier[$stype.getName()] expr expr)
+  | ^(Not e=expr) {
+    if ($e.stype.getName().equals("boolean"))
+      $stype = new BuiltInTypeSymbol("boolean");
+    else 
+      throw new RuntimeException(errorhead + " type promotion error");
+    
+  } -> ^(Not Identifier[$stype.getName()] expr)
   | ^(By a=expr b=expr) {$stype = $a.stype;} -> ^(By Identifier[$stype.getName()] expr expr)
-  | ^(CALL id=Identifier ^(ARGLIST expr*)) {
+  | ^(CALL id=Identifier ^(ARGLIST (e=expr {argtypes.add($e.stype);})*)) {
     ProcedureSymbol ps = symtab.resolveProcedure($id.text);
     FunctionSymbol fs = symtab.resolveFunction($id.text);
     if (ps == null && fs == null)
       throw new RuntimeException(getErrorHeader() + $id.text + " is undefined function or procedure");
-    if (ps != null && fs == null)
+    if (ps != null && fs == null) {
+      if (inFunction) {
+        throw new RuntimeException(getErrorHeader() + ps.getName() + ": calling a procedure inside a function");
+      }
+        
       $stype = ps.getType(0);
-    if (fs != null && ps == null)
+      ArrayList<Symbol> argsyms = ps.getParamList();
+      if (argsyms.size() != argtypes.size())
+        throw new RuntimeException(errorhead + ps.getName() + ": number of arguments doesn't match");
+      for (int i=0; i<argsyms.size(); i++) {
+        VariableSymbol vs = (VariableSymbol) argsyms.get(i);
+        if (!vs.getType(0).getName().equals(argtypes.get(i).getName()))
+          throw new RuntimeException(errorhead + "type mismatch, expected " +  vs.getType(0).getName() + " but got " + argtypes.get(i).getName());
+      }
+    } else if (fs != null && ps == null) {
       $stype = fs.getType(0);
-    else 
+      ArrayList<Symbol> argsyms = fs.getParamList();
+      if (argsyms.size() != argtypes.size())
+        throw new RuntimeException(errorhead + ps.getName() + ": number of arguments doesn't match");
+      for (int i=0; i<argsyms.size(); i++) {
+        VariableSymbol vs = (VariableSymbol) argsyms.get(i);
+        if (!vs.getType(0).getName().equals(argtypes.get(i).getName()))
+          throw new RuntimeException(errorhead + "type mismatch, expected " +  vs.getType(0).getName() + " but got " + argtypes.get(i).getName());
+      }
+    } else 
       throw new RuntimeException(getErrorHeader() + "Multiple defined error");
+    argtypes.clear();
   } -> ^(CALL Identifier[$stype.getName()] Identifier[$id.text] ^(ARGLIST expr*))
   | id=Identifier {
     Symbol s = currentscope.resolve($id.text);
@@ -370,6 +629,8 @@ expr returns [Type stype]
   | FPNumber {$stype = new BuiltInTypeSymbol("real");} -> Identifier["real"] FPNumber
   | True {$stype = new BuiltInTypeSymbol("boolean");} -> Identifier["boolean"] True
   | False {$stype = new BuiltInTypeSymbol("boolean");} -> Identifier["boolean"] False
+  | Null {$stype = new BuiltInTypeSymbol("null");} -> Identifier["null"] Null
+  | Identity {$stype = new BuiltInTypeSymbol("identity");} -> Identifier["identity"] Identity
   | ^(TUPLEEX (e=expr {
     stream_TUPLEEX.reset();
     stream_TUPLEEX.add((CommonTree) adaptor.create(Identifier, $e.stype.getName()));
@@ -396,7 +657,17 @@ expr returns [Type stype]
     index = index.parseInt(num);
     $stype = ts.getFieldNames().get(index-1).type;
   } -> Identifier[$stype.getName()] ^(Dot $id $n))) 
-  | ^(NEG e=expr) {$stype = $e.stype;}
-  | ^(POS e=expr) {$stype = $e.stype;}
+  | ^(NEG e=expr) {
+    if (!$e.stype.getName().equals("integer") && !$e.stype.getName().equals("real")) 
+      throw new RuntimeException(errorhead + " type error");
+    else
+      $stype = $e.stype;
+  }
+  | ^(POS e=expr) {
+    if (!$e.stype.getName().equals("integer") && !$e.stype.getName().equals("real")) 
+      throw new RuntimeException(errorhead + " type error");
+    else
+      $stype = $e.stype;
+  }
   ;
   

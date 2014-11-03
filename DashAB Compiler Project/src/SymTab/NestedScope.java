@@ -6,7 +6,7 @@ import java.util.Map;
 
 public class NestedScope implements Scope{
 	String name;
-	Map<String, Symbol> symbols = new HashMap<String, Symbol>();
+	public Map<String, Symbol> symbols = new HashMap<String, Symbol>();
 	Scope enclosingscope;
 	//protected ArrayList<Scope> children = new ArrayList<Scope>();
 	
