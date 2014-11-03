@@ -20,20 +20,20 @@ options {
     Scope currentscope;
     int nestedLoop = 0;
     boolean inFunction = false;
-    public TypeExpand(TreeNodeStream input, SymbolTable symtab) {
+    String inputfile;
+    public TypeExpand(TreeNodeStream input, SymbolTable symtab, String inputfile) {
         this(input);
         this.symtab = symtab;
         currentscope = symtab.globals;
         ret_type_stack = new LinkedList<Type>();
         ret_type_stack.push(new BuiltInTypeSymbol("N/A"));
+        this.inputfile = inputfile;
     }
     private String getErrorHeader() {
-      
-      //int line = input.getTokenStream().get(input.index()).getLine(); 
-      //int chline = input.getTokenStream().get(input.index()).getCharPositionInLine();
-      int line = 0;
-      int chline = 0;
-      return getGrammarFileName() + ">" + line + ":" + chline + ": ";
+      CommonTree tree = (CommonTree) input.LT(1);
+      int line = tree.getLine();
+      int chline = tree.getCharPositionInLine();
+      return getGrammarFileName() + "> In " + inputfile + ", " + line + ":" + chline + ": ";
   }
   
     private void checkGlobalName(String symbolName) {
@@ -52,7 +52,7 @@ program
 @after {
   ProcedureSymbol ps = symtab.resolveProcedure("main");
   if (ps == null)
-    throw new RuntimeException("Missing main procedure");
+    throw new RuntimeException(getErrorHeader() + "Missing main procedure");
 }
   : ^(PROGRAM globalStatement*)
   ;
@@ -203,7 +203,7 @@ typedef
   } while (!bitname.equals("null"));
   BuiltInTypeSymbol bits = (BuiltInTypeSymbol) symtab.resolveType(oldname);
   if (bits == null)
-    throw new RuntimeException(getErrorHeader() + "type " + bits.getName() + " doesn't exist");
+    throw new RuntimeException("type " + bits.getName() + " doesn't exist");
   TypeDefSymbol tds = new TypeDefSymbol(bits, $id.text);
   symtab.defineType(tds);
 }
@@ -286,22 +286,22 @@ callStatement
   : ^(CALL id=Identifier ^(ARGLIST (e=expr {argtypes.add($e.stype);})*)) {
     ProcedureSymbol ps = symtab.resolveProcedure($id.text);
     if (ps == null) {
-      throw new RuntimeException(getErrorHeader() + $id.text + " is undefined procedure");
+      throw new RuntimeException($id.text + " is undefined procedure");
     }
     else {
       if (inFunction) {
-        throw new RuntimeException(getErrorHeader() + ps.getName() + ": calling procedure inside a function");
+        throw new RuntimeException(ps.getName() + ": calling procedure inside a function");
       }
     
     
       ArrayList<Symbol> argsyms = ps.getParamList();
       if (argsyms.size() != argtypes.size())
-        throw new RuntimeException(getErrorHeader() + ps.getName() + ": number of arguments doesn't match");
+        throw new RuntimeException(ps.getName() + ": number of arguments doesn't match");
       
       for (int i=0; i<argsyms.size(); i++) {
         VariableSymbol vs = (VariableSymbol) argsyms.get(i);
         if (!vs.getType(0).getName().equals(argtypes.get(i).getName()))
-          throw new RuntimeException(getErrorHeader() + "type mismatch, expected " +  vs.getType(0).getName() + " but got " + argtypes.get(i).getName());
+          throw new RuntimeException("type mismatch, expected " +  vs.getType(0).getName() + " but got " + argtypes.get(i).getName());
       }
     }
   }
@@ -574,10 +574,10 @@ expr returns [Type stype]
     ProcedureSymbol ps = symtab.resolveProcedure($id.text);
     FunctionSymbol fs = symtab.resolveFunction($id.text);
     if (ps == null && fs == null)
-      throw new RuntimeException(getErrorHeader() + $id.text + " is undefined function or procedure");
+      throw new RuntimeException(errorhead + $id.text + " is undefined function or procedure");
     if (ps != null && fs == null) {
       if (inFunction) {
-        throw new RuntimeException(getErrorHeader() + ps.getName() + ": calling a procedure inside a function");
+        throw new RuntimeException(errorhead + ps.getName() + ": calling a procedure inside a function");
       }
         
       $stype = ps.getType(0);
@@ -600,13 +600,13 @@ expr returns [Type stype]
           throw new RuntimeException(errorhead + "type mismatch, expected " +  vs.getType(0).getName() + " but got " + argtypes.get(i).getName());
       }
     } else 
-      throw new RuntimeException(getErrorHeader() + "Multiple defined error");
+      throw new RuntimeException(errorhead + "Multiple defined error");
     argtypes.clear();
   } -> ^(CALL Identifier[$stype.getName()] Identifier[$id.text] ^(ARGLIST expr*))
   | id=Identifier {
     Symbol s = currentscope.resolve($id.text);
     if (s == null)
-      throw new RuntimeException(getErrorHeader() + $id.text + " is undefined");
+      throw new RuntimeException(errorhead + $id.text + " is undefined");
     VariableSymbol vs = (VariableSymbol) s;
     
     $stype = vs.getType(0);
@@ -617,7 +617,7 @@ expr returns [Type stype]
   | id=Identifier {
     Symbol s = currentscope.resolve($id.text);
     if (s == null)
-      throw new RuntimeException(getErrorHeader() + $id.text + " is undefined");
+      throw new RuntimeException(errorhead+ $id.text + " is undefined");
     VariableSymbol vs = (VariableSymbol) s;
     $stype = vs.getType(0);
     if ($stype.getName().equals("std_input") || $stype.getName().equals("std_output"))
@@ -652,7 +652,7 @@ expr returns [Type stype]
   | ^(Dot id=Identifier {
     Symbol s = currentscope.resolve($id.text);
     if (s == null)
-      throw new RuntimeException(getErrorHeader() + $id.text + " is undefined");
+      throw new RuntimeException(errorhead+ $id.text + " is undefined");
     VariableSymbol vs = (VariableSymbol) s;
     ts = (TupleSymbol) vs.getType(0);
     index = -1; } 
@@ -665,7 +665,7 @@ expr returns [Type stype]
       }
     }
     if (index.equals(-1))
-      throw new RuntimeException(getErrorHeader() + $eid.text + " is undefined");
+      throw new RuntimeException(errorhead+ $eid.text + " is undefined");
   } -> Identifier[$stype.getName()] ^(Dot $id Number[index.toString()]) | n=Number {
     String num = $n.text;
     index = index.parseInt(num);

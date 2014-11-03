@@ -18,15 +18,18 @@ options {
 @members {
     SymbolTable symtab;
     Scope currentscope;
-    public TypeTranslate(TreeNodeStream input, SymbolTable symtab) {
+    String inputfile;
+    public TypeTranslate(TreeNodeStream input, SymbolTable symtab, String inputfile) {
         this(input);
         this.symtab = symtab;
         currentscope = symtab.globals;
+        this.inputfile = inputfile;
     }
     private String getErrorHeader() {
-      int line = input.getTokenStream().get(input.index()).getLine(); 
-      int chline = input.getTokenStream().get(input.index()).getCharPositionInLine();
-      return getGrammarFileName() + ">" + line + ":" + chline + ": ";
+      CommonTree tree = (CommonTree) input.LT(1);
+      int line = tree.getLine();
+      int chline = tree.getCharPositionInLine();
+      return getGrammarFileName() + "> In " + inputfile + ", " + line + ":" + chline + ": ";
   }
 }
 

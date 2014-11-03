@@ -23,13 +23,15 @@ public class DashAB_Test {
 			System.err.println(Arrays.toString(args));
 			System.exit(1);
 		}*/
-
+		String inputfile = null;
 		ANTLRFileStream input = null;
 		try {
-			input = new ANTLRFileStream("test.ds");
+			inputfile = "test.ds";
+			//String inputfile = args[0];
+			input = new ANTLRFileStream(inputfile);
 		} catch (IOException e) {
 			System.err.print("Invalid program filename: ");
-			System.err.println(args[0]);
+			//System.err.println(args[0]);
 			System.exit(1);
 		}
 
@@ -46,7 +48,7 @@ public class DashAB_Test {
 			
 			CommonTreeNodeStream nodes = new CommonTreeNodeStream(ast);
 			nodes.setTokenStream(tokenStream);
-			TypeExpand te = new TypeExpand(nodes, symtab);
+			TypeExpand te = new TypeExpand(nodes, symtab, inputfile);
 			TypeExpand.program_return teret = te.program();
 			ast = (CommonTree) teret.getTree();
 			st = gen.toDOT(ast);
@@ -54,7 +56,7 @@ public class DashAB_Test {
 			
 			nodes = new CommonTreeNodeStream(ast);
 			nodes.setTokenStream(tokenStream);
-			TypeTranslate tt = new TypeTranslate(nodes, symtab);
+			TypeTranslate tt = new TypeTranslate(nodes, symtab, inputfile);
 			TypeTranslate.program_return ttret = tt.program();
 			ast = (CommonTree) ttret.getTree();
 			
