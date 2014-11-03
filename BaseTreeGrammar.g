@@ -154,6 +154,7 @@ expr
   | False
   | Null
   | Identity
+  | Char
   | ^(TUPLEEX expr)
   | ^(Dot Identifier)
   ;
