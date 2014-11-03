@@ -83,18 +83,20 @@ public class SymbolTable {
         defineRes("const");
     }
     Boolean[][] promotelookup = {
-			{false, null, null, null, null},
-			{null, false, true, null, null},
-			{null, null, false, null, null},
-			{null, null, null, false, null},
-			{null, null, null, null, false}
+			{false, null, null, null, null, null},
+			{null, false, true, null, null, null},
+			{null, null, false, null, null, null},
+			{null, null, null, false, null, null},
+			{null, null, null, null, false, null},
+			{null, null, null, null, null, false}
 	};
     Boolean[][] expromotelookup = {
-			{false, true, true, null, true},
-			{true, false, true, null, true},
-			{null, true, false, null, null},
-			{null, null, null, false, null},
-			{true, true, true, null, false}
+			{false, true, true, null, true, null},
+			{true, false, true, null, true, null},
+			{null, true, false, null, null, null},
+			{null, null, null, false, null, null},
+			{true, true, true, null, false, null},
+			{null, null, null, null, null, false}
 	};
     public Boolean lookup(Type tst1, Type tst2) {
     	Integer i1 = null;
@@ -117,6 +119,9 @@ public class SymbolTable {
     	case "character":
     		i1 = 4;
     		break;
+    	case "tuple":
+    		i1 = 5;
+    		break;
     	}
     	switch (st2) {
     	case "boolean":
@@ -134,9 +139,14 @@ public class SymbolTable {
     	case "character":
     		i2 = 4;
     		break;
+    	case "tuple":
+    		i2 = 5;
+    		break;
     	}
     	
+    	
     	return promotelookup[i1][i2];
+    	
     }
 	public Boolean exLookup(Type tst1, Type tst2) {
 		Integer i1 = null;
