@@ -227,7 +227,6 @@ procedure
   ArrayList<Type> type = new ArrayList<Type>();
 }
 @after {
-  ret_type_stack.pop();
   checkGlobalName($id.text);
 
   ProcedureSymbol ps = new ProcedureSymbol($id.text, type, $pl.params);
@@ -248,6 +247,16 @@ function
 @after {
 
   checkGlobalName($id.text);
+  
+  for(Symbol param : $pl.params) {
+  	if (param instanceof VariableSymbol) {
+  		VariableSymbol vs = (VariableSymbol)param;
+  		if (vs.isVar()) {
+  			throw new RuntimeException("function " + $id.text + " needs only const parameters");
+  		}
+  	}
+  }
+  
 
   FunctionSymbol fs = new FunctionSymbol($id.text, type, $pl.params);
   symtab.defineFunction(fs);
@@ -276,12 +285,18 @@ parameter returns [VariableSymbol varsym]
 @after {
   type.add($t.tsym);
   ArrayList<Type> spec = new ArrayList<Type>();
-  spec.add(new BuiltInTypeSymbol("const"));
+  if ($s.text == null) {
+  	spec.add(new BuiltInTypeSymbol("const"));
+  }
+  else {
+  	spec.add(new BuiltInTypeSymbol($s.text));
+  }
+  
   VariableSymbol vs = new VariableSymbol($id.text, type, spec);
   currentscope.define(vs);
   $varsym = vs;
 }
-  : ^(id=Identifier t=type)
+  : ^(id=Identifier s=specifier? t=type)
   ;
   
 callStatement
