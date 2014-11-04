@@ -69,7 +69,7 @@ inputstream
 
 declaration
   : ^(DECL type* Identifier)
-  | ^(DECL type* ^(Assign Identifier expr)) -> outputAssi(varName={$Identifier}, varType={$type.st}, expr={$expr.st}, tmpNum={counter++})
+  | ^(DECL type* ^(Assign Identifier expr)) -> outputAssi(varName={$Identifier}, varType={$type.st}, expr={$expr.st}, tmpNum={counter})
   | ^(DECL StdInput ^(Assign Identifier StdInput))
   | ^(DECL StdOutput ^(Assign Identifier StdOutput))
   ;
@@ -80,7 +80,7 @@ block
   
 procedure
   : ^(Procedure Identifier paramlist ^(Returns type) block) -> declareProcOrFunc(procName={$Identifier}, procVars={$paramlist.st}, procBody={$block.st}, retType={$type.st}, retNum={counter++})
-  | ^(Procedure Identifier paramlist block) -> declareVoidProcOrFunc(procName={$Identifier}, procVars={$paramlist.st}, procBody={$block.st}, retType={"void"})
+  | ^(Procedure Identifier paramlist block) -> declareVoidProcOrFunc(procName={$Identifier}, procVars={$paramlist.st}, procBody={$block.st})
   ;
   
 function
@@ -101,7 +101,8 @@ callStatement
   ;
   
 returnStatement
-  : ^(Return expr?) -> returnStat(val={$expr.st})
+  : ^(Return expr) -> return(a={$expr.st})
+  | Return
   ;
   
 assignment
@@ -146,7 +147,7 @@ tuple
   ;
   
 expr returns [String type]
-  : ^(Plus type a=expr b=expr) ->  add(func={getAdd($type.st)}, expr1={$a.st}, expr2={$b.st}, tmpNum1={counter++}, tmpNum2={counter++}, result={counter++})
+  : ^(Plus type a=expr b=expr) ->  add(func={getAdd($type.st)}, expr1={$a.st}, expr2={$b.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
   | ^(Minus type a=expr b=expr)
   | ^(Multiply type a=expr b=expr)
   | ^(Divide type a=expr b=expr)
@@ -164,8 +165,8 @@ expr returns [String type]
   | ^(By type a=expr expr)
   | ^(CALL Identifier ^(ARGLIST expr*))
   | ^(As type expr)
-  | type Identifier -> load_var(tmpNum={counter++}, var={$Identifier}, varType={$type.st})
-  | type Number
+  | type Identifier -> load_var(tmpNum={++counter}, var={$Identifier}, varType={$type.st})
+  | type Number -> load_num(tmpNum={++counter}, value={$Number})
   | type FPNumber
   | type True
   | type False

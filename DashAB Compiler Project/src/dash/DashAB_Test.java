@@ -78,7 +78,8 @@ public class DashAB_Test {
 				interpreter.program();
 			} else {
 				// Pass it all to the String templater!
-				String templateFile = args[1] + ".stg";
+				 */
+				String templateFile = "llvm.stg";
 
 				FileReader template;
 				try {
@@ -86,16 +87,17 @@ public class DashAB_Test {
 
 					StringTemplateGroup stg = new StringTemplateGroup(template);
 
-					nodes.reset();
+					nodes = new CommonTreeNodeStream(ast);
+		                        nodes.setTokenStream(tokenStream);
 
-					Templater templater = new Templater(nodes, symtab);
+					LLVMTemplater templater = new LLVMTemplater(nodes, symtab);
 					templater.setTemplateLib(stg);
 					System.out.println(templater.program().getTemplate().toString());				
 				} catch (FileNotFoundException e) {
 					System.out.print("The template file is missing:");
 					System.out.println(templateFile);
 				}
-			}*/
+			
 		/*} catch (RuntimeException e) {
 			System.out.println("A problem has occured with the DashAB input file: " + e.getMessage());
 			System.out.println("Please check the input file for correctness.");

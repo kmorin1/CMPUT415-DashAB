@@ -2,6 +2,12 @@ group llvm;
 
 return(a) ::= "<a>"
 
+returnTwo(a, b) ::= <<
+<a>
+<b>
+
+>>
+
 declare(var, expr, tmpNum) ::= <<
 ;evaluating expression
 <expr>
@@ -21,20 +27,24 @@ globalDeclare(varName, varType, varValue, alignment) ::= <<
   @.<varName> = global <varType> <varValue>, align <alignment>
 >>
 
-declareProcOrFunc(procName, procVars, procType, procBody, retType, retNum) ::= <<
-define <retType> @<procName>(<vars:{ a | <a>}; seperator=", ">) {
+declareProcOrFunc(procName, procVars, procBody, retType, retNum) ::= <<
+define <retType> @<procName>(<procVars:{ a | <a>}; separator=", ">) {
 entry:
   <procBody>
   ret <retType> %.<retNum>
 }
+
+
 >>
 
-declareVoidProcOrFunc(procName, procVars, procType, procBody, retType) ::= <<
+declareVoidProcOrFunc(procName, procVars, procType, procBody) ::= <<
 define <retType> @<procName>(<vars:{ a | <a>}; seperator=", ">) {
 entry:
   <procBody>
-  ret <retType>
+  ret void
 }
+
+
 >>
 
 param(name, type) ::= << <type> %<name> >>
@@ -69,6 +79,14 @@ load_var(tmpNum, var, varType) ::= <<
 print(expr, result) ::= <<
 
 >>
+
+returnStat(val, tmpNum, type) ::= <<
+<val>
+ret <type> %.<tmpNum>
+
+>>
+
+returnVoid() ::= "ret void"
 
 //?
 cast(varType, expr, castType) ::= <<
@@ -196,6 +214,8 @@ greaterThanEFloat(expr1, expr2, tmpNum1, tmpNum2, result) ::= <<
 %.bool<result> = icmp oge float %.<tmpNum1>, %.<tmpNum2>
 %.<result> = select i1 %.bool<result>, i32 1, i32 0
 ;end greater than or e
+
+>>
 
 add(expr1, expr2, tmpNum1, tmpNum2, result) ::= <<
 ;start add
