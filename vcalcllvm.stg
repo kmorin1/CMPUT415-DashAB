@@ -1,0 +1,179 @@
+group llvm;
+
+//  program will take in two parameters
+//  parameter a will be the initialization of variables
+//strings will be handled by a hard coded @.str variable
+//  parameter b will be the rest of the program 
+
+
+program(a) ::= <<
+; ModuleID = 'nomain.c'
+target datalayout = "e-p:64:64:64-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:64:64-f32:32:32-f64:64:64-v64:64:64-v128:128:128-a0:0:64-s0:64:64-f80:128:128-n8:16:32:64-S128"
+target triple = "x86_64-pc-linux-gnu"
+
+@.str = private unnamed_addr constant [4 x i8] c"%d\0A\00", align 1
+
+define i32 @main() nounwind uwtable {
+%1 = alloca i32, align 4
+store i32 0, i32* %1
+
+<a>
+
+
+>>
+
+program2(a,b) ::= <<
+; ModuleID = 'nomain.c'
+target datalayout = "e-p:64:64:64-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:64:64-f32:32:32-f64:64:64-v64:64:64-v128:128:128-a0:0:64-s0:64:64-f80:128:128-n8:16:32:64-S128"
+target triple = "x86_64-pc-linux-gnu"
+
+@.str = private unnamed_addr constant [4 x i8] c"%d\0A\00", align 1
+
+define i32 @main() nounwind uwtable {
+%1 = alloca i32, align 4
+store i32 0, i32* %1
+  <a>
+  <b>
+  ret i32 0
+}
+
+declare i32 @printf(i8*, ...)
+>>
+
+//a is the variable name
+//b is the variable value
+declareInt(a,id,op) ::= <<
+%<id> = alloca i32, align 4
+<a>
+store i32 %<op>, i32* %<id>, align 4
+
+>>
+
+//a is the variable being printed out
+//b is the current temp variable -1
+//c is the current temp variable 
+printStatement(a,tc,op) ::= <<
+<a>
+%t<tc> = call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([4 x i8]* @.str, i32 0, i32 0), i32 %<op>)
+
+>>
+
+//a is the resolution of the exp a
+//b is the location that a is being stored
+storeVar(a,id,op) ::= <<
+<a>
+store i32 %<op>, i32* %<id>, align 4
+
+>>
+
+//a is the resolution of the exp a
+//b is the resolution of the exp b
+//op1 is the result of a (opcounter-2)
+//op2 is the result of b (opcounter-1)
+//dest is the result of add (opcounter)
+add(a,b,op1,op2,dest) ::= <<
+<a>
+<b>
+%<dest> = add i32 %<op1>, %<op2>
+
+>>
+
+//a is the resolution of the exp a
+//b is the resolution of the exp b
+//c is the current temp variable number
+sub(a,b,op1,op2,dest) ::= <<
+<a>
+<b>
+%<dest> = sub i32 %<op1>, %<op2>
+
+>>
+
+//a is the resolution of the exp a
+//b is the resolution of the exp b
+//c is the current temp variable number
+mult(a,b,op1,op2,dest) ::= <<
+<a>
+<b>
+%<dest> = mul i32 %<op1>, %<op2>
+
+>>
+
+//a is the resolution of the exp a
+//b is the resolution of the exp b
+//c is the current temp variable number
+div(a,b,op1,op2,dest) ::= <<
+<a>
+<b>
+%<dest> = idiv i32 %<op1>, %<op2>
+
+>>
+
+//v is the constant
+//oc is the opcounter
+//tc is the temp var counter
+int(v,oc,tc) ::= <<
+%t<tc> = alloca i32, align 4
+store i32 <v>, i32* %t<tc>
+%<oc> = load i32* %t<tc>, align 4
+
+>>
+
+//id is the variable id
+//oc is the opcounter
+var(id, oc) ::= <<
+
+%<oc> = load i32* %<id>, align 4
+
+>>
+
+//a is the resolution of exp a
+//b is the resolution of exp b
+//c is the current temp variable
+eql(a,b,op1,op2,tc,dest) ::= <<
+<a>
+<b>
+%t<tc> = icmp eq i32 %<op1>, %<op2>
+%<dest> = zext i1 %t<tc> to i32
+
+>>
+
+//a is the resolution of exp a
+//b is the resolution of exp b
+//c is the current temp variable
+neq(a,b,op1,op2,tc,dest) ::= <<
+<a>
+<b>
+%t<tc> = icmp ne i32 %<op1>, %<op2>
+%<dest> = zext i1 %t<tc> to i32
+
+>>
+
+//a is the resolution of exp a
+//b is the resolution of exp b
+//c is the current temp variable
+sgt(a,b,op1,op2,tc,dest) ::= <<
+<a>
+<b>
+%t<tc> = icmp sgt i32 %<op1>, %<op2>
+%<dest> = zext i1 %t<tc> to i32
+
+>>
+
+//a is the resolution of exp a
+//b is the resolution of exp b
+//c is the current temp variable
+slt(a,b,op1,op2,tc,dest) ::= <<
+<a>
+<b>
+%t<tc> = icmp slt i32 %<op1>, %<op2>
+%<dest> = zext i1 %t<tc> to i32
+
+>>
+
+//a is the variable name for the vector
+//b is the number of elements vector a holds
+vectorInit(a,b,c) ::= <<
+
+%<a> = alloca [<b> x i32], align 16
+
+>>
