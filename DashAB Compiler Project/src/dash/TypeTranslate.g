@@ -66,10 +66,10 @@ inputstream
   ;
 
 declaration
-  : ^(DECL specifier* type* Identifier)
-  | ^(DECL specifier* type* ^(Assign Identifier expr))
-  | ^(DECL specifier* StdInput ^(Assign Identifier StdInput))
-  | ^(DECL specifier* StdOutput ^(Assign Identifier StdOutput))
+  : ^(DECL specifier* type* Identifier) -> ^(DECL type* Identifier)
+  | ^(DECL specifier* type* ^(Assign Identifier expr)) -> ^(DECL type* ^(Assign Identifier expr))
+  | ^(DECL specifier* StdInput ^(Assign Identifier StdInput)) -> ^(DECL StdInput ^(Assign Identifier StdInput))
+  | ^(DECL specifier* StdOutput ^(Assign Identifier StdOutput)) -> ^(DECL StdOutput ^(Assign Identifier StdOutput))
   ;
   
 typedef
@@ -95,7 +95,7 @@ paramlist
   ;
   
 parameter
-  : ^(Identifier specifier? type)
+  : ^(Identifier specifier? type) -> ^(Identifier type)
   ;
   
 callStatement

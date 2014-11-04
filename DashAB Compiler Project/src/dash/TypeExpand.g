@@ -673,8 +673,8 @@ expr returns [Type stype]
       throw new RuntimeException(errorhead + " expression cannot be cast to " + $type.tsym.getName());
     $stype = $type.tsym;
   }
-  | Number {$stype = new BuiltInTypeSymbol("integer");} -> Identifier["integer"] Number
-  | FPNumber {$stype = new BuiltInTypeSymbol("real");} -> Identifier["real"] FPNumber
+  | Number {$stype = new BuiltInTypeSymbol("integer");} -> Identifier["integer"] Number[$Number.text.replaceAll("_","")]
+  | FPNumber {$stype = new BuiltInTypeSymbol("real");} -> Identifier["real"] FPNumber[$FPNumber.text.replaceAll("_","")]
   | True {$stype = new BuiltInTypeSymbol("boolean");} -> Identifier["boolean"] True
   | False {$stype = new BuiltInTypeSymbol("boolean");} -> Identifier["boolean"] False
   | Null {$stype = new BuiltInTypeSymbol("null");} -> Identifier["null"] Null

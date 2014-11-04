@@ -345,11 +345,15 @@ Bar       : '|';
 Dot       : '.';
 
 Number 
-  : Digit+
+  : (Digit|'_')+
   ;
 FPNumber
-  : Digit* Dot Digit+
-  | Digit+ Dot? 'e' (Minus|Plus)? Digit+
+  : (Digit|'_')* Dot (Digit|'_')+
+  | (Digit|'_')+ Dot
+  | (Digit|'_')+ 'e' (Digit|'_')+
+  | (Digit|'_')+ 'e' '_'* (Minus|Plus) (Digit|'_')+
+  | (Digit|'_')* Dot '_'* 'e' (Digit|'_')+
+  | (Digit|'_')* Dot '_'* 'e' (Minus|Plus) (Digit|'_')+
   ;
   
 Char
