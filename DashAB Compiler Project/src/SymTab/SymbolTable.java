@@ -83,11 +83,11 @@ public class SymbolTable {
         defineRes("const");
     }
     Boolean[][] promotelookup = {
-			{false, true, true, null, null, null},
+			{false, null, null, null, null, null},
 			{null, false, true, null, null, null},
 			{null, null, false, null, null, null},
 			{null, null, null, false, null, null},
-			{null, true, true, null, false, null},
+			{null, null, null, null, false, null},
 			{null, null, null, null, null, false}
 	};
     Boolean[][] expromotelookup = {
