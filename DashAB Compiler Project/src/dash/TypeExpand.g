@@ -633,31 +633,22 @@ expr returns [Type stype]
   | id=Identifier {
     Symbol s = currentscope.resolve($id.text);
     if (s == null)
-      throw new RuntimeException(errorhead + $id.text + " is undefined");
-    VariableSymbol vs = (VariableSymbol) s;
-    
-    $stype = symtab.getBuiltInSymbol(vs.getType(0).getName());
-    if ($stype.getName().equals("std_input") || $stype.getName().equals("std_output"))
-      throw new RuntimeException("stream " + $id.text + " cannot occur in an expression");
-  } {!currentscope.resolve($id.text).getType(0).getName().equals("tuple")}?
-    -> Identifier[$stype.getName()] Identifier[$id.text] 
-  | id=Identifier {
-    Symbol s = currentscope.resolve($id.text);
-    if (s == null)
       throw new RuntimeException(errorhead+ $id.text + " is undefined");
     VariableSymbol vs = (VariableSymbol) s;
     $stype = vs.getType(0);
     if ($stype.getName().equals("std_input") || $stype.getName().equals("std_output"))
       throw new RuntimeException("stream " + $id.text + " cannot occur in an expression");
-    ts = (TupleSymbol) vs.getType(0);
-    //index = 0;
     stream_Identifier.reset();
-    for (int i=0; i<ts.getFieldNames().size(); i++) {
-      stream_Identifier.add((CommonTree) adaptor.create(Identifier, ts.getFieldNames().get(i).type.getName()));
+    if (vs.getType(0).getName().equals("tuple")) {
+      ts = (TupleSymbol) vs.getType(0);
+      
+      for (int i=0; i<ts.getFieldNames().size(); i++) {
+        stream_Identifier.add((CommonTree) adaptor.create(Identifier, ts.getFieldNames().get(i).type.getName()));
+      }
     }
     stream_Identifier.nextNode();
-  } {currentscope.resolve($id.text).getType(0).getName().equals("tuple")}?
-    -> ^(Identifier[$stype.getName()] (Identifier)+) Identifier[$id.text] 
+  } 
+    -> ^(Identifier[$stype.getName()] (Identifier)*) Identifier[$id.text] 
   | ^(As type e=expr) {
     Boolean exlu = symtab.exLookup($type.tsym, $e.stype);
     if (exlu == null)
