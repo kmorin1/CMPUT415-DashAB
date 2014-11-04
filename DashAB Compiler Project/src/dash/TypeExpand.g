@@ -635,11 +635,11 @@ expr returns [Type stype]
     if (s == null)
       throw new RuntimeException(errorhead+ $id.text + " is undefined");
     VariableSymbol vs = (VariableSymbol) s;
-    $stype = vs.getType(0);
+    $stype = symtab.getBuiltInSymbol(vs.getType(0).getName());
     if ($stype.getName().equals("std_input") || $stype.getName().equals("std_output"))
       throw new RuntimeException("stream " + $id.text + " cannot occur in an expression");
     stream_Identifier.reset();
-    if (vs.getType(0).getName().equals("tuple")) {
+    if (symtab.getBuiltInSymbol(vs.getType(0).getName()).equals("tuple")) {
       ts = (TupleSymbol) vs.getType(0);
       
       for (int i=0; i<ts.getFieldNames().size(); i++) {
