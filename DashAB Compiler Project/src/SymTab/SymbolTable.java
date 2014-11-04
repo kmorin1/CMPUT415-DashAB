@@ -98,11 +98,20 @@ public class SymbolTable {
 			{true, true, true, null, false, null},
 			{null, null, null, null, null, false}
 	};
+    public BuiltInTypeSymbol getBuiltInSymbol(String name) {
+        String bitname = name;
+        String oldname;
+        do {
+          oldname = bitname;
+          bitname = resolveTDType(bitname).getSourceSymbol().getName();
+        } while (!bitname.equals("null"));
+        return (BuiltInTypeSymbol) resolveType(oldname);
+      }
     public Boolean lookup(Type tst1, Type tst2) {
     	Integer i1 = null;
     	Integer i2 = null;
-    	String st1 = tst1.getName();
-    	String st2 = tst2.getName();
+    	String st1 = getBuiltInSymbol(tst1.getName()).getName();
+    	String st2 = getBuiltInSymbol(tst2.getName()).getName();
     	switch (st1) {
     	case "boolean":
     		i1 = 0;
@@ -144,7 +153,7 @@ public class SymbolTable {
     		break;
     	}
     	
-    	
+    	//System.out.println(tst1.getName() + " " + tst2.getName());
     	return promotelookup[i1][i2];
     	
     }
