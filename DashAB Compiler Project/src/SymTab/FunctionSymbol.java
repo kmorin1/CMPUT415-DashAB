@@ -6,6 +6,7 @@ import java.util.List;
 
 public class FunctionSymbol extends Symbol {
 	ArrayList<Symbol> params;
+	Boolean isdefined = false;
 	public FunctionSymbol(String name, List<Type> type) {
 		super(name, type);
 	}
@@ -18,4 +19,6 @@ public class FunctionSymbol extends Symbol {
 	}
 	
 	public ArrayList<Symbol> getParamList() {return this.params;}
+	public Boolean isDefined() {return isdefined;}
+	public void setDefined() {isdefined = true;}
 }

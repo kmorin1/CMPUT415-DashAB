@@ -225,17 +225,23 @@ procedure
 @init {
   //ArrayList<Symbol> params = new ArrayList<Symbol>();
   ArrayList<Type> type = new ArrayList<Type>();
+  Boolean def = false;
 }
 @after {
   checkGlobalName($id.text);
-
+  
   ProcedureSymbol ps = new ProcedureSymbol($id.text, type, $pl.params);
+  ProcedureSymbol check = symtab.resolveProcedure(ps.getName());
+  if (check != null && check.isDefined())
+    throw new RuntimeException(getErrorHeader() + "multiple defined procedures");
+  if (def)
+    ps.setDefined();
   symtab.defineProcedure(ps);
   currentscope = currentscope.getEnclosingScope();
   ret_type_stack.pop();
 }
-  : ^(Procedure id=Identifier pl=paramlist ^(Returns type {ret_type_stack.push($type.tsym);}) block) {type.add($type.tsym);}
-  | ^(Procedure id=Identifier pl=paramlist {ret_type_stack.push(new BuiltInTypeSymbol("void"));} block)
+  : ^(Procedure id=Identifier pl=paramlist ^(Returns type {ret_type_stack.push($type.tsym);}) (block {def = true;})?) {type.add($type.tsym);}
+  | ^(Procedure id=Identifier pl=paramlist {ret_type_stack.push(new BuiltInTypeSymbol("void"));} (block {def = true;})?)
   ;
    
 function
@@ -243,6 +249,7 @@ function
   //ArrayList<Symbol> params = new ArrayList<Symbol>();
   ArrayList<Type> type = new ArrayList<Type>();
   //currentscope = new NestedScope("funcscope", currentscope);
+  Boolean def = false;
 }
 @after {
 
@@ -259,12 +266,19 @@ function
   
 
   FunctionSymbol fs = new FunctionSymbol($id.text, type, $pl.params);
+  FunctionSymbol check = symtab.resolveFunction(fs.getName());
+  if (check != null && check.isDefined())
+    throw new RuntimeException(getErrorHeader() + "multiple defined function");
+  if (def)
+    fs.setDefined();
   symtab.defineFunction(fs);
   currentscope = currentscope.getEnclosingScope();
   ret_type_stack.pop();
 }
-  : ^(Function id=Identifier pl=paramlist ^(Returns type {ret_type_stack.push($type.tsym);}) {inFunction = true;}block {inFunction = false;}) {type.add($type.tsym);}
-  | ^(Function id=Identifier pl=paramlist ^(Returns type {ret_type_stack.push(new BuiltInTypeSymbol("N/A"));}) {inFunction = true;} ^(Assign expr {
+  : ^(Function id=Identifier pl=paramlist ^(Returns type {ret_type_stack.push($type.tsym);}) {inFunction = true;} (
+    block {def = true;})? {inFunction = false;}) {type.add($type.tsym);}
+  | ^(Function id=Identifier pl=paramlist ^(Returns type {ret_type_stack.push(new BuiltInTypeSymbol("N/A"));})
+   {inFunction = true; def = true;} ^(Assign expr {
     if (symtab.lookup($expr.stype, $type.tsym) == null)
       throw new RuntimeException(getErrorHeader() + "type mismatch on function return");
   }
@@ -274,7 +288,7 @@ function
 paramlist returns [ArrayList<Symbol> params]
 @init {
   ArrayList<Symbol> paramlst = new ArrayList<Symbol>();
-  //currentscope = new NestedScope("paramscope", currentscope);
+  currentscope = new NestedScope("paramscope", currentscope);
 }
 @after {$params = paramlst;}
   : ^(PARAMLIST (p=parameter {paramlst.add($p.varsym);})*)

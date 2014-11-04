@@ -5,7 +5,8 @@ import java.util.List;
 
 public class ProcedureSymbol extends Symbol{
 	ArrayList<Symbol> params;
-public ProcedureSymbol(String name, List<Type> type) {
+	Boolean isdefined = false;
+	public ProcedureSymbol(String name, List<Type> type) {
 		super(name, type);
 	}
 	public ProcedureSymbol(String name, List<Type> type, List<Symbol> params) {
@@ -17,4 +18,6 @@ public ProcedureSymbol(String name, List<Type> type) {
 	}
 	
 	public ArrayList<Symbol> getParamList() {return this.params;}
+	public Boolean isDefined() {return isdefined;}
+	public void setDefined() {isdefined = true;}
 }
