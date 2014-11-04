@@ -45,16 +45,6 @@ options {
       }
     }
     
-    private BuiltInTypeSymbol getBuiltInSymbol(String name) {
-      String bitname = name;
-      String oldname;
-      do {
-        oldname = bitname;
-        bitname = symtab.resolveTDType(bitname).getSourceSymbol().getName();
-      } while (!bitname.equals("null"));
-      return (BuiltInTypeSymbol) symtab.resolveType(oldname);
-    }
-    
     LinkedList<Type> ret_type_stack;
 }
 
@@ -170,7 +160,10 @@ declaration
     }
   } -> ^(DECL type* $id)
   | ^(DECL (s=specifier {specs.add($s.tsym);})* (t=type {types.add($t.tsym);})* ^(Assign id=Identifier e=expr)) {
-    if (types.size() > 0 && symtab.lookup(getBuiltInSymbol($e.stype.getName()), getBuiltInSymbol(types.get(0).getName())) == null)
+    if (specs.size() > 1)
+      throw new RuntimeException(getErrorHeader() + "invalid use of specifiers");
+    
+    if (types.size() > 0 && symtab.lookup($e.stype, types.get(0)) == null)
       throw new RuntimeException(getErrorHeader() + "assignment type error, expected " + types.get(0).getName() + " but got " + $e.stype.getName());
       
     stream_DECL.reset();
@@ -205,7 +198,13 @@ typedef
 
   checkGlobalName($id.text);
 
-  BuiltInTypeSymbol bits = getBuiltInSymbol($t.tsym.getName());
+  String bitname = $t.tsym.getName();
+  String oldname;
+  do {
+    oldname = bitname;
+    bitname = symtab.resolveTDType(bitname).getSourceSymbol().getName();
+  } while (!bitname.equals("null"));
+  BuiltInTypeSymbol bits = (BuiltInTypeSymbol) symtab.resolveType(oldname);
   if (bits == null)
     throw new RuntimeException(getErrorHeader() + "type " + bits.getName() + " doesn't exist");
   TypeDefSymbol tds = new TypeDefSymbol(bits, $id.text);
@@ -255,7 +254,7 @@ function
 }
   : ^(Function id=Identifier pl=paramlist ^(Returns type {ret_type_stack.push($type.tsym);}) {inFunction = true;}block {inFunction = false;}) {type.add($type.tsym);}
   | ^(Function id=Identifier pl=paramlist ^(Returns type {ret_type_stack.push(new BuiltInTypeSymbol("N/A"));}) {inFunction = true;} ^(Assign expr {
-    if (symtab.lookup(getBuiltInSymbol($expr.stype.getName()), getBuiltInSymbol($type.tsym.getName())) == null)
+    if (symtab.lookup($expr.stype, $type.tsym) == null)
       throw new RuntimeException(getErrorHeader() + "type mismatch on function return");
   }
   ) {inFunction = false;}) {type.add($type.tsym);}
@@ -346,7 +345,7 @@ assignment
     if (varType.equals("std_input") || varType.equals("std_output"))
       throw new RuntimeException(getErrorHeader() + "Cannot assign to stream " + $var.text);
       
-    if (symtab.lookup(getBuiltInSymbol($e.stype.getName()), getBuiltInSymbol(varVS.getType(0).getName())) == null)
+    if (symtab.lookup($e.stype, varVS.getType(0)) == null)
       throw new RuntimeException(getErrorHeader() + "assignment type error, expected " + varType + " but got " + $e.stype.getName());
     
   }
@@ -637,7 +636,7 @@ expr returns [Type stype]
       throw new RuntimeException(errorhead + $id.text + " is undefined");
     VariableSymbol vs = (VariableSymbol) s;
     
-    $stype = vs.getType(0);
+    $stype = symtab.getBuiltInSymbol(vs.getType(0).getName());
     if ($stype.getName().equals("std_input") || $stype.getName().equals("std_output"))
       throw new RuntimeException("stream " + $id.text + " cannot occur in an expression");
   } {!currentscope.resolve($id.text).getType(0).getName().equals("tuple")}?
