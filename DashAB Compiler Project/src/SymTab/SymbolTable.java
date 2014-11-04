@@ -83,11 +83,11 @@ public class SymbolTable {
         defineRes("const");
     }
     Boolean[][] promotelookup = {
-			{false, null, null, null, null, null},
+			{false, true, true, null, null, null},
 			{null, false, true, null, null, null},
 			{null, null, false, null, null, null},
 			{null, null, null, false, null, null},
-			{null, null, null, null, false, null},
+			{null, true, true, null, false, null},
 			{null, null, null, null, null, false}
 	};
     Boolean[][] expromotelookup = {
@@ -157,8 +157,8 @@ public class SymbolTable {
 	public Boolean exLookup(Type tst1, Type tst2) {
 		Integer i1 = null;
     	Integer i2 = null;
-    	String st1 = tst1.getName();
-    	String st2 = tst2.getName();
+    	String st1 = getBuiltInSymbol(tst1.getName()).getName();
+    	String st2 = getBuiltInSymbol(tst2.getName()).getName();
     	if (st1.equals("boolean")) {
             i1 = 0;
         }
