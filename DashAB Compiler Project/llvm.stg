@@ -21,13 +21,25 @@ globalDeclare(varName, varType, varValue, alignment) ::= <<
   @.<varName> = global <varType> <varValue>, align <alignment>
 >>
 
-declareProcedure(procName, procVars, procType, procBody, retType, retNum) ::= <<
-define <retType> @<procName>(<procVars, procType:{ a, b | <b> %<a>}; seperator=", ">) {
+declareProcOrFunc(procName, procVars, procType, procBody, retType, retNum) ::= <<
+define <retType> @<procName>(<vars:{ a | <a>}; seperator=", ">) {
 entry:
   <procBody>
   ret <retType> %.<retNum>
 }
 >>
+
+declareVoidProcOrFunc(procName, procVars, procType, procBody, retType) ::= <<
+define <retType> @<procName>(<vars:{ a | <a>}; seperator=", ">) {
+entry:
+  <procBody>
+  ret <retType>
+}
+>>
+
+param(name, type) ::= << <type> %<name> >>
+
+
 
 outputAssi(varName, varType, expr, tmpNum) ::= <<
 ;start outputAssi
