@@ -162,7 +162,7 @@ declaration
   | ^(DECL (s=specifier {specs.add($s.tsym);})* (t=type {types.add($t.tsym);})* ^(Assign id=Identifier e=expr)) {
     if (specs.size() > 1)
       throw new RuntimeException(getErrorHeader() + "invalid use of specifiers");
-    
+    //System.out.println(types.get(0).getName());
     if (types.size() > 0 && symtab.lookup($e.stype, types.get(0)) == null)
       throw new RuntimeException(getErrorHeader() + "assignment type error, expected " + types.get(0).getName() + " but got " + $e.stype.getName());
       
@@ -204,9 +204,11 @@ typedef
     oldname = bitname;
     bitname = symtab.resolveTDType(bitname).getSourceSymbol().getName();
   } while (!bitname.equals("null"));
-  BuiltInTypeSymbol bits = (BuiltInTypeSymbol) symtab.resolveType(oldname);
-  if (bits == null)
-    throw new RuntimeException(getErrorHeader() + "type " + bits.getName() + " doesn't exist");
+  Symbol s = symtab.resolveType(oldname);
+  if (s == null)
+    throw new RuntimeException(getErrorHeader() + "type " + s.getName() + " doesn't exist");
+  
+  BuiltInTypeSymbol bits = (BuiltInTypeSymbol) s;
   TypeDefSymbol tds = new TypeDefSymbol(bits, $id.text);
   symtab.defineType(tds);
 }
@@ -334,7 +336,7 @@ assignment
     Symbol varSymbol = currentscope.resolve($var.text);
     
     if (varSymbol == null)
-      throw new RuntimeException($var.text + " is undefined");
+      throw new RuntimeException(getErrorHeader() + $var.text + " is undefined");
       
     VariableSymbol varVS = (VariableSymbol) varSymbol;
     if (varVS.isConst())
@@ -637,8 +639,9 @@ expr returns [Type stype]
     VariableSymbol vs = (VariableSymbol) s;
     $stype = symtab.getBuiltInSymbol(vs.getType(0).getName());
     if ($stype.getName().equals("std_input") || $stype.getName().equals("std_output"))
-      throw new RuntimeException("stream " + $id.text + " cannot occur in an expression");
+      throw new RuntimeException(errorhead + "stream " + $id.text + " cannot occur in an expression");
     stream_Identifier.reset();
+    //System.out.println($stype.getName());
     if (symtab.getBuiltInSymbol(vs.getType(0).getName()).equals("tuple")) {
       ts = (TupleSymbol) vs.getType(0);
       
