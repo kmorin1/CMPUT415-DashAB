@@ -28,7 +28,7 @@ globalDeclare(varName, varType, varValue, alignment) ::= <<
 >>
 
 declareProcOrFunc(procName, procVars, procBody, retType, retNum) ::= <<
-define <retType> @<procName>(<procVars:{ a | <a>}; separator=", ">) {
+define <retType> @<procName>(<procVars>) {
 entry:
   <procBody>
   ret <retType> %.<retNum>
@@ -38,7 +38,7 @@ entry:
 >>
 
 declareVoidProcOrFunc(procName, procVars, procType, procBody) ::= <<
-define <retType> @<procName>(<vars:{ a | <a>}; seperator=", ">) {
+define <retType> @<procName>(<procVars>) {
 entry:
   <procBody>
   ret void
@@ -47,7 +47,10 @@ entry:
 
 >>
 
-param(name, type) ::= << <type> %<name> >>
+paramsep(params) ::= << <params:{ a |<a>}; separator=", "> >>
+
+param(name, type) ::= << <type> %<name>
+>>
 
 
 
@@ -59,7 +62,6 @@ store <varType> %.<tmpNum>, <varType>* @.<varName>
 ;end outputAssi
 >>
 
-//??
 load_num(tmpNum, value) ::= <<
 ;start load_num
 %.temp<tmpNum> = alloca i32, align 4
@@ -112,153 +114,6 @@ arithmetic(expr1, expr2, operator, type, tmpNum1, tmpNum2, result) ::= <<
 <expr2>
 %.<result> = <operator> <type> %.<tmpNum1>, %.<tmpNum2>
 ;end arithmetic
-
->>
-
-nEquals(expr1, expr2, tmpNum1, tmpNum2, result) ::= <<
-;start nequals
-<expr1>
-<expr2>
-
-%.bool<result> = icmp ne  i32 %.<tmpNum1>, %.<tmpNum2>
-%.<result> = select i1 %.bool<result>, i32 1, i32 0
-;end nequals
->>
-
-lessThan(expr1, expr2, tmpNum1, tmpNum2, result) ::= <<
-;start less than
-<expr1>
-<expr2>
-
-%.bool<result> = icmp slt  i32 %.<tmpNum1>, %.<tmpNum2>
-%.<result> = select i1 %.bool<result>, i32 1, i32 0
-;end less than
->>
-
-lessThanE(expr1, expr2, tmpNum1, tmpNum2, result) ::= <<
-;start less than or e
-<expr1>
-<expr2>
-
-%.bool<result> = icmp sle  i32 %.<tmpNum1>, %.<tmpNum2>
-%.<result> = select i1 %.bool<result>, i32 1, i32 0
-;end less than or e
->>
-
-greaterThan(expr1, expr2, tmpNum1, tmpNum2, result) ::= <<
-;start greater than
-<expr1>
-<expr2>
-
-%.bool<result> = icmp sgt  i32 %.<tmpNum1>, %.<tmpNum2>
-%.<result> = select i1 %.bool<result>, i32 1, i32 0
-;end greater than
->>
-
-greaterThanE(expr1, expr2, tmpNum1, tmpNum2, result) ::= <<
-;start greater than or e
-<expr1>
-<expr2>
-
-%.bool<result> = icmp sge i32 %.<tmpNum1>, %.<tmpNum2>
-%.<result> = select i1 %.bool<result>, i32 1, i32 0
-;end greater than or e
->>
-
-equalsFloat(expr1, expr2, tmpNum1, tmpNum2, result) ::= <<
-;start equals
-<expr1>
-<expr2>
-
-%.bool<result> = fcmp oeq float %.<tmpNum1>, %.<tmpNum2>
-%.<result> = select i1 %.bool<result>, i32 1, i32 0
-;end equals
->>
-
-nEqualsFloat(expr1, expr2, tmpNum1, tmpNum2, result) ::= <<
-;start nequals
-<expr1>
-<expr2>
-
-%.bool<result> = fcmp one float %.<tmpNum1>, %.<tmpNum2>
-%.<result> = select i1 %.bool<result>, i32 1, i32 0
-;end nequals
->>
-
-lessThanFloat(expr1, expr2, tmpNum1, tmpNum2, result) ::= <<
-;start less than
-<expr1>
-<expr2>
-
-%.bool<result> = fcmp olt float %.<tmpNum1>, %.<tmpNum2>
-%.<result> = select i1 %.bool<result>, i32 1, i32 0
-;end less than
->>
-
-lessThanEFloat(expr1, expr2, tmpNum1, tmpNum2, result) ::= <<
-;start less than or e
-<expr1>
-<expr2>
-
-%.bool<result> = icmp ole float %.<tmpNum1>, %.<tmpNum2>
-%.<result> = select i1 %.bool<result>, i32 1, i32 0
-;end less than or e
->>
-
-greaterThanFloat(expr1, expr2, tmpNum1, tmpNum2, result) ::= <<
-;start greater than
-<expr1>
-<expr2>
-
-%.bool<result> = icmp ogt float %.<tmpNum1>, %.<tmpNum2>
-%.<result> = select i1 %.bool<result>, i32 1, i32 0
-;end greater than
->>
-
-greaterThanEFloat(expr1, expr2, tmpNum1, tmpNum2, result) ::= <<
-;start greater than or e
-<expr1>
-<expr2>
-
-%.bool<result> = icmp oge float %.<tmpNum1>, %.<tmpNum2>
-%.<result> = select i1 %.bool<result>, i32 1, i32 0
-;end greater than or e
-
->>
-
-add(expr1, expr2, tmpNum1, tmpNum2, result) ::= <<
-;start add
-<expr1>
-<expr2>
-%.<result> = add i32 %.<tmpNum1>, %.<tmpNum2>
-;end add
-
->>
-
-sub(expr1, expr2, tmpNum1, tmpNum2, result) ::= <<
-;start add
-<expr1>
-<expr2>
-%.<result> = sub i32 %.<tmpNum1>, %.<tmpNum2>
-;end add
-
->>
-
-mul(expr1, expr2, tmpNum1, tmpNum2, result) ::= <<
-;start add
-<expr1>
-<expr2>
-%.<result> = mul i32 %.<tmpNum1>, %.<tmpNum2>
-;end add
-
->>
-
-div(expr1, expr2, tmpNum1, tmpNum2, result) ::= <<
-;start add
-<expr1>
-<expr2>
-%.<result> = udiv i32 %.<tmpNum1>, %.<tmpNum2>
-;end add
 
 >>
 

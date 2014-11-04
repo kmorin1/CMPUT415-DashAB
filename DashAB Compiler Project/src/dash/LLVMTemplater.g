@@ -35,7 +35,7 @@ options {
   String GtOp = "gt"; String LtOp = "lt";
   String GteOp = "ge"; String LteOp = "le";
 
-  private String getOperation(StringTemplate type, String operation) {
+  private String getArithOp(StringTemplate type, String operation) {
   	if (type.toString().equals(IntType)) {
   	  if (operation.equals(DivOp))
   	    return "s" + operation;
@@ -44,6 +44,15 @@ options {
   	else {
   		return "f" + operation;
   	}
+  }
+  
+  private String getCompOp(StringTemplate type, String operation) {
+    if (type.toString().equals(IntType)) {
+      return operation;
+    }
+    else {
+      return "o" + operation;
+    }
   }
 }
 
@@ -100,7 +109,7 @@ function
   ;
   
 paramlist
-  : ^(PARAMLIST p+=parameter*) -> return(a={$p})
+  : ^(PARAMLIST p+=parameter*) -> paramsep(params={$p})
   ;
   
 parameter
@@ -158,17 +167,17 @@ tuple
   ;
   
 expr returns [String type]
-  : ^(Plus type a=expr b=expr) ->  arithmetic(expr1={$a.st}, expr2={$b.st}, operator={getOperation($type.st, AddOp)}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
-  | ^(Minus type a=expr b=expr) ->  arithmetic(expr1={$a.st}, expr2={$b.st}, operator={getOperation($type.st, SubOp)}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
-  | ^(Multiply type a=expr b=expr) ->  arithmetic(expr1={$a.st}, expr2={$b.st}, operator={getOperation($type.st, MulOp)}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
-  | ^(Divide type a=expr b=expr) ->  arithmetic(expr1={$a.st}, expr2={$b.st}, operator={getOperation($type.st, DivOp)}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
+  : ^(Plus type a=expr b=expr) ->  arithmetic(expr1={$a.st}, expr2={$b.st}, operator={getArithOp($type.st, AddOp)}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
+  | ^(Minus type a=expr b=expr) ->  arithmetic(expr1={$a.st}, expr2={$b.st}, operator={getArithOp($type.st, SubOp)}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
+  | ^(Multiply type a=expr b=expr) ->  arithmetic(expr1={$a.st}, expr2={$b.st}, operator={getArithOp($type.st, MulOp)}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
+  | ^(Divide type a=expr b=expr) ->  arithmetic(expr1={$a.st}, expr2={$b.st}, operator={getArithOp($type.st, DivOp)}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
   | ^(Exponent type a=expr b=expr)
-  | ^(Equals type a=expr b=expr) -> compare(expr1={$a.st}, expr2={$b.st}, comparison={Cmp}, operator={EqOp}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
-  | ^(NEquals type a=expr b=expr) -> compare(expr1={$a.st}, expr2={$b.st}, comparison={Cmp}, operator={NeOp}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
-  | ^(GThan type a=expr b=expr) -> compare(expr1={$a.st}, expr2={$b.st}, comparison={Cmp}, operator={GtOp}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
-  | ^(LThan type a=expr b=expr) -> compare(expr1={$a.st}, expr2={$b.st}, comparison={Cmp}, operator={LtOp}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
-  | ^(GThanE type a=expr b=expr) -> compare(expr1={$a.st}, expr2={$b.st}, comparison={Cmp}, operator={GteOp}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
-  | ^(LThanE type a=expr b=expr) -> compare(expr1={$a.st}, expr2={$b.st}, comparison={Cmp}, operator={LteOp}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
+  | ^(Equals type a=expr b=expr) -> compare(expr1={$a.st}, expr2={$b.st}, comparison={Cmp}, operator={getCompOp($type.st, EqOp)}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
+  | ^(NEquals type a=expr b=expr) -> compare(expr1={$a.st}, expr2={$b.st}, comparison={Cmp}, operator={getCompOp($type.st, NeOp)}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
+  | ^(GThan type a=expr b=expr) -> compare(expr1={$a.st}, expr2={$b.st}, comparison={Cmp}, operator={getCompOp($type.st, GtOp)}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
+  | ^(LThan type a=expr b=expr) -> compare(expr1={$a.st}, expr2={$b.st}, comparison={Cmp}, operator={getCompOp($type.st, LtOp)}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
+  | ^(GThanE type a=expr b=expr) -> compare(expr1={$a.st}, expr2={$b.st}, comparison={Cmp}, operator={getCompOp($type.st, GteOp)}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
+  | ^(LThanE type a=expr b=expr) -> compare(expr1={$a.st}, expr2={$b.st}, comparison={Cmp}, operator={getCompOp($type.st, LteOp)}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
   | ^(Or type a=expr b=expr)
   | ^(Xor type a=expr b=expr)
   | ^(And type a=expr b=expr)
