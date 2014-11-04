@@ -26,12 +26,23 @@ options {
         currentscope = symtab.globals;
     }
   
-  private String getAdd(StringTemplate type) {
-  	if (type.equals("i32")) {
-  		return "add";
+  String IntType = "i32"; String CharType = "i8"; String BoolType = "i1"; String FloatType = "float";
+  
+  String AddOp = "add"; String SubOp = "sub"; String MulOp = "mul"; String DivOp = "div";
+  
+  String Cmp = "cmp";
+  String EqOp = "eq"; String NeOp = "ne";
+  String GtOp = "gt"; String LtOp = "lt";
+  String GteOp = "ge"; String LteOp = "le";
+
+  private String getOperation(StringTemplate type, String operation) {
+  	if (type.toString().equals(IntType)) {
+  	  if (operation.equals(DivOp))
+  	    return "s" + operation;
+  	  return operation;
   	}
   	else {
-  		return "fadd";
+  		return "f" + operation;
   	}
   }
 }
@@ -127,14 +138,14 @@ slist
   
 type
   : Identifier -> return(a={"ID"})
-  | Boolean -> return(a={"i1"})
-  | Integer -> return(a={"i32"})
+  | Boolean -> return(a={BoolType})
+  | Integer -> return(a={IntType})
   | Matrix
   | Interval
   | String
   | Vector
-  | Real -> return(a={"float"})
-  | Character -> return(a={"i8"})
+  | Real -> return(a={FloatType})
+  | Character -> return(a={CharType})
   | StdInput
   | StdOutput
   | Null -> return(a={"Null"})
@@ -147,22 +158,22 @@ tuple
   ;
   
 expr returns [String type]
-  : ^(Plus type a=expr b=expr) ->  add(func={getAdd($type.st)}, expr1={$a.st}, expr2={$b.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
-  | ^(Minus type a=expr b=expr)
-  | ^(Multiply type a=expr b=expr)
-  | ^(Divide type a=expr b=expr)
+  : ^(Plus type a=expr b=expr) ->  arithmetic(expr1={$a.st}, expr2={$b.st}, operator={getOperation($type.st, AddOp)}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
+  | ^(Minus type a=expr b=expr) ->  arithmetic(expr1={$a.st}, expr2={$b.st}, operator={getOperation($type.st, SubOp)}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
+  | ^(Multiply type a=expr b=expr) ->  arithmetic(expr1={$a.st}, expr2={$b.st}, operator={getOperation($type.st, MulOp)}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
+  | ^(Divide type a=expr b=expr) ->  arithmetic(expr1={$a.st}, expr2={$b.st}, operator={getOperation($type.st, DivOp)}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
   | ^(Exponent type a=expr b=expr)
-  | ^(Equals type a=expr b=expr)
-  | ^(NEquals type a=expr b=expr)
-  | ^(GThan type a=expr b=expr)
-  | ^(LThan type a=expr b=expr)
-  | ^(GThanE type a=expr b=expr)
-  | ^(LThanE type a=expr b=expr)
+  | ^(Equals type a=expr b=expr) -> compare(expr1={$a.st}, expr2={$b.st}, comparison={Cmp}, operator={EqOp}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
+  | ^(NEquals type a=expr b=expr) -> compare(expr1={$a.st}, expr2={$b.st}, comparison={Cmp}, operator={NeOp}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
+  | ^(GThan type a=expr b=expr) -> compare(expr1={$a.st}, expr2={$b.st}, comparison={Cmp}, operator={GtOp}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
+  | ^(LThan type a=expr b=expr) -> compare(expr1={$a.st}, expr2={$b.st}, comparison={Cmp}, operator={LtOp}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
+  | ^(GThanE type a=expr b=expr) -> compare(expr1={$a.st}, expr2={$b.st}, comparison={Cmp}, operator={GteOp}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
+  | ^(LThanE type a=expr b=expr) -> compare(expr1={$a.st}, expr2={$b.st}, comparison={Cmp}, operator={LteOp}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
   | ^(Or type a=expr b=expr)
   | ^(Xor type a=expr b=expr)
   | ^(And type a=expr b=expr)
   | ^(Not type a=expr)
-  | ^(By type a=expr expr)
+  | ^(By type a=expr b=expr)
   | ^(CALL Identifier ^(ARGLIST expr*))
   | ^(As type expr)
   | type Identifier -> load_var(tmpNum={++counter}, var={$Identifier}, varType={$type.st})

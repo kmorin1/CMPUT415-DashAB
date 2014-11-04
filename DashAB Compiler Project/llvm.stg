@@ -96,14 +96,23 @@ resultthing = bitcast <varType> <expr> to <castType>
 
 >>
 
-equals(expr1, expr2, tmpNum1, tmpNum2, result) ::= <<
+compare(expr1, expr2, comparison, operator, type, tmpNum1, tmpNum2, result) ::= <<
 ;start equals
 <expr1>
 <expr2>
 
-%.bool<result> = icmp eq  i32 %.<tmpNum1>, %.<tmpNum2>
+%.bool<result> = <comparison> <operator> <type> %.<tmpNum1>, %.<tmpNum2>
 %.<result> = select i1 %.bool<result>, i32 1, i32 0
 ;end equals
+>>
+
+arithmetic(expr1, expr2, operator, type, tmpNum1, tmpNum2, result) ::= <<
+;start arithmetic
+<expr1>
+<expr2>
+%.<result> = <operator> <type> %.<tmpNum1>, %.<tmpNum2>
+;end arithmetic
+
 >>
 
 nEquals(expr1, expr2, tmpNum1, tmpNum2, result) ::= <<

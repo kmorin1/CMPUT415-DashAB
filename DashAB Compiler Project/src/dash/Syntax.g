@@ -345,8 +345,9 @@ Bar       : '|';
 Dot       : '.';
 
 Number 
-  : (Digit|'_')+
+  : Digit (Digit|'_')*
   ;
+  
 FPNumber
   : (Digit|'_')* Dot (Digit|'_')+
   | (Digit|'_')+ Dot
@@ -370,8 +371,10 @@ Identifier
 fragment Digit
   : '0'..'9'
   ;
+  
 MULTILINE_COMMENT : '/*' .* '*/' {$channel = HIDDEN;} ;
 COMMENT : '//' .* ('\n'|'\r') {$channel = HIDDEN;};
+
 Space
   : (' ' 
   | '\t' 
