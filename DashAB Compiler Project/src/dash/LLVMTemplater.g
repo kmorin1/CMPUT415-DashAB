@@ -81,7 +81,7 @@ statement
   ;
    
 outputstream
-  : ^(RArrow expr stream=Identifier)
+  : ^(RArrow expr stream=Identifier) -> print(expr={$expr.st}, result={counter})
   ;
 
 inputstream
