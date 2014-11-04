@@ -162,7 +162,7 @@ declaration
   | ^(DECL (s=specifier {specs.add($s.tsym);})* (t=type {types.add($t.tsym);})* ^(Assign id=Identifier e=expr)) {
     if (specs.size() > 1)
       throw new RuntimeException(getErrorHeader() + "invalid use of specifiers");
-    
+    //System.out.println(types.get(0).getName());
     if (types.size() > 0 && symtab.lookup($e.stype, types.get(0)) == null)
       throw new RuntimeException(getErrorHeader() + "assignment type error, expected " + types.get(0).getName() + " but got " + $e.stype.getName());
       
@@ -204,9 +204,11 @@ typedef
     oldname = bitname;
     bitname = symtab.resolveTDType(bitname).getSourceSymbol().getName();
   } while (!bitname.equals("null"));
-  BuiltInTypeSymbol bits = (BuiltInTypeSymbol) symtab.resolveType(oldname);
-  if (bits == null)
-    throw new RuntimeException(getErrorHeader() + "type " + bits.getName() + " doesn't exist");
+  Symbol s = symtab.resolveType(oldname);
+  if (s == null)
+    throw new RuntimeException(getErrorHeader() + "type " + s.getName() + " doesn't exist");
+  
+  BuiltInTypeSymbol bits = (BuiltInTypeSymbol) s;
   TypeDefSymbol tds = new TypeDefSymbol(bits, $id.text);
   symtab.defineType(tds);
 }
@@ -334,7 +336,7 @@ assignment
     Symbol varSymbol = currentscope.resolve($var.text);
     
     if (varSymbol == null)
-      throw new RuntimeException($var.text + " is undefined");
+      throw new RuntimeException(getErrorHeader() + $var.text + " is undefined");
       
     VariableSymbol varVS = (VariableSymbol) varSymbol;
     if (varVS.isConst())
@@ -633,31 +635,23 @@ expr returns [Type stype]
   | id=Identifier {
     Symbol s = currentscope.resolve($id.text);
     if (s == null)
-      throw new RuntimeException(errorhead + $id.text + " is undefined");
-    VariableSymbol vs = (VariableSymbol) s;
-    
-    $stype = symtab.getBuiltInSymbol(vs.getType(0).getName());
-    if ($stype.getName().equals("std_input") || $stype.getName().equals("std_output"))
-      throw new RuntimeException("stream " + $id.text + " cannot occur in an expression");
-  } {!currentscope.resolve($id.text).getType(0).getName().equals("tuple")}?
-    -> Identifier[$stype.getName()] Identifier[$id.text] 
-  | id=Identifier {
-    Symbol s = currentscope.resolve($id.text);
-    if (s == null)
       throw new RuntimeException(errorhead+ $id.text + " is undefined");
     VariableSymbol vs = (VariableSymbol) s;
-    $stype = vs.getType(0);
+    $stype = symtab.getBuiltInSymbol(vs.getType(0).getName());
     if ($stype.getName().equals("std_input") || $stype.getName().equals("std_output"))
-      throw new RuntimeException("stream " + $id.text + " cannot occur in an expression");
-    ts = (TupleSymbol) vs.getType(0);
-    //index = 0;
+      throw new RuntimeException(errorhead + "stream " + $id.text + " cannot occur in an expression");
     stream_Identifier.reset();
-    for (int i=0; i<ts.getFieldNames().size(); i++) {
-      stream_Identifier.add((CommonTree) adaptor.create(Identifier, ts.getFieldNames().get(i).type.getName()));
+    //System.out.println($stype.getName());
+    if (symtab.getBuiltInSymbol(vs.getType(0).getName()).equals("tuple")) {
+      ts = (TupleSymbol) vs.getType(0);
+      
+      for (int i=0; i<ts.getFieldNames().size(); i++) {
+        stream_Identifier.add((CommonTree) adaptor.create(Identifier, ts.getFieldNames().get(i).type.getName()));
+      }
     }
     stream_Identifier.nextNode();
-  } {currentscope.resolve($id.text).getType(0).getName().equals("tuple")}?
-    -> ^(Identifier[$stype.getName()] (Identifier)+) Identifier[$id.text] 
+  } 
+    -> ^(Identifier[$stype.getName()] (Identifier)*) Identifier[$id.text] 
   | ^(As type e=expr) {
     Boolean exlu = symtab.exLookup($type.tsym, $e.stype);
     if (exlu == null)

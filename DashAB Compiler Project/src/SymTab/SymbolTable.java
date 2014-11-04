@@ -112,45 +112,42 @@ public class SymbolTable {
     	Integer i2 = null;
     	String st1 = getBuiltInSymbol(tst1.getName()).getName();
     	String st2 = getBuiltInSymbol(tst2.getName()).getName();
-    	switch (st1) {
-    	case "boolean":
-    		i1 = 0;
-    		break;
-    	case "integer":
-    		i1 = 1;
-    		break;
-    	case "real":
-    		i1 = 2;
-    		break;
-    	case "interval":
-    		i1 = 3;
-    		break;
-    	case "character":
-    		i1 = 4;
-    		break;
-    	case "tuple":
-    		i1 = 5;
-    		break;
+    	if (st1.equals("boolean")) {
+    	    i1 = 0;
     	}
-    	switch (st2) {
-    	case "boolean":
-    		i2 = 0;
-    		break;
-    	case "integer":
+    	else if (st1.equals("integer")) {
+    		i1 = 1;
+    	}
+    	else if (st1.equals("real")) {
+    		i1 = 2;
+    	}
+    	else if (st1.equals("interval")) {
+    		i1 = 3;
+    	}
+    	else if (st1.equals("character")) {
+    		i1 = 4;
+    	}
+    	else if (st1.equals("tuple")) {
+    		i1 = 5;
+    	}
+    	
+    	if (st2.equals("boolean")) {
+            i2 = 0;
+        }
+    	else if (st2.equals("integer")) {
     		i2 = 1;
-    		break;
-    	case "real":
+    	}
+    	else if (st2.equals("real")) {
     		i2 = 2;
-    		break;
-    	case "interval":
+    	}
+    	else if (st2.equals("interval")) {
     		i2 = 3;
-    		break;
-    	case "character":
+    	}
+    	else if (st2.equals("character")) {
     		i2 = 4;
-    		break;
-    	case "tuple":
+    	}
+    	else if (st2.equals("tuple")) {
     		i2 = 5;
-    		break;
     	}
     	
     	//System.out.println(tst1.getName() + " " + tst2.getName());
@@ -162,40 +159,40 @@ public class SymbolTable {
     	Integer i2 = null;
     	String st1 = tst1.getName();
     	String st2 = tst2.getName();
-    	switch (st1) {
-    	case "boolean":
-    		i1 = 0;
-    		break;
-    	case "integer":
-    		i1 = 1;
-    		break;
-    	case "real":
-    		i1 = 2;
-    		break;
-    	case "interval":
-    		i1 = 3;
-    		break;
-    	case "character":
-    		i1 = 4;
-    		break;
-    	}
-    	switch (st2) {
-    	case "boolean":
-    		i2 = 0;
-    		break;
-    	case "integer":
-    		i2 = 1;
-    		break;
-    	case "real":
-    		i2 = 2;
-    		break;
-    	case "interval":
-    		i2 = 3;
-    		break;
-    	case "character":
-    		i2 = 4;
-    		break;
-    	}
+    	if (st1.equals("boolean")) {
+            i1 = 0;
+        }
+        else if (st1.equals("integer")) {
+                i1 = 1;
+        }
+        else if (st1.equals("real")) {
+                i1 = 2;
+        }
+        else if (st1.equals("interval")) {
+                i1 = 3;
+        }
+        else if (st1.equals("character")) {
+                i1 = 4;
+        }
+
+    	if (st2.equals("boolean")) {
+            i2 = 0;
+        }
+        else if (st2.equals("integer")) {
+                i2 = 1;
+        }
+        else if (st2.equals("real")) {
+                i2 = 2;
+        }
+        else if (st2.equals("interval")) {
+                i2 = 3;
+        }
+        else if (st2.equals("character")) {
+                i2 = 4;
+        }
+        else if (st2.equals("tuple")) {
+                i2 = 5;
+        }
     	
     	return expromotelookup[i1][i2];
 	}
