@@ -34,6 +34,7 @@ options {
   String EqOp = "eq"; String NeOp = "ne";
   String GtOp = "gt"; String LtOp = "lt";
   String GteOp = "ge"; String LteOp = "le";
+  String XorOp = "xor"; String OrOp = "or"; String AndOp = "and";
 
   private String getArithOp(StringTemplate type, String operation) {
   	if (type.toString().equals(IntType)) {
@@ -178,16 +179,16 @@ expr returns [String type]
   | ^(LThan type a=expr b=expr) -> compare(expr1={$a.st}, expr2={$b.st}, comparison={Cmp}, operator={getCompOp($type.st, LtOp)}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
   | ^(GThanE type a=expr b=expr) -> compare(expr1={$a.st}, expr2={$b.st}, comparison={Cmp}, operator={getCompOp($type.st, GteOp)}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
   | ^(LThanE type a=expr b=expr) -> compare(expr1={$a.st}, expr2={$b.st}, comparison={Cmp}, operator={getCompOp($type.st, LteOp)}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
-  | ^(Or type a=expr b=expr)
-  | ^(Xor type a=expr b=expr)
-  | ^(And type a=expr b=expr)
+  | ^(Or type a=expr b=expr) -> arithmetic(expr1={$a.st}, expr2={$b.st}, operator={OrOp}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
+  | ^(Xor type a=expr b=expr) -> arithmetic(expr1={$a.st}, expr2={$b.st}, operator={XorOp}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
+  | ^(And type a=expr b=expr) -> arithmetic(expr1={$a.st}, expr2={$b.st}, operator={AndOp}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
   | ^(Not type a=expr)
   | ^(By type a=expr b=expr)
   | ^(CALL Identifier ^(ARGLIST expr*))
   | ^(As type expr)
   | type Identifier -> load_var(tmpNum={++counter}, var={$Identifier}, varType={$type.st})
-  | type Number -> load_num(tmpNum={++counter}, value={$Number})
-  | type FPNumber
+  | type Number -> load_num(tmpNum={++counter}, value={$Number}, varType={$type.st})
+  | type FPNumber -> load_num(tmpNum={++counter}, value={$FPNumber}, varType={$type.st})
   | type True
   | type False
   | type Null

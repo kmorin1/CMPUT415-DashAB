@@ -62,11 +62,11 @@ store <varType> %.<tmpNum>, <varType>* @.<varName>
 ;end outputAssi
 >>
 
-load_num(tmpNum, value) ::= <<
+load_num(tmpNum, value, varType) ::= <<
 ;start load_num
-%.temp<tmpNum> = alloca i32, align 4
-store i32 <value>, i32* %.temp<tmpNum>
-%.<tmpNum> = load i32* %.temp<tmpNum>
+%.temp<tmpNum> = alloca <varType>, align 4
+store <varType> <value>, <varType>* %.temp<tmpNum>
+%.<tmpNum> = load <varType>* %.temp<tmpNum>
 ;end load_num
 
 >>
