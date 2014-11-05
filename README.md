@@ -17,11 +17,8 @@ Definition checking:
 	first pass is in, should work more or less
 	
 TO-DO:
-	-poke a little more at implicit type promotion
-	to make sure in line with spec. 
-	-get tuple type promotion and translation working 
-	-do all type checking for expressions, functions etc. 
-	-do type checking on statements (return will be nasty)
+	-WISHLIST: get tuple type promotion working 
+	-do all type checking for expressions, functions etc. (done?) 
 	-run tests
 		test scope for all blocks (if/loop/function etc)
 		test all type combinations for errors. 

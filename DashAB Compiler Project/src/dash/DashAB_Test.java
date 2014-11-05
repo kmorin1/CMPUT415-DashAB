@@ -61,9 +61,9 @@ public class DashAB_Test {
 		ast = (CommonTree) ttret.getTree();
 			
 		st = gen.toDOT(ast);
-		System.out.println(st);
+		//System.out.println(st);
 
-		/*String templateFile = "llvm.stg";
+		String templateFile = "llvm.stg";
 
 		FileReader template;
 		try {
@@ -80,7 +80,7 @@ public class DashAB_Test {
 		} catch (FileNotFoundException e) {
 		    System.out.print("The template file is missing:");
 		    System.out.println(templateFile);
-		}*/
+		}
 	}
 	
 }
