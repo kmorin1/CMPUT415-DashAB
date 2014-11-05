@@ -1,0 +1,18 @@
+procedure main() returns integer {
+
+	a();
+
+	returns 0;	
+}
+
+procedure a() {
+	c();	
+}
+
+procedure b() {
+
+}
+
+procedure c() {
+	b();
+}

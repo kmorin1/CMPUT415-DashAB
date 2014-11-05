@@ -1,0 +1,8 @@
+const integer global = 100;
+
+procedure main() returns integer {
+
+	integer local = 10;
+
+	returns 0;
+}
