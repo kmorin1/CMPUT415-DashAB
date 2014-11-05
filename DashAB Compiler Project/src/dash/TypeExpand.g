@@ -102,6 +102,9 @@ outputstream
   ;
 
 inputstream
+@init {
+	String varType = "";
+}
   : ^(LArrow var=Identifier stream=Identifier)
   {
     Symbol streamSymbol = currentscope.resolve($stream.text);
@@ -116,12 +119,12 @@ inputstream
     VariableSymbol varVS = (VariableSymbol) varSymbol;
     
     String streamType = streamVS.getType(0).getName();
-    String varType = varVS.getType(0).getName();
+    varType = varVS.getType(0).getName();
     if (!streamType.equals("std_input"))
       throw new RuntimeException(getErrorHeader() + $stream.text + " is not an input stream");
     else if (varType.equals("std_input") || varType.equals("std_output") || varType.equals("tuple"))
       throw new RuntimeException(getErrorHeader() + "invalid type for input stream to variable " + $var.text);
-  }
+  } -> ^(LArrow Identifier[varType] $var $stream)
   ;
 
 declaration

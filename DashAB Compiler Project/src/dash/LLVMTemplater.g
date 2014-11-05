@@ -123,7 +123,7 @@ outputstream
   ;
 
 inputstream
-  : ^(LArrow var=Identifier stream=Identifier)
+  : ^(LArrow type var=Identifier stream=Identifier) -> input(varName={$var}, varType={$type.st})
   ;
 
 declaration

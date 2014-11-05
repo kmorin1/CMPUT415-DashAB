@@ -62,7 +62,7 @@ outputstream
   ;
 
 inputstream
-  : ^(LArrow var=Identifier stream=Identifier)
+  : ^(LArrow varType=type var=Identifier stream=Identifier)
   ;
 
 declaration

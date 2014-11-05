@@ -22,3 +22,13 @@ bool print_i1(bool x) {
     printf("%s", x ? "T": "F");
     return true;
 }
+
+char print_i8(char x) {
+    printf("%c", x);
+    return 0;
+}
+
+uint32_t input_i32(uint32_t * x) {
+    scanf("%d", &x);
+    return 0;
+}
