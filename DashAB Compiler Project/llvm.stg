@@ -157,7 +157,7 @@ compare(expr1, expr2, comparison, operator, type, tmpNum1, tmpNum2, result) ::= 
 <expr2>
 
 %.bool<result> = <comparison> <operator> <type> %.<tmpNum1>, %.<tmpNum2>
-%.<result> = select i1 %.bool<result>, i32 1, i32 0
+%.<result> = select i1 %.bool<result>, i1 1, i1 0
 ;end equals
 
 >>
@@ -174,7 +174,7 @@ arithmetic(expr1, expr2, operator, type, tmpNum1, tmpNum2, result) ::= <<
 ifStatement(condition, body, tmpNum) ::= <<
 ;start if conditional
 <condition>
-%.notZero<tmpNum> = icmp ne i32 %.<tmpNum>, 0
+%.notZero<tmpNum> = icmp ne i1 %.<tmpNum>, 0
 br i1 %.notZero<tmpNum>, label %.body<tmpNum>, label %.skip<tmpNum>
 .body<tmpNum>:
 <body>
@@ -187,7 +187,7 @@ br label %.skip<tmpNum>
 ifElseStatement(condition, body, elseBody, tmpNum) ::= <<
 ;start if else conditional
 <condition>
-%.notZero<tmpNum> = icmp ne i32 %.<tmpNum>, 0
+%.notZero<tmpNum> = icmp ne i1 %.<tmpNum>, 0
 br i1 %.notZero<tmpNum>, label %.body<tmpNum>, label %.elseBody<tmpNum>
 .body<tmpNum>:
 <body>
@@ -206,7 +206,7 @@ whileLoop(condition, body, tmpNum) ::= <<
 br label %.startloop<tmpNum>
 .startloop<tmpNum>:
 <condition>
-%.notZero<tmpNum> = icmp ne i32 %.<tmpNum>, 0
+%.notZero<tmpNum> = icmp ne i1 %.<tmpNum>, 0
 br i1 %.notZero<tmpNum>, label %.body<tmpNum>, label %.endloop<tmpNum>
 .body<tmpNum>:
 <body>
@@ -222,7 +222,7 @@ br label %.body<tmpNum>
 .body<tmpNum>:
 <body>
 <condition>
-%.notZero<tmpNum> = icmp ne i32 %.<tmpNum>, 0
+%.notZero<tmpNum> = icmp ne i1 %.<tmpNum>, 0
 br i1 %.notZero<tmpNum>, label %.body<tmpNum>, label %.endloop<tmpNum>
 .endloop<tmpNum>:
 ;end do while loop
