@@ -1,0 +1,11 @@
+typedef boolean bool;
+typedef bool truefalse;
+
+function add(integer x, integer y) returns integer {
+	return x + y;
+}
+
+procedure main() returns integer {
+	add(1, 2);
+	return 0;
+}
