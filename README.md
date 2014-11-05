@@ -31,10 +31,9 @@ TO-DO:
 	-global variables in LLVM
 	-scoped local variables in LLVM
 	-calling procedures and functions in LLVM
-	-printing char, bool, and tuple in LLVM
-	-input and stream_state in LLVM
 	-most things tuple in LLVM
 	-somehow check that every path in a function or procedure ends in a return statement if needed
+	-forward function or procedure declarations in LLVM
 	
 	
 To link an llvm file with our libruntime.c functions (only tested on lab machines so far):
