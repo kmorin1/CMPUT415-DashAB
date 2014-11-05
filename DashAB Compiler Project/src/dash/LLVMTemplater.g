@@ -21,6 +21,7 @@ options {
     String inputfile;
     int counter = 0;
     int scopeCounter = 0;
+    int numLoop = 0;
     public LLVMTemplater(TreeNodeStream input, SymbolTable symtab) {
         this(input);
         this.symtab = symtab;
@@ -113,8 +114,8 @@ statement
   | block -> return(a={$block.st})
   | callStatement -> return(a={$callStatement.st})
   | returnStatement -> return(a={$returnStatement.st})
-  | Break
-  | Continue
+  | Break -> break(loopNum={numLoop})
+  | Continue -> continue(loopNum={numLoop})
   ;
    
 outputstream
@@ -178,10 +179,11 @@ ifstatement
 loopstatement
 @init {
 	int result = 0;
+	int currentLoop = 0;
 }
-  : ^(Loop ^(While expr) {result = counter;} slist) -> whileLoop(condition={$expr.st}, body={$slist.st}, tmpNum={result})
-  | ^(Loop slist ^(While expr) {result = counter;}) -> doWhileLoop(condition={$expr.st}, body={$slist.st}, tmpNum={result})
-  | ^(Loop slist) -> infLoop(body={$slist.st}, tmpNum={counter})
+  : ^(Loop ^(While expr) {result = counter; currentLoop = ++numLoop;} slist) -> whileLoop(condition={$expr.st}, body={$slist.st}, tmpNum={result}, loopNum={currentLoop})
+  | ^(Loop {currentLoop = ++numLoop;} slist ^(While expr) {result = counter;}) -> doWhileLoop(condition={$expr.st}, body={$slist.st}, tmpNum={result}, loopNum={currentLoop})
+  | ^(Loop {currentLoop = ++numLoop;} slist) -> infLoop(body={$slist.st}, tmpNum={counter}, loopNum={currentLoop})
   ;
   
 slist

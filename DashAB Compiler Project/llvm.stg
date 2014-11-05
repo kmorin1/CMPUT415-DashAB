@@ -212,40 +212,57 @@ br label %.finished<tmpNum>
 >>
 
 
-whileLoop(condition, body, tmpNum) ::= <<
+whileLoop(condition, body, tmpNum, loopNum) ::= <<
 ;start while loop
-br label %.startloop<tmpNum>
-.startloop<tmpNum>:
+br label %.startloop<loopNum>
+.startloop<loopNum>:
 <condition>
 %.notZero<tmpNum> = icmp ne i1 %.<tmpNum>, 0
-br i1 %.notZero<tmpNum>, label %.body<tmpNum>, label %.endloop<tmpNum>
-.body<tmpNum>:
+br i1 %.notZero<tmpNum>, label %.body<loopNum>, label %.endloop<loopNum>
+.body<loopNum>:
 <body>
-br label %.startloop<tmpNum>
-.endloop<tmpNum>:
+br label %.startloop<loopNum>
+.endloop<loopNum>:
 ;end while loop
 
 >>
 
-doWhileLoop(condition, body, tmpNum) ::= <<
+doWhileLoop(condition, body, tmpNum, loopNum) ::= <<
 ;start do while loop
-br label %.body<tmpNum>
-.body<tmpNum>:
+br label %.body<loopNum>
+.body<loopNum>:
 <body>
+br label %.startloop<loopNum>
+.startloop<loopNum>:
 <condition>
 %.notZero<tmpNum> = icmp ne i1 %.<tmpNum>, 0
-br i1 %.notZero<tmpNum>, label %.body<tmpNum>, label %.endloop<tmpNum>
-.endloop<tmpNum>:
+br i1 %.notZero<tmpNum>, label %.body<loopNum>, label %.endloop<loopNum>
+.endloop<loopNum>:
 ;end do while loop
 
 >>
 
-infLoop(body, tmpNum) ::= <<
+infLoop(body, tmpNum, loopNum) ::= <<
 ;start inf loop
-br label %.startloop<tmpNum>
-.startloop<tmpNum>:
+br label %.startloop<loopNum>
+.startloop<loopNum>:
 <body>
-br label %.startloop<tmpNum>
+br label %.startloop<loopNum>
+.endloop<loopNum>:
 ;end inf loop
+
+>>
+
+break(loopNum) ::= <<
+;start break
+br label %.endloop<loopNum>
+;end break
+
+>>
+
+continue(loopNum) ::= <<
+;start continue
+br label %.startloop<loopNum>
+;end continue
 
 >>
