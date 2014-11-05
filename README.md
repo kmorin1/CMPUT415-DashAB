@@ -27,6 +27,21 @@ TO-DO:
 		test all type combinations for errors. 
 		test for correct error reports on implicit and explicit promotion
 		WIP
+	-type promotion and casting for LLVM
+	-global variables in LLVM
+	-scoped local variables in LLVM
+	-calling procedures and functions in LLVM
+	-printing char, bool, and tuple in LLVM
+	-input and stream_state in LLVM
+	-most things tuple in LLVM
+	-somehow check that every path in a function or procedure ends in a return statement if needed
+	
+	
+To link an llvm file with our libruntime.c functions (only tested on lab machines so far):
+	-use the Makefile to compile libruntime.c into libruntime.a
+	-compile an llvm file test.llvm into test.llvm.o by command: llc-3.2 test.llvm -filetype=obj
+	-link the .o and the .a by command: clang test.llvm.o libruntime.a
+	-run the resulting executable ./a.out
   
 Active Files:
   All SymTab
