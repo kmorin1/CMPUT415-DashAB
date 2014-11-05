@@ -135,6 +135,10 @@ outputstream
 inputstream
   : ^(LArrow type var=Identifier stream=Identifier) -> input(varName={$var}, varType={$type.st})
   ;
+  
+streamstate
+	: ^(Stream stream=Identifier) -> streamState(tmpNum={++counter})
+	;
 
 declaration
   : ^(DECL type* Identifier) -> outputEmptyDecl(varName={$Identifier}, varType={$type.st}, value={getEmptyValue($type.st.toString())})
@@ -253,5 +257,6 @@ expr returns [String stype]
   | type ^(Dot Identifier Number) {$stype = $type.st.toString();}
   | ^(NEG a=expr) {$stype = $a.stype;} -> negative(tmpNum={counter}, expr={$a.st}, result={++counter}, type={$a.stype}, operator={getArithOp($a.stype, SubOp)})
   | ^(POS a=expr) {$stype = $a.stype;} -> return(a={$a.st})
+  | type streamstate {$stype = $type.st.toString();} -> return(a={$streamstate.st})
   ;
   

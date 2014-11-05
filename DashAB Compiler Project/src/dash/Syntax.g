@@ -89,7 +89,7 @@ inputstream
   ;
 
 streamstate
-  : Stream LParen Identifier RParen SemiColon
+  : Stream LParen Identifier RParen -> ^(Stream Identifier)
   ;
 
 declaration
@@ -246,6 +246,7 @@ atom
   | Char
   | Identifier Dot^ (Identifier|Number)
   | LParen (a=expr -> expr) (Comma b=expr -> ^(TUPLEEX $a $b))+ RParen
+  | streamstate
   | Identifier LParen expr? (Comma expr)* RParen -> ^(CALL Identifier ^(ARGLIST expr*))
   | Identifier
   | filter

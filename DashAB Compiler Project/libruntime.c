@@ -3,6 +3,28 @@
 #include <stdio.h>
 #include <stdbool.h>
 
+uint32_t FAIL;
+
+uint32_t set_fail(uint32_t code) {
+    if (code == 1) {
+        FAIL = 0;
+    }
+    else if (code == 0) {
+        FAIL = 1;
+    }
+    else if (code == EOF) {
+        FAIL = 2;
+    }
+    else {
+        FAIL = 0;
+    }
+    return 0;
+}
+
+uint32_t stream_state() {
+    return FAIL;
+}
+
 uint32_t power_i32(uint32_t base, uint32_t exp) {
     int i, result = 1;
     for (i = 0; i < exp; i++)
@@ -29,28 +51,34 @@ char print_i8(char x) {
 }
 
 uint32_t input_i32(uint32_t * x) {
-    scanf("%d", x);
+    int result = scanf("%d", x);
+    set_fail(result);
     return 0;
 }
 
 uint32_t input_float(float * x) {
-    scanf("%g", x);
+    int result = scanf("%g", x);
+    set_fail(result);
     return 0;
 }
 
 uint32_t input_i1(bool * x) {
     char input;
-    scanf("%c", &input);
-    if (input == 'T') {
-	*x = 1;
+    int result = scanf("%c", &input);
+    if (result == 1) {
+        if (input == 'T') {
+	    *x = 1;
+        }
+        else if (input == 'F') {
+            *x = 0;
+        }
     }
-    else if (input == 'F') {
-        *x = 0;
-    }
+    set_fail(result);
     return 0;
 }
 
 char input_i8(char * x) {
-    scanf("%c", x);
+    int result = scanf("%c", x);
+    set_fail(result);
     return 0;
 }

@@ -126,6 +126,21 @@ inputstream
       throw new RuntimeException(getErrorHeader() + "invalid type for input stream to variable " + $var.text);
   } -> ^(LArrow Identifier[varType] $var $stream)
   ;
+  
+streamstate
+  : ^(Stream stream=Identifier)
+  {
+  	Symbol streamSymbol = currentscope.resolve($stream.text);
+  	
+  	if (streamSymbol == null)
+      throw new RuntimeException(getErrorHeader() + $stream.text + " is undefined");
+  
+    VariableSymbol streamVS = (VariableSymbol) streamSymbol;
+    String streamType = streamVS.getType(0).getName();
+    if (!streamType.equals("std_input"))
+      throw new RuntimeException(getErrorHeader() + $stream.text + " is not an input stream");
+  }
+  ;
 
 declaration
 @init {
@@ -738,5 +753,6 @@ expr returns [Type stype]
     else
       $stype = $e.stype;
   }
+  | streamstate { $stype = new BuiltInTypeSymbol("integer");} -> Identifier[$stype.getName()] streamstate
   ;
   

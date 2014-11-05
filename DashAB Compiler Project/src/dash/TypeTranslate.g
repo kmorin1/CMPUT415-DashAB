@@ -64,6 +64,10 @@ outputstream
 inputstream
   : ^(LArrow varType=type var=Identifier stream=Identifier)
   ;
+  
+streamstate
+  : ^(Stream stream=Identifier)
+  ;
 
 declaration
   : ^(DECL specifier* type* Identifier) -> ^(DECL type* Identifier)
@@ -225,5 +229,6 @@ expr
   | type ^(Dot Identifier Number)
   | ^(NEG expr)
   | ^(POS expr)
+  | type streamstate
   ;
   
