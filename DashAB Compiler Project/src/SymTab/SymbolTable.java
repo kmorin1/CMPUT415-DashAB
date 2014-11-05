@@ -231,4 +231,13 @@ public class SymbolTable {
     public FunctionSymbol resolveFunction(String name) {return funcsyms.get(name); }
     public ProcedureSymbol resolveProcedure(String name) {return procsyms.get(name); }
     
+    public void allDefined() {
+    	for (FunctionSymbol fs : funcsyms.values())
+    		if (!fs.isDefined())
+    			throw new RuntimeException("Function " + fs.getName() + " was declared but never defined");
+    	for (ProcedureSymbol ps : procsyms.values())
+    		if (!ps.isDefined())
+    			throw new RuntimeException("Procedure " + ps.getName() + " was declared but never defined");
+
+    }
 }

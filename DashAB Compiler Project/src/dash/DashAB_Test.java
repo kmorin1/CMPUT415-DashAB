@@ -49,6 +49,7 @@ public class DashAB_Test {
 		nodes.setTokenStream(tokenStream);
 		TypeExpand te = new TypeExpand(nodes, symtab, inputfile);
 		TypeExpand.program_return teret = te.program();
+		symtab.allDefined();
 		ast = (CommonTree) teret.getTree();
 		st = gen.toDOT(ast);
 		//System.out.println(st);
@@ -62,7 +63,7 @@ public class DashAB_Test {
 		st = gen.toDOT(ast);
 		System.out.println(st);
 
-		String templateFile = "llvm.stg";
+		/*String templateFile = "llvm.stg";
 
 		FileReader template;
 		try {
@@ -75,11 +76,11 @@ public class DashAB_Test {
 
 		    LLVMTemplater templater = new LLVMTemplater(nodes, symtab);
 		    templater.setTemplateLib(stg);
-		    System.out.println(templater.program().getTemplate().toString());				
+		    //System.out.println(templater.program().getTemplate().toString());				
 		} catch (FileNotFoundException e) {
 		    System.out.print("The template file is missing:");
 		    System.out.println(templateFile);
-		}
+		}*/
 	}
 	
 }
