@@ -354,8 +354,8 @@ FPNumber
   | (Digit|'_')+ Dot
   | (Digit|'_')+ 'e' (Digit|'_')+
   | (Digit|'_')+ 'e' '_'* (Minus|Plus) (Digit|'_')+
-  | (Digit|'_')* Dot '_'* 'e' (Digit|'_')+
-  | (Digit|'_')* Dot '_'* 'e' (Minus|Plus) (Digit|'_')+
+  | (Digit|'_')* Dot (Digit|'_')* 'e' (Digit|'_')+
+  | (Digit|'_')* Dot (Digit|'_')* 'e' (Minus|Plus) (Digit|'_')+
   ;
   
 Char

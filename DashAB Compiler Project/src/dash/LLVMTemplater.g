@@ -110,6 +110,19 @@ options {
     else
       return counterCopy-1;      
   }
+  
+  private String getCastFunc(String from, String to) {
+	  if (to.equals(FloatType)) {
+	    return "sitofp";
+	  }
+	  else if (from.equals(BoolType)) {
+	  
+	  }
+	  else if (from.equals(CharType)) {
+	  
+	  }
+      return "";
+  }
 }
 
 program
@@ -261,10 +274,10 @@ expr returns [String stype]
   | ^(Not type a=expr) {$stype = $type.st.toString();}
   | ^(By type a=expr b=expr) {$stype = $type.st.toString();}
   | ^(CALL Identifier ^(ARGLIST expr*))
-  | ^(As type expr) {$stype = $type.st.toString();}
+  | ^(As type a=expr) {$stype = $type.st.toString();} -> cast(castType={$type.st}, func={getCastFunc($a.stype, $stype)}, varType={$a.stype}, expr={$a.st}, tmpNum={++counter})
   | type Identifier {$stype = $type.st.toString();} -> load_var(tmpNum={++counter}, var={$Identifier}, varType={$type.st})
   | type Number {$stype = $type.st.toString();} -> load_num(tmpNum={++counter}, value={$Number}, varType={$type.st})
-  | type FPNumber {$stype = $type.st.toString();} -> load_num(tmpNum={++counter}, value={Long.toHexString((Double.doubleToLongBits(Double.parseDouble($FPNumber.toString()))))}, varType={$type.st})
+  | type FPNumber {$stype = $type.st.toString();} -> load_num(tmpNum={++counter}, value={"0x"+Long.toHexString((Double.doubleToLongBits(Float.parseFloat($FPNumber.toString()))))}, varType={$type.st})
   | type True {$stype = $type.st.toString();} -> load_bool(tmpNum={++counter}, value={"true"}, varType={$type.st})
   | type False {$stype = $type.st.toString();} -> load_bool(tmpNum={++counter}, value={"false"}, varType={$type.st})
   | type Null {$stype = $type.st.toString();}
@@ -272,7 +285,7 @@ expr returns [String stype]
   | type Char {$stype = $type.st.toString();} -> load_char(tmpNum={++counter}, value={getIntFromChar($Char.text)}, varType={$type.st})
   | ^(TUPLEEX type expr+)
   | type ^(Dot Identifier Number) {$stype = $type.st.toString();}
-  | ^(NEG a=expr) {$stype = $a.stype; unaryNeg = true;} -> negative(tmpNum={counter}, expr={$a.st}, result={++counter}, type={$a.stype}, operator={getArithOp($a.stype, SubOp)})
+  | ^(NEG a=expr) {$stype = $a.stype; unaryNeg = true;} -> negative(tmpNum={counter}, expr={$a.st}, zero={getEmptyValue($a.stype)}, result={++counter}, type={$a.stype}, operator={getArithOp($a.stype, SubOp)})
   | ^(POS a=expr) {$stype = $a.stype;} -> return(a={$a.st})
   | type streamstate {$stype = $type.st.toString();} -> return(a={$streamstate.st})
   ;
