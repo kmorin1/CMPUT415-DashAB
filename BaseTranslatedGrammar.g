@@ -147,7 +147,7 @@ expr
   | ^(And type expr expr)
   | ^(Not type expr)
   | ^(By type expr expr)
-  | ^(CALL Identifier ^(ARGLIST expr*))
+  | ^(CALL type Identifier ^(ARGLIST expr*))
   | ^(As type expr)
   | type Identifier
   | type Number
