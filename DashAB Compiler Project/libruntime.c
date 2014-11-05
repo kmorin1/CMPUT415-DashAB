@@ -15,7 +15,7 @@ uint32_t print_i32(uint32_t x) {
 }
 
 uint32_t print_float(float x) {
-    return printf("%f", x);
+    return printf("%g", x);
 }
 
 bool print_i1(bool x) {
@@ -29,6 +29,28 @@ char print_i8(char x) {
 }
 
 uint32_t input_i32(uint32_t * x) {
-    scanf("%d", &x);
+    scanf("%d", x);
+    return 0;
+}
+
+uint32_t input_float(float * x) {
+    scanf("%g", x);
+    return 0;
+}
+
+uint32_t input_i1(bool * x) {
+    char input;
+    scanf("%c", &input);
+    if (input == 'T') {
+	*x = 1;
+    }
+    else if (input == 'F') {
+        *x = 0;
+    }
+    return 0;
+}
+
+char input_i8(char * x) {
+    scanf("%c", x);
     return 0;
 }

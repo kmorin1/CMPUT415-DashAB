@@ -36,6 +36,12 @@ declare i8 @print_i8(i8)
 
 declare i32 @input_i32(i32*)
 
+declare float @input_float(float*)
+
+declare i1 @input_i1(i1*)
+
+declare i8 @input_i8(i8*)
+
 >>
 
 globalDeclare(varName, varType, varValue, alignment) ::= <<
@@ -78,10 +84,10 @@ store <varType> %.<tmpNum>, <varType>* %.<varName>
 
 >>
 
-outputEmptyDecl(varName, varType) ::= <<
+outputEmptyDecl(varName, varType, value) ::= <<
 ;start outputEmptyDecl
 %.<varName> = alloca <varType>, align 4
-store <varType> 0, <varType>* %.<varName>
+store <varType> <value>, <varType>* %.<varName>
 ;end outputEmptyDecl
 
 >>

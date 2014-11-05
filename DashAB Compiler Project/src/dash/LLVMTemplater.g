@@ -93,6 +93,16 @@ options {
   			return ""+(int)noQuotes.charAt(0);
   	}
   }
+  
+  private String getEmptyValue(String type) {
+  	if (type.equals(FloatType))
+  		return "0.0";
+  	else
+  		return "0";
+  
+  }
+  
+  
 }
 
 program
@@ -127,7 +137,7 @@ inputstream
   ;
 
 declaration
-  : ^(DECL type* Identifier) -> outputEmptyDecl(varName={$Identifier}, varType={$type.st})
+  : ^(DECL type* Identifier) -> outputEmptyDecl(varName={$Identifier}, varType={$type.st}, value={getEmptyValue($type.st.toString())})
   | ^(DECL type* ^(Assign Identifier expr)) -> outputDecl(varName={$Identifier}, varType={$type.st}, expr={$expr.st}, tmpNum={counter})
   | ^(DECL StdInput ^(Assign Identifier StdInput))
   | ^(DECL StdOutput ^(Assign Identifier StdOutput))
