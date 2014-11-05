@@ -74,8 +74,6 @@ options {
   				return ""+13;
   			case('\\') : //escaped backslash
   				return ""+92;
-  			case('\'') : //escaped single quote
-  				return ""+39;
   			case('\"') : //escaped double quote
   				return ""+34;
   			case('a') : //bell
@@ -88,7 +86,10 @@ options {
   		}
   	}
   	else {
-  		return ""+(int)noQuotes.charAt(0);
+  		if (noQuotes.length() == 1 && noQuotes.charAt(0) == '\\')
+  			return ""+39; //escaped single quote, the quote was removed
+  		else
+  			return ""+(int)noQuotes.charAt(0);
   	}
   }
 }
