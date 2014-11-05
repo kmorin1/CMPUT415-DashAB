@@ -1,0 +1,6 @@
+typedef int32 float;
+
+procedure main() returns integer {
+	
+	return 0;
+}

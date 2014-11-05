@@ -1,0 +1,7 @@
+typedef real float;
+
+procedure main() returns integer {
+	var f = 5.5;
+	const b = false;
+	real r = f + b;
+}

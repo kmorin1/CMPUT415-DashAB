@@ -1,0 +1,7 @@
+typedef boolean bool;
+typedef bool truefalse;
+
+procedure main() returns integer {
+	
+	return 0;
+}

@@ -40,7 +40,7 @@ options {
       ProcedureSymbol ps = symtab.resolveProcedure(symbolName);
       FunctionSymbol fs = symtab.resolveFunction(symbolName);
       Symbol type = symtab.resolveType(symbolName);
-      if (ps != null || fs != null || type != null) {
+      if ((ps != null && ps.isDefined()) || (fs != null && fs.isDefined()) || type != null) {
         throw new RuntimeException(getErrorHeader() + symbolName + " is defined multiple times in global scope");
       }
     }
@@ -232,6 +232,9 @@ typedef
 }
   : ^(Typedef t=type id=Identifier)
   ;
+  catch [NullPointerException npe] {
+    throw new RuntimeException(getErrorHeader() + "cannot typedef a non-existant type");
+  }
 
 block
 @init {currentscope = new NestedScope("blockscope", currentscope); }
@@ -252,6 +255,15 @@ procedure
   ProcedureSymbol check = symtab.resolveProcedure(ps.getName());
   if (check != null && check.isDefined())
     throw new RuntimeException(getErrorHeader() + "multiple defined procedures");
+  if (check != null && !check.isDefined()) {
+    if (check.getParamList().size() != ps.getParamList().size())
+      throw new RuntimeException(getErrorHeader() + "mismatch in number of operators between prototype and definition");
+    for (int i=0; i<ps.getParamList().size(); i++) {
+      if (symtab.lookup(ps.getParamList().get(i).getType(0), check.getParamList().get(i).getType(0)) == null &&
+        symtab.lookup(check.getParamList().get(i).getType(0), ps.getParamList().get(i).getType(0)) == null)
+        throw new RuntimeException(getErrorHeader() + "type mismatch between prototype and definition");
+    }
+  }
   if (def)
     ps.setDefined();
   symtab.defineProcedure(ps);
@@ -283,6 +295,15 @@ function
   FunctionSymbol check = symtab.resolveFunction(fs.getName());
   if (check != null && check.isDefined())
     throw new RuntimeException(getErrorHeader() + "multiple defined function");
+  if (check != null && !check.isDefined()) {
+    if (check.getParamList().size() != fs.getParamList().size())
+      throw new RuntimeException(getErrorHeader() + "mismatch in number of operators between prototype and definition");
+    for (int i=0; i<fs.getParamList().size(); i++) {
+      if (symtab.getBuiltInSymbol(check.getParamList().get(i).getType(0).getName()).getName().equals(
+        symtab.getBuiltInSymbol(fs.getParamList().get(i).getType(0).getName()).getName()))
+        throw new RuntimeException(getErrorHeader() + "type mismatch between prototype and definition");
+    }
+  }
   if (def)
     fs.setDefined();
   symtab.defineFunction(fs);

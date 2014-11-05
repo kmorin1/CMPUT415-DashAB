@@ -1,0 +1,10 @@
+function add(integer x, real y) returns integer;
+function add(real x, real y) returns real {
+	return x + y;
+}
+
+procedure main() returns integer {
+	real f = 5.5;
+	real r = add(2, 2.3);
+	
+}

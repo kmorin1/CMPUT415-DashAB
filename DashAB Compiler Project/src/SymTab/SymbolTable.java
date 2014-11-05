@@ -110,8 +110,14 @@ public class SymbolTable {
     public Boolean lookup(Type tst1, Type tst2) {
     	Integer i1 = null;
     	Integer i2 = null;
-    	String st1 = getBuiltInSymbol(tst1.getName()).getName();
-    	String st2 = getBuiltInSymbol(tst2.getName()).getName();
+    	String st1 = "";
+    	String st2 = "";
+    	try {
+    		st1 = getBuiltInSymbol(tst1.getName()).getName();
+    		st2 = getBuiltInSymbol(tst2.getName()).getName();
+    	} catch (NullPointerException npe) {
+    		throw new RuntimeException("undefined type error, use typedef to define user types");
+    	}
     	if (st1.equals("boolean")) {
     	    i1 = 0;
     	}
