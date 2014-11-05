@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <math.h>
 #include <stdio.h>
+#include <stdbool.h>
 
 uint32_t power_i32(uint32_t base, uint32_t exp) {
     int i, result = 1;
@@ -15,4 +16,9 @@ uint32_t print_i32(uint32_t x) {
 
 uint32_t print_float(float x) {
     return printf("%f", x);
+}
+
+bool print_i1(bool x) {
+    printf("%s", x ? "T": "F");
+    return true;
 }
