@@ -666,7 +666,7 @@ expr returns [Type stype]
       $stype = fs.getType(0);
       ArrayList<Symbol> argsyms = fs.getParamList();
       if (argsyms.size() != argtypes.size())
-        throw new RuntimeException(errorhead + ps.getName() + ": number of arguments doesn't match");
+        throw new RuntimeException(errorhead + fs.getName() + ": number of arguments doesn't match");
       for (int i=0; i<argsyms.size(); i++) {
         VariableSymbol vs = (VariableSymbol) argsyms.get(i);
         if (symtab.lookup(argtypes.get(i), vs.getType(0)) == null)
