@@ -85,12 +85,12 @@ block
   ;
   
 procedure
-  : ^(Procedure Identifier paramlist ^(Returns type) block)
-  | ^(Procedure Identifier paramlist block)
+  : ^(Procedure Identifier paramlist ^(Returns type) block?)
+  | ^(Procedure Identifier paramlist block?)
   ;
   
 function
-  : ^(Function Identifier paramlist ^(Returns type) block)
+  : ^(Function Identifier paramlist ^(Returns type) block?)
   | ^(Function Identifier paramlist ^(Returns type) ^(Assign expr))
   ;
   
@@ -215,7 +215,7 @@ expr
   | ^(And type expr expr)
   | ^(Not type expr)
   | ^(By type expr expr)
-  | ^(CALL Identifier ^(ARGLIST expr*))
+  | ^(CALL type Identifier ^(ARGLIST expr*))
   | ^(As a=type expr)
   | type Identifier
   | type Number

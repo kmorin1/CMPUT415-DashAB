@@ -155,7 +155,7 @@ declaration
     sym = ns.symbols.get($id.text);
   }
   else if (currentscope instanceof GlobalScope) {
-    checkGlobalName($id.text);
+    //checkGlobalName($id.text);
     GlobalScope gs = (GlobalScope)currentscope;
     sym = gs.symbols.get($id.text);
   }
@@ -214,7 +214,7 @@ declaration
 typedef
 @after {
 
-  checkGlobalName($id.text);
+  //checkGlobalName($id.text);
 
   String bitname = $t.tsym.getName();
   String oldname;
@@ -246,7 +246,7 @@ procedure
   Boolean def = false;
 }
 @after {
-  checkGlobalName($id.text);
+  //checkGlobalName($id.text);
   
   ProcedureSymbol ps = new ProcedureSymbol($id.text, type, $pl.params);
   ProcedureSymbol check = symtab.resolveProcedure(ps.getName());
@@ -270,9 +270,7 @@ function
   Boolean def = false;
 }
 @after {
-
-  checkGlobalName($id.text);
-  
+  //checkGlobalName($id.text);
   for(Symbol param : $pl.params) {
   	if (param instanceof VariableSymbol) {
   		VariableSymbol vs = (VariableSymbol)param;
@@ -281,8 +279,6 @@ function
   		}
   	}
   }
-  
-
   FunctionSymbol fs = new FunctionSymbol($id.text, type, $pl.params);
   FunctionSymbol check = symtab.resolveFunction(fs.getName());
   if (check != null && check.isDefined())
@@ -662,17 +658,18 @@ expr returns [Type stype]
         throw new RuntimeException(errorhead + ps.getName() + ": number of arguments doesn't match");
       for (int i=0; i<argsyms.size(); i++) {
         VariableSymbol vs = (VariableSymbol) argsyms.get(i);
-        if (!vs.getType(0).getName().equals(argtypes.get(i).getName()))
+        
+        if (symtab.lookup(argtypes.get(i), vs.getType(0)) == null)
           throw new RuntimeException(errorhead + "type mismatch, expected " +  vs.getType(0).getName() + " but got " + argtypes.get(i).getName());
       }
     } else if (fs != null && ps == null) {
       $stype = fs.getType(0);
       ArrayList<Symbol> argsyms = fs.getParamList();
       if (argsyms.size() != argtypes.size())
-        throw new RuntimeException(errorhead + ps.getName() + ": number of arguments doesn't match");
+        throw new RuntimeException(errorhead + fs.getName() + ": number of arguments doesn't match");
       for (int i=0; i<argsyms.size(); i++) {
         VariableSymbol vs = (VariableSymbol) argsyms.get(i);
-        if (!vs.getType(0).getName().equals(argtypes.get(i).getName()))
+        if (symtab.lookup(argtypes.get(i), vs.getType(0)) == null)
           throw new RuntimeException(errorhead + "type mismatch, expected " +  vs.getType(0).getName() + " but got " + argtypes.get(i).getName());
       }
     } else 
