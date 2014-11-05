@@ -32,6 +32,8 @@ declare float @print_float(float)
 
 declare i1 @print_i1(i1)
 
+declare i8 @print_i8(i8)
+
 >>
 
 globalDeclare(varName, varType, varValue, alignment) ::= <<
@@ -116,7 +118,16 @@ store <varType> <value>, <varType>* %.temp<tmpNum>
 
 >>
 
-print(string, expr, type, result) ::= <<
+load_char(tmpNum, value, varType) ::= <<
+;start load_char
+%.temp<tmpNum> = alloca <varType>, align 1
+store <varType> <value>, <varType>* %.temp<tmpNum>
+%.<tmpNum> = load <varType>* %.temp<tmpNum>
+;end load_char
+
+>>
+
+print(expr, type, result) ::= <<
 ;start print
 <expr>
 call <type> (<type>)* @print_<type>(<type> %.<result>)

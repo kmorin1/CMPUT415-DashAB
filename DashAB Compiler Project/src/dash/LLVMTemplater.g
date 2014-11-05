@@ -59,14 +59,37 @@ options {
     }
   }
   
-  private String getPrintString(String type) {
-  	if (type.equals(IntType))
-  		return "int_str";
-  	else if (type.equals(BoolType))
-  		return "bool_str";
-  	else
-  		return "float_str";
-  
+  private String getIntFromChar(String input) {
+  	String noQuotes = input.replaceAll("'","");
+  	if (noQuotes.length() > 1) {
+  		char escaped = noQuotes.charAt(1);
+  		switch(escaped) {
+  			case('n') : //newline
+  				return ""+10;
+  			case('t') : //tab
+  				return ""+9;
+  			case('0') : //null
+  				return ""+0;
+  			case('r') : //carriage return
+  				return ""+13;
+  			case('\\') : //escaped backslash
+  				return ""+92;
+  			case('\'') : //escaped single quote
+  				return ""+39;
+  			case('\"') : //escaped double quote
+  				return ""+34;
+  			case('a') : //bell
+  				return ""+7;
+  			case('b') : //backspace
+  				return ""+8;
+  			default :
+  				return ""+0;
+  			
+  		}
+  	}
+  	else {
+  		return ""+(int)noQuotes.charAt(0);
+  	}
   }
 }
 
@@ -94,7 +117,7 @@ statement
   ;
    
 outputstream
-  : ^(RArrow expr stream=Identifier) -> print(string={getPrintString($expr.stype)}, expr={$expr.st}, type={$expr.stype}, result={counter})
+  : ^(RArrow expr stream=Identifier) -> print(expr={$expr.st}, type={$expr.stype}, result={counter})
   ;
 
 inputstream
@@ -212,7 +235,7 @@ expr returns [String stype]
   | type False {$stype = $type.st.toString();} -> load_bool(tmpNum={++counter}, value={"false"}, varType={$type.st})
   | type Null {$stype = $type.st.toString();}
   | type Identity {$stype = $type.st.toString();} 
-  | type Char {$stype = $type.st.toString();} -> load_char(tmpNum={++counter}, value={$Char}, varType={$type.st})
+  | type Char {$stype = $type.st.toString();} -> load_char(tmpNum={++counter}, value={getIntFromChar($Char.text)}, varType={$type.st})
   | ^(TUPLEEX type expr+)
   | type ^(Dot Identifier Number) {$stype = $type.st.toString();}
   | ^(NEG a=expr) {$stype = $a.stype;} -> negative(tmpNum={counter}, expr={$a.st}, result={++counter}, type={$a.stype}, operator={getArithOp($a.stype, SubOp)})
