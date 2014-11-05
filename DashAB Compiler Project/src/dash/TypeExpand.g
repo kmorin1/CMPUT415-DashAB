@@ -44,7 +44,7 @@ options {
         throw new RuntimeException(getErrorHeader() + symbolName + " is defined multiple times in global scope");
       }
     }
-    
+    Boolean proc_ret_flag = false;
     LinkedList<Type> ret_type_stack;
 }
 
@@ -354,6 +354,10 @@ callStatement
 }
   : ^(CALL id=Identifier ^(ARGLIST (e=expr {argtypes.add($e.stype);})*)) {
     ProcedureSymbol ps = symtab.resolveProcedure($id.text);
+    FunctionSymbol fs = symtab.resolveFunction($id.text);
+    if (fs != null) {
+      throw new RuntimeException(getErrorHeader() + "functions cannot be used as a statement");
+    }
     if (ps == null) {
       throw new RuntimeException(getErrorHeader() + $id.text + " is undefined procedure");
     }
@@ -664,6 +668,7 @@ expr returns [Type stype]
   } -> ^(Not Identifier[$stype.getName()] expr)
   | ^(By a=expr b=expr) {$stype = $a.stype;} -> ^(By Identifier[$stype.getName()] expr expr)
   | ^(CALL id=Identifier ^(ARGLIST (e=expr {argtypes.add($e.stype);})*)) {
+    proc_ret_flag = true;
     ProcedureSymbol ps = symtab.resolveProcedure($id.text);
     FunctionSymbol fs = symtab.resolveFunction($id.text);
     if (ps == null && fs == null)
