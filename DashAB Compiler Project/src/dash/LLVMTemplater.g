@@ -142,9 +142,12 @@ ifstatement
   ;
   
 loopstatement
-  : ^(Loop ^(While expr) slist) -> whileLoop(condition={$expr.st}, body={$slist.st}, tmpNum={counter++})
-  | ^(Loop slist ^(While expr)) -> doWhileLoop(condition={$expr.st}, body={$slist.st}, tmpNum={counter++})
-  | ^(Loop slist) -> infLoop(body={$slist.st}, tmpNum={counter++})
+@init {
+	int result = 0;
+}
+  : ^(Loop ^(While expr) {result = counter;} slist) -> whileLoop(condition={$expr.st}, body={$slist.st}, tmpNum={result})
+  | ^(Loop slist ^(While expr) {result = counter;}) -> doWhileLoop(condition={$expr.st}, body={$slist.st}, tmpNum={result})
+  | ^(Loop slist) -> infLoop(body={$slist.st}, tmpNum={counter})
   ;
   
 slist
@@ -174,10 +177,10 @@ tuple
   ;
   
 expr returns [String stype]
-  : ^(Plus type a=expr b=expr) {$stype = $type.st.toString();} ->  arithmetic(expr1={$a.st}, expr2={$b.st}, operator={getArithOp($type.st.toString(), AddOp)}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
-  | ^(Minus type a=expr b=expr) {$stype = $type.st.toString();} ->  arithmetic(expr1={$a.st}, expr2={$b.st}, operator={getArithOp($type.st.toString(), SubOp)}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
-  | ^(Multiply type a=expr b=expr) {$stype = $type.st.toString();} ->  arithmetic(expr1={$a.st}, expr2={$b.st}, operator={getArithOp($type.st.toString(), MulOp)}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
-  | ^(Divide type a=expr b=expr) {$stype = $type.st.toString();} ->  arithmetic(expr1={$a.st}, expr2={$b.st}, operator={getArithOp($type.st.toString(), DivOp)}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
+  : ^(Plus type a=expr b=expr) {$stype = $type.st.toString();} ->  arithmetic(expr1={$a.st}, expr2={$b.st}, operator={getArithOp($type.st.toString(), AddOp)}, type={$type.st}, tmpNum1={counter-1}, tmpNum2={counter}, result={++counter})
+  | ^(Minus type a=expr b=expr) {$stype = $type.st.toString();} ->  arithmetic(expr1={$a.st}, expr2={$b.st}, operator={getArithOp($type.st.toString(), SubOp)}, type={$type.st}, tmpNum1={counter-1}, tmpNum2={counter}, result={++counter})
+  | ^(Multiply type a=expr b=expr) {$stype = $type.st.toString();} ->  arithmetic(expr1={$a.st}, expr2={$b.st}, operator={getArithOp($type.st.toString(), MulOp)}, type={$type.st}, tmpNum1={counter-1}, tmpNum2={counter}, result={++counter})
+  | ^(Divide type a=expr b=expr) {$stype = $type.st.toString();} ->  arithmetic(expr1={$a.st}, expr2={$b.st}, operator={getArithOp($type.st.toString(), DivOp)}, type={$type.st}, tmpNum1={counter-1}, tmpNum2={counter}, result={++counter})
   | ^(Exponent type a=expr b=expr) {$stype = $type.st.toString();}
   | ^(Equals type a=expr b=expr) {$stype = $type.st.toString();} -> compare(expr1={$a.st}, expr2={$b.st}, comparison={Cmp}, operator={getCompOp($a.stype, EqOp)}, type={$a.stype}, tmpNum1={counter-1}, tmpNum2={counter}, result={++counter})
   | ^(NEquals type a=expr b=expr) {$stype = $type.st.toString();} -> compare(expr1={$a.st}, expr2={$b.st}, comparison={Cmp}, operator={getCompOp($a.stype, NeOp)}, type={$a.stype}, tmpNum1={counter-1}, tmpNum2={counter}, result={++counter})

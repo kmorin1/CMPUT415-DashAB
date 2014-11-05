@@ -186,8 +186,8 @@ br label %.finished<tmpNum>
 >>
 
 
-loopStatement(condition, body, tmpNum) ::= <<
-;start loop conditional
+whileLoop(condition, body, tmpNum) ::= <<
+;start while loop
 br label %.startloop<tmpNum>
 .startloop<tmpNum>:
 <condition>
@@ -197,6 +197,29 @@ br i1 %.notZero<tmpNum>, label %.body<tmpNum>, label %.endloop<tmpNum>
 <body>
 br label %.startloop<tmpNum>
 .endloop<tmpNum>:
-;end loop conditional
+;end while loop
+
+>>
+
+doWhileLoop(condition, body, tmpNum) ::= <<
+;start do while loop
+br label %.body<tmpNum>
+.body<tmpNum>:
+<body>
+<condition>
+%.notZero<tmpNum> = icmp ne i32 %.<tmpNum>, 0
+br i1 %.notZero<tmpNum>, label %.body<tmpNum>, label %.endloop<tmpNum>
+.endloop<tmpNum>:
+;end do while loop
+
+>>
+
+infLoop(body, tmpNum) ::= <<
+;start inf loop
+br label %.startloop<tmpNum>
+.startloop<tmpNum>:
+<body>
+br label %.startloop<tmpNum>
+;end inf loop
 
 >>
