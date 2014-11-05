@@ -58,6 +58,16 @@ options {
       return "o" + operation;
     }
   }
+  
+  private String getPrintString(String type) {
+  	if (type.equals(IntType))
+  		return "int_str";
+  	else if (type.equals(BoolType))
+  		return "bool_str";
+  	else
+  		return "float_str";
+  
+  }
 }
 
 program
@@ -84,7 +94,7 @@ statement
   ;
    
 outputstream
-  : ^(RArrow expr stream=Identifier) -> print(expr={$expr.st}, type={$expr.stype}, result={counter})
+  : ^(RArrow expr stream=Identifier) -> print(string={getPrintString($expr.stype)}, expr={$expr.st}, type={$expr.stype}, result={counter})
   ;
 
 inputstream
@@ -198,8 +208,8 @@ expr returns [String stype]
   | type Identifier {$stype = $type.st.toString();} -> load_var(tmpNum={++counter}, var={$Identifier}, varType={$type.st})
   | type Number {$stype = $type.st.toString();} -> load_num(tmpNum={++counter}, value={$Number}, varType={$type.st})
   | type FPNumber {$stype = $type.st.toString();} -> load_num(tmpNum={++counter}, value={$FPNumber}, varType={$type.st})
-  | type True {$stype = $type.st.toString();}
-  | type False {$stype = $type.st.toString();}
+  | type True {$stype = $type.st.toString();} -> load_bool(tmpNum={++counter}, value={"true"}, varType={$type.st})
+  | type False {$stype = $type.st.toString();} -> load_bool(tmpNum={++counter}, value={"false"}, varType={$type.st})
   | type Null {$stype = $type.st.toString();}
   | type Identity {$stype = $type.st.toString();} 
   | type Char {$stype = $type.st.toString();} -> load_char(tmpNum={++counter}, value={$Char}, varType={$type.st})
