@@ -63,7 +63,7 @@ outputAssi(varName, varType, expr, tmpNum) ::= <<
 ;start outputAssi
 <expr>
 
-%.<varName> = alloca i32, align 4
+%.<varName> = alloca <varType>, align 4
 store <varType> %.<tmpNum>, <varType>* %.<varName>
 ;end outputAssi
 >>
@@ -84,10 +84,11 @@ load_var(tmpNum, var, varType) ::= <<
 
 >>
 
-print(expr, result) ::= <<
+print(expr, type, result) ::= <<
 
 <expr>
-call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([4 x i8]* @.str, i32 0, i32 0), i32 %.<result>)
+call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([4 x i8]* @.str, i32 0, i32 0), <type> %.<result>)
+
 >>
 
 returnStat(val, tmpNum, type) ::= <<
@@ -137,6 +138,23 @@ br label %.skip<tmpNum>
 ;end if conditional
 
 >>
+
+ifElseStatement(condition, body, elseBody, tmpNum) ::= <<
+;start if conditional
+<condition>
+%.notZero<tmpNum> = icmp ne i32 %.<tmpNum>, 0
+br i1 %.notZero<tmpNum>, label %.body<tmpNum>, label %.elseBody<tmpNum>
+.body<tmpNum>:
+<body>
+br label %.finished<tmpNum>
+.elseBody<tmpNum>:
+<elseBody>
+br label %.finished<tmpNum>
+.finished<tmpNum>:
+;end if conditional
+
+>>
+
 
 loopStatement(condition, body, tmpNum) ::= <<
 ;start loop conditional

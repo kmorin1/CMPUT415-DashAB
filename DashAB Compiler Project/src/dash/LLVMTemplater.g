@@ -20,6 +20,7 @@ options {
     Scope currentscope;
     String inputfile;
     int counter = 0;
+    int scopeCounter = 0;
     public LLVMTemplater(TreeNodeStream input, SymbolTable symtab) {
         this(input);
         this.symtab = symtab;
@@ -30,7 +31,7 @@ options {
   
   String AddOp = "add"; String SubOp = "sub"; String MulOp = "mul"; String DivOp = "div";
   
-  String Cmp = "cmp";
+  String Cmp = "icmp";
   String EqOp = "eq"; String NeOp = "ne";
   String GtOp = "gt"; String LtOp = "lt";
   String GteOp = "ge"; String LteOp = "le";
@@ -47,9 +48,11 @@ options {
   	}
   }
   
-  private String getCompOp(StringTemplate type, String operation) {
+  private String getCompOp(String type, String operation) {
     if (type.toString().equals(IntType)) {
-      return operation;
+    	if (operation.equals("eq") || operation.equals("ne"))
+    		return operation;
+      return "s" + operation;
     }
     else {
       return "o" + operation;
@@ -81,7 +84,7 @@ statement
   ;
    
 outputstream
-  : ^(RArrow expr stream=Identifier) -> print(expr={$expr.st}, result={counter})
+  : ^(RArrow expr stream=Identifier) -> print(expr={$expr.st}, type={$expr.stype}, result={counter})
   ;
 
 inputstream
@@ -127,12 +130,15 @@ returnStatement
   ;
   
 assignment
-  : ^(Assign Identifier expr) -> outputAssi(varname={$Identifier}, varType={$expr.type}, expr={$expr.st}, tmpNum={counter++})
+  : ^(Assign Identifier expr) -> outputAssi(varname={$Identifier}, varType={$expr.stype}, expr={$expr.st}, tmpNum={counter++})
   ;
   
 ifstatement
-  : ^(If expr ifBody=slist ^(Else elseBody=slist)) -> ifElseStatement(condition={$expr.st}, body={$ifBody.st}, elseBody={$elseBody.st}, tmpNum={counter++})
-  | ^(If expr slist) -> ifStatement(condition={$expr.st}, body={$slist.st}, tmpNum={counter++})
+@init {
+	int result = 0;
+}
+  : ^(If expr {result = counter;} ifBody=slist ^(Else elseBody=slist)) -> ifElseStatement(condition={$expr.st}, body={$ifBody.st}, elseBody={$elseBody.st}, tmpNum={result})
+  | ^(If expr {result = counter;} slist) -> ifStatement(condition={$expr.st}, body={$slist.st}, tmpNum={result})
   ;
   
 loopstatement
@@ -167,35 +173,35 @@ tuple
   : ^(Tuple type+)
   ;
   
-expr returns [String type]
-  : ^(Plus type a=expr b=expr) ->  arithmetic(expr1={$a.st}, expr2={$b.st}, operator={getArithOp($type.st, AddOp)}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
-  | ^(Minus type a=expr b=expr) ->  arithmetic(expr1={$a.st}, expr2={$b.st}, operator={getArithOp($type.st, SubOp)}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
-  | ^(Multiply type a=expr b=expr) ->  arithmetic(expr1={$a.st}, expr2={$b.st}, operator={getArithOp($type.st, MulOp)}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
-  | ^(Divide type a=expr b=expr) ->  arithmetic(expr1={$a.st}, expr2={$b.st}, operator={getArithOp($type.st, DivOp)}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
-  | ^(Exponent type a=expr b=expr)
-  | ^(Equals type a=expr b=expr) -> compare(expr1={$a.st}, expr2={$b.st}, comparison={Cmp}, operator={getCompOp($type.st, EqOp)}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
-  | ^(NEquals type a=expr b=expr) -> compare(expr1={$a.st}, expr2={$b.st}, comparison={Cmp}, operator={getCompOp($type.st, NeOp)}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
-  | ^(GThan type a=expr b=expr) -> compare(expr1={$a.st}, expr2={$b.st}, comparison={Cmp}, operator={getCompOp($type.st, GtOp)}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
-  | ^(LThan type a=expr b=expr) -> compare(expr1={$a.st}, expr2={$b.st}, comparison={Cmp}, operator={getCompOp($type.st, LtOp)}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
-  | ^(GThanE type a=expr b=expr) -> compare(expr1={$a.st}, expr2={$b.st}, comparison={Cmp}, operator={getCompOp($type.st, GteOp)}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
-  | ^(LThanE type a=expr b=expr) -> compare(expr1={$a.st}, expr2={$b.st}, comparison={Cmp}, operator={getCompOp($type.st, LteOp)}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
-  | ^(Or type a=expr b=expr) -> arithmetic(expr1={$a.st}, expr2={$b.st}, operator={OrOp}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
-  | ^(Xor type a=expr b=expr) -> arithmetic(expr1={$a.st}, expr2={$b.st}, operator={XorOp}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
-  | ^(And type a=expr b=expr) -> arithmetic(expr1={$a.st}, expr2={$b.st}, operator={AndOp}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
-  | ^(Not type a=expr)
-  | ^(By type a=expr b=expr)
+expr returns [String stype]
+  : ^(Plus type a=expr b=expr) {$stype = $type.st.toString();} ->  arithmetic(expr1={$a.st}, expr2={$b.st}, operator={getArithOp($type.st, AddOp)}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
+  | ^(Minus type a=expr b=expr) {$stype = $type.st.toString();} ->  arithmetic(expr1={$a.st}, expr2={$b.st}, operator={getArithOp($type.st, SubOp)}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
+  | ^(Multiply type a=expr b=expr) {$stype = $type.st.toString();} ->  arithmetic(expr1={$a.st}, expr2={$b.st}, operator={getArithOp($type.st, MulOp)}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
+  | ^(Divide type a=expr b=expr) {$stype = $type.st.toString();} ->  arithmetic(expr1={$a.st}, expr2={$b.st}, operator={getArithOp($type.st, DivOp)}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
+  | ^(Exponent type a=expr b=expr) {$stype = $type.st.toString();}
+  | ^(Equals type a=expr b=expr) {$stype = $type.st.toString();} -> compare(expr1={$a.st}, expr2={$b.st}, comparison={Cmp}, operator={getCompOp($a.stype, EqOp)}, type={$a.stype}, tmpNum1={counter-1}, tmpNum2={counter}, result={++counter})
+  | ^(NEquals type a=expr b=expr) {$stype = $type.st.toString();} -> compare(expr1={$a.st}, expr2={$b.st}, comparison={Cmp}, operator={getCompOp($a.stype, NeOp)}, type={$a.stype}, tmpNum1={counter-1}, tmpNum2={counter}, result={++counter})
+  | ^(GThan type a=expr b=expr) {$stype = $type.st.toString();} -> compare(expr1={$a.st}, expr2={$b.st}, comparison={Cmp}, operator={getCompOp($a.stype, GtOp)}, type={$a.stype}, tmpNum1={counter-1}, tmpNum2={counter}, result={++counter})
+  | ^(LThan type a=expr b=expr) {$stype = $type.st.toString();} -> compare(expr1={$a.st}, expr2={$b.st}, comparison={Cmp}, operator={getCompOp($a.stype, LtOp)}, type={$a.stype}, tmpNum1={counter-1}, tmpNum2={counter}, result={++counter})
+  | ^(GThanE type a=expr b=expr) {$stype = $type.st.toString();} -> compare(expr1={$a.st}, expr2={$b.st}, comparison={Cmp}, operator={getCompOp($a.stype, GteOp)}, type={$a.stype}, tmpNum1={counter-1}, tmpNum2={counter}, result={++counter})
+  | ^(LThanE type a=expr b=expr) {$stype = $type.st.toString();} -> compare(expr1={$a.st}, expr2={$b.st}, comparison={Cmp}, operator={getCompOp($a.stype, LteOp)}, type={$a.stype}, tmpNum1={counter-1}, tmpNum2={counter}, result={++counter})
+  | ^(Or type a=expr b=expr) {$stype = $type.st.toString();} -> arithmetic(expr1={$a.st}, expr2={$b.st}, operator={OrOp}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
+  | ^(Xor type a=expr b=expr) {$stype = $type.st.toString();} -> arithmetic(expr1={$a.st}, expr2={$b.st}, operator={XorOp}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
+  | ^(And type a=expr b=expr) {$stype = $type.st.toString();} -> arithmetic(expr1={$a.st}, expr2={$b.st}, operator={AndOp}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
+  | ^(Not type a=expr) {$stype = $type.st.toString();}
+  | ^(By type a=expr b=expr) {$stype = $type.st.toString();}
   | ^(CALL Identifier ^(ARGLIST expr*))
-  | ^(As type expr)
-  | type Identifier -> load_var(tmpNum={++counter}, var={$Identifier}, varType={$type.st})
-  | type Number -> load_num(tmpNum={++counter}, value={$Number}, varType={$type.st})
-  | type FPNumber -> load_num(tmpNum={++counter}, value={$FPNumber}, varType={$type.st})
-  | type True
-  | type False
-  | type Null
-  | type Identity
-  | type Char
+  | ^(As type expr) {$stype = $type.st.toString();}
+  | type Identifier {$stype = $type.st.toString();} -> load_var(tmpNum={++counter}, var={$Identifier}, varType={$type.st})
+  | type Number {$stype = $type.st.toString();} -> load_num(tmpNum={++counter}, value={$Number}, varType={$type.st})
+  | type FPNumber {$stype = $type.st.toString();} -> load_num(tmpNum={++counter}, value={$FPNumber}, varType={$type.st})
+  | type True {$stype = $type.st.toString();}
+  | type False {$stype = $type.st.toString();}
+  | type Null {$stype = $type.st.toString();}
+  | type Identity {$stype = $type.st.toString();} 
+  | type Char {$stype = $type.st.toString();} -> load_char(tmpNum={++counter}, value={$Char}, varType={$type.st})
   | ^(TUPLEEX type expr+)
-  | type ^(Dot Identifier Number)
+  | type ^(Dot Identifier Number) {$stype = $type.st.toString();}
   | ^(NEG expr)
   | ^(POS expr)
   ;
