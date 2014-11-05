@@ -2,16 +2,17 @@
 #include <math.h>
 #include <stdio.h>
 
-uint32_t exponentiation_integer(uint32_t b, uint32_t p) {
-	uint32_t result = pow(b, p);
-	return result;
+uint32_t power_i32(uint32_t base, uint32_t exp) {
+    int i, result = 1;
+    for (i = 0; i < exp; i++)
+        result *= base;
+    return result;
 }
 
-float exponentiation_float(float b, float p) {
-	float result = pow(b, p);
-	return result;
+uint32_t print_i32(uint32_t x) {
+    return printf("%d", x);
 }
 
-void output(uint32_t x) {
-	printf("%d", x);
+uint32_t print_float(float x) {
+    return printf("%f", x);
 }
