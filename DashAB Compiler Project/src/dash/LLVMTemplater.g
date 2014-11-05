@@ -37,7 +37,7 @@ options {
   String GteOp = "ge"; String LteOp = "le";
   String XorOp = "xor"; String OrOp = "or"; String AndOp = "and";
 
-  private String getArithOp(StringTemplate type, String operation) {
+  private String getArithOp(String type, String operation) {
   	if (type.toString().equals(IntType)) {
   	  if (operation.equals(DivOp))
   	    return "s" + operation;
@@ -92,8 +92,8 @@ inputstream
   ;
 
 declaration
-  : ^(DECL type* Identifier)
-  | ^(DECL type* ^(Assign Identifier expr)) -> outputAssi(varName={$Identifier}, varType={$type.st}, expr={$expr.st}, tmpNum={counter})
+  : ^(DECL type* Identifier) -> outputEmptyDecl(varName={$Identifier}, varType={$type.st})
+  | ^(DECL type* ^(Assign Identifier expr)) -> outputDecl(varName={$Identifier}, varType={$type.st}, expr={$expr.st}, tmpNum={counter})
   | ^(DECL StdInput ^(Assign Identifier StdInput))
   | ^(DECL StdOutput ^(Assign Identifier StdOutput))
   ;
@@ -130,7 +130,7 @@ returnStatement
   ;
   
 assignment
-  : ^(Assign Identifier expr) -> outputAssi(varname={$Identifier}, varType={$expr.stype}, expr={$expr.st}, tmpNum={counter++})
+  : ^(Assign Identifier expr) -> outputAssi(varName={$Identifier}, varType={$expr.stype}, expr={$expr.st}, tmpNum={counter++})
   ;
   
 ifstatement
@@ -174,10 +174,10 @@ tuple
   ;
   
 expr returns [String stype]
-  : ^(Plus type a=expr b=expr) {$stype = $type.st.toString();} ->  arithmetic(expr1={$a.st}, expr2={$b.st}, operator={getArithOp($type.st, AddOp)}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
-  | ^(Minus type a=expr b=expr) {$stype = $type.st.toString();} ->  arithmetic(expr1={$a.st}, expr2={$b.st}, operator={getArithOp($type.st, SubOp)}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
-  | ^(Multiply type a=expr b=expr) {$stype = $type.st.toString();} ->  arithmetic(expr1={$a.st}, expr2={$b.st}, operator={getArithOp($type.st, MulOp)}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
-  | ^(Divide type a=expr b=expr) {$stype = $type.st.toString();} ->  arithmetic(expr1={$a.st}, expr2={$b.st}, operator={getArithOp($type.st, DivOp)}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
+  : ^(Plus type a=expr b=expr) {$stype = $type.st.toString();} ->  arithmetic(expr1={$a.st}, expr2={$b.st}, operator={getArithOp($type.st.toString(), AddOp)}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
+  | ^(Minus type a=expr b=expr) {$stype = $type.st.toString();} ->  arithmetic(expr1={$a.st}, expr2={$b.st}, operator={getArithOp($type.st.toString(), SubOp)}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
+  | ^(Multiply type a=expr b=expr) {$stype = $type.st.toString();} ->  arithmetic(expr1={$a.st}, expr2={$b.st}, operator={getArithOp($type.st.toString(), MulOp)}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
+  | ^(Divide type a=expr b=expr) {$stype = $type.st.toString();} ->  arithmetic(expr1={$a.st}, expr2={$b.st}, operator={getArithOp($type.st.toString(), DivOp)}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
   | ^(Exponent type a=expr b=expr) {$stype = $type.st.toString();}
   | ^(Equals type a=expr b=expr) {$stype = $type.st.toString();} -> compare(expr1={$a.st}, expr2={$b.st}, comparison={Cmp}, operator={getCompOp($a.stype, EqOp)}, type={$a.stype}, tmpNum1={counter-1}, tmpNum2={counter}, result={++counter})
   | ^(NEquals type a=expr b=expr) {$stype = $type.st.toString();} -> compare(expr1={$a.st}, expr2={$b.st}, comparison={Cmp}, operator={getCompOp($a.stype, NeOp)}, type={$a.stype}, tmpNum1={counter-1}, tmpNum2={counter}, result={++counter})
@@ -202,7 +202,7 @@ expr returns [String stype]
   | type Char {$stype = $type.st.toString();} -> load_char(tmpNum={++counter}, value={$Char}, varType={$type.st})
   | ^(TUPLEEX type expr+)
   | type ^(Dot Identifier Number) {$stype = $type.st.toString();}
-  | ^(NEG expr)
-  | ^(POS expr)
+  | ^(NEG a=expr) {$stype = $a.stype;} -> negative(tmpNum={counter}, expr={$a.st}, result={++counter}, type={$a.stype}, operator={getArithOp($a.stype, SubOp)})
+  | ^(POS a=expr) {$stype = $a.stype;} -> return(a={$a.st})
   ;
   

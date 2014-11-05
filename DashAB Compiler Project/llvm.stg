@@ -58,14 +58,31 @@ param(name, type) ::= << <type> %<name>
 >>
 
 
+outputDecl(varName, varType, expr, tmpNum) ::= <<
+;start outputDecl
+<expr>
+
+%.<varName> = alloca <varType>, align 4
+store <varType> %.<tmpNum>, <varType>* %.<varName>
+;end outputDecl
+
+>>
+
+outputEmptyDecl(varName, varType) ::= <<
+;start outputEmptyDecl
+%.<varName> = alloca <varType>, align 4
+store <varType> 0, <varType>* %.<varName>
+;end outputEmptyDecl
+
+>>
 
 outputAssi(varName, varType, expr, tmpNum) ::= <<
 ;start outputAssi
 <expr>
 
-%.<varName> = alloca <varType>, align 4
 store <varType> %.<tmpNum>, <varType>* %.<varName>
 ;end outputAssi
+
 >>
 
 load_num(tmpNum, value, varType) ::= <<
@@ -85,15 +102,18 @@ load_var(tmpNum, var, varType) ::= <<
 >>
 
 print(expr, type, result) ::= <<
-
+;start print
 <expr>
 call i32 (i8*, ...)* @printf(i8* getelementptr inbounds ([4 x i8]* @.str, i32 0, i32 0), <type> %.<result>)
+;end print
 
 >>
 
 returnStat(val, tmpNum, type) ::= <<
+;start return
 <val>
 ret <type> %.<tmpNum>
+;end return
 
 >>
 
@@ -107,6 +127,15 @@ resultthing = bitcast <varType> <expr> to <castType>
 
 >>
 
+negative(tmpNum, expr, result, operator) ::= <<
+;start negative
+<expr>
+
+%.<result> = <operator> <type> 0, %.<tmpNum>
+;end negative
+
+>>
+
 compare(expr1, expr2, comparison, operator, type, tmpNum1, tmpNum2, result) ::= <<
 ;start equals
 <expr1>
@@ -115,6 +144,7 @@ compare(expr1, expr2, comparison, operator, type, tmpNum1, tmpNum2, result) ::= 
 %.bool<result> = <comparison> <operator> <type> %.<tmpNum1>, %.<tmpNum2>
 %.<result> = select i1 %.bool<result>, i32 1, i32 0
 ;end equals
+
 >>
 
 arithmetic(expr1, expr2, operator, type, tmpNum1, tmpNum2, result) ::= <<
@@ -140,7 +170,7 @@ br label %.skip<tmpNum>
 >>
 
 ifElseStatement(condition, body, elseBody, tmpNum) ::= <<
-;start if conditional
+;start if else conditional
 <condition>
 %.notZero<tmpNum> = icmp ne i32 %.<tmpNum>, 0
 br i1 %.notZero<tmpNum>, label %.body<tmpNum>, label %.elseBody<tmpNum>
@@ -151,7 +181,7 @@ br label %.finished<tmpNum>
 <elseBody>
 br label %.finished<tmpNum>
 .finished<tmpNum>:
-;end if conditional
+;end if else conditional
 
 >>
 
