@@ -85,12 +85,12 @@ block
   ;
   
 procedure
-  : ^(Procedure Identifier paramlist ^(Returns type) block)
-  | ^(Procedure Identifier paramlist block)
+  : ^(Procedure Identifier paramlist ^(Returns type) block?)
+  | ^(Procedure Identifier paramlist block?)
   ;
   
 function
-  : ^(Function Identifier paramlist ^(Returns type) block)
+  : ^(Function Identifier paramlist ^(Returns type) block?)
   | ^(Function Identifier paramlist ^(Returns type) ^(Assign expr))
   ;
   
