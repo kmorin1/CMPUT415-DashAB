@@ -44,6 +44,8 @@ declare i8 @input_i8(i8*)
 
 declare i32 @stream_state()
 
+declare float @implicit_promotion(i32)
+
 >>
 
 globalDeclare(varName, varType, varValue, alignment) ::= <<
@@ -170,9 +172,10 @@ ret <type> %.<tmpNum>
 returnVoid() ::= "ret void"
 
 //?
-cast(varType, expr, castType) ::= <<
+cast(varType, func, expr, castType, tmpNum) ::= <<
 ;start cast
-resultthing = bitcast <varType> <expr> to <castType>
+<expr>
+%.<tmpNum> = <func> <varType> <expr> to <castType>
 ;end cast
 
 >>
@@ -197,10 +200,12 @@ compare(expr1, expr2, comparison, operator, type, tmpNum1, tmpNum2, result) ::= 
 
 >>
 
-arithmetic(expr1, expr2, operator, type, tmpNum1, tmpNum2, result) ::= <<
+arithmetic(expr1, expr2, operator, type, tmpNum1, tmpNum2, result, promote1, promote2) ::= <<
 ;start arithmetic
 <expr1>
 <expr2>
+<promote1>
+<promote2>
 %.<result> = <operator> <type> %.<tmpNum1>, %.<tmpNum2>
 ;end arithmetic
 
