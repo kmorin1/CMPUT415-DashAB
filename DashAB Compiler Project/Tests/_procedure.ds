@@ -1,3 +1,16 @@
+procedure c() {
+	b();
+}
+
+procedure b() {
+
+}
+
+procedure a() {
+	c();	
+}
+
+
 procedure main() returns integer {
 
 	a();
@@ -5,14 +18,3 @@ procedure main() returns integer {
 	returns 0;	
 }
 
-procedure a() {
-	c();	
-}
-
-procedure b() {
-
-}
-
-procedure c() {
-	b();
-}
