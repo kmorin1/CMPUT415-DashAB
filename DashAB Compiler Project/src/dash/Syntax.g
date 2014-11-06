@@ -189,7 +189,7 @@ xorExpr
   ;
   
 andExpr
-  : equExpr ((And)^ equExpr)*
+  : equExpr (And^ equExpr)*
   ;
   
 equExpr
@@ -201,7 +201,7 @@ relExpr
   ;
   
 byExpr
-  : addExpr ((By)^ addExpr)*
+  : addExpr (By^ addExpr)*
   ;
   
 addExpr
