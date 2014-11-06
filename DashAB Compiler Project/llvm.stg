@@ -146,6 +146,16 @@ call <type> (<type>)* @print_<type>(<type> %.<result>)
 
 >>
 
+exponent(expr1, expr2, type, tmpNum1, tmpNum2, result) ::= <<
+;start power
+<expr1>
+<expr2>
+%.<result> = call <type> (<type>, <type>)* @power_<type>(<type> %.<tmpNum1>, <type> %.<tmpNum2>)
+;end power
+
+
+>>
+
 input(varName, varType) ::= <<
 ;start input
 call <varType> (<varType>*)* @input_<varType>(<varType>* %.<varName>)
