@@ -722,12 +722,27 @@ expr returns [Type stype]
     stream_Identifier.nextNode();
   } 
     -> ^(Identifier[$stype.getName()] (Identifier)*) Identifier[$id.text] 
-  | ^(As type e=expr) {
+  | ^(As t=type e=expr) {
     Boolean exlu = symtab.exLookup($type.tsym, $e.stype);
     if (exlu == null)
       throw new RuntimeException(errorhead + " expression cannot be cast to " + $type.tsym.getName());
     $stype = $type.tsym;
-  }
+    if ($t.tsym.getName().equals($e.stype.getName())) {
+    if ( state.backtracking==0 ) {
+                    retval.tree = root_0;
+                    RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
+                    RewriteRuleSubtreeStream stream_e=new RewriteRuleSubtreeStream(adaptor,"rule e",e!=null?e.tree:null);
+
+                    root_0 = (CommonTree)adaptor.nil();
+                    
+                    {
+                        adaptor.addChild(root_0, stream_e.nextTree());
+
+                    }
+
+                    retval.tree = root_0;}
+     }
+  } 
   | Number {$stype = new BuiltInTypeSymbol("integer");} -> Identifier["integer"] Number[$Number.text.replaceAll("_","")]
   | FPNumber {$stype = new BuiltInTypeSymbol("real");} -> Identifier["real"] FPNumber[$FPNumber.text.replaceAll("_","")]
   | True {$stype = new BuiltInTypeSymbol("boolean");} -> Identifier["boolean"] True
