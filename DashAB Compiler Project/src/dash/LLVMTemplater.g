@@ -132,7 +132,7 @@ options {
 	  		return "\%." + result + " = zext " + from + " \%." + tmpNum + " to " + to;
 	  	}
 	  }
-      return "";
+    return "";
   }
 }
 
@@ -257,12 +257,18 @@ tuple
   : ^(Tuple type+)
   ;
   
-expr returns [String stype, int resultVar]
+expr returns [String stype, String resultVar]
 @init {
 	int tmpNum1 = 0;
 	int tmpNum2 = 0;
+	List<String> varNums = new ArrayList<String>();
+	List<String> expressions = new ArrayList<String>();
+	List<String> varTypes = new ArrayList<String>();
 }
-  : ^(Plus type a=expr {tmpNum1 = counter;} b=expr {tmpNum2 = counter;}) {$stype = $type.st.toString(); $resultVar = counter + 1;} 
+@after {
+	$resultVar = ""+counter;
+}
+  : ^(Plus type a=expr {tmpNum1 = counter;} b=expr {tmpNum2 = counter;}) {$stype = $type.st.toString();} 
     ->  arithmetic(expr1={$a.st}, expr2={$b.st}, operator={getArithOp($type.st.toString(), AddOp)}, type={$type.st}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
   | ^(Minus type a=expr {tmpNum1 = counter;} b=expr {tmpNum2 = counter;}) {$stype = $type.st.toString(); } 
     ->  arithmetic(expr1={$a.st}, expr2={$b.st}, operator={getArithOp($type.st.toString(), SubOp)}, type={$type.st}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
@@ -293,7 +299,7 @@ expr returns [String stype, int resultVar]
     -> arithmetic(expr1={$a.st}, expr2={$b.st}, operator={AndOp}, type={$type.st}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
   | ^(Not type a=expr {tmpNum1 = counter;}) {$stype = $type.st.toString();} -> not(expr={$a.st}, type={$type.st}, tmpNum={tmpNum1}, result={++counter})
   | ^(By type a=expr {tmpNum1 = counter;} b=expr {tmpNum2 = counter;}) {$stype = $type.st.toString();}
-  | ^(CALL type Identifier ^(ARGLIST e+=expr*)) -> call(funcName={$Identifier}, retType={$type.st} )
+  | ^(CALL type Identifier ^(ARGLIST (e=expr {varNums.add($e.resultVar); expressions.add($e.st.toString()); varTypes.add($e.stype);})*)) -> call(funcName={$Identifier}, retType={$type.st}, expr={expressions}, varNames={varNums}, varTypes={varTypes})
   | ^(As type a=expr {tmpNum1 = counter;}) {$stype = $type.st.toString();} -> cast(func={getCastFunc($a.stype, $stype, tmpNum1, ++counter)}, expr={$a.st})
   | type Identifier {$stype = $type.st.toString();} -> load_var(tmpNum={++counter}, var={$Identifier}, varType={$type.st})
   | type Number {$stype = $type.st.toString();} -> load_num(tmpNum={++counter}, value={$Number}, varType={$type.st})
