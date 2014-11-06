@@ -19,20 +19,19 @@ import org.antlr.stringtemplate.StringTemplateGroup;
 
 public class DashAB_Test {
 	public static void main(String[] args) throws RecognitionException {
-		/*if (args.length != 2) {
-			System.err.print("Insufficient arguments: ");
-			System.err.println(Arrays.toString(args));
+		if (args.length != 2) {
+			System.err.print("Usage: DashAB_Test <dash_file> > <output>");
 			System.exit(1);
-		}*/
+		}
 		String inputfile = null;
 		ANTLRFileStream input = null;
 		try {
-			inputfile = "test.ds";
-			//String inputfile = args[0];
+			//inputfile = "test.ds";
+			inputfile = args[0];
 			input = new ANTLRFileStream(inputfile);
 		} catch (IOException e) {
 			System.err.print("Invalid program filename: ");
-			//System.err.println(args[0]);
+			System.err.println(args[0]);
 			System.exit(1);
 		}
 
