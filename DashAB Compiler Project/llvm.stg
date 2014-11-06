@@ -179,12 +179,22 @@ cast(varType, func, expr, castType, tmpNum) ::= <<
 
 >>
 
+call(funcName, retType) ::= "nope"
+
 negative(tmpNum, expr, zero, result, operator) ::= <<
 ;start negative
 <expr>
 
 %.<result> = <operator> <type> <zero>, %.<tmpNum>
 ;end negative
+
+>>
+
+not(expr, type, tmpNum, result) ::= <<
+;start not
+<expr>
+%.<result> = xor i1 1, %.<tmpNum>
+;end not  
 
 >>
 
