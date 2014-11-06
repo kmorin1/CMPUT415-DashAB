@@ -1,0 +1,10 @@
+procedure main() returns integer {
+
+	integer i =  a();
+
+	returns 0;	
+}
+
+procedure a() returns integer{
+	return 42;	
+}

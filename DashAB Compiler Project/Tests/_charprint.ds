@@ -1,0 +1,15 @@
+procedure main() returns integer {
+
+	var out = std_output();
+
+	'a' -> out;
+	'A' -> out;
+	'1' -> out;
+	'!' -> out;
+	';' -> out;
+	'\n' -> out;
+	'Z' -> out;
+
+	return 0;
+
+}
