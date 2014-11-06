@@ -200,7 +200,7 @@ public class SymbolTable {
                 i2 = 5;
         }
     	
-    	return expromotelookup[i1][i2];
+    	return expromotelookup[i2][i1];
 	}
     
     private void defineRes(String sym) {resnames.put(sym, new Symbol(sym));}

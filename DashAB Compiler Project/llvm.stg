@@ -73,7 +73,7 @@ entry:
 
 paramsep(params) ::= << <params:{ a |<a>}; separator=", "> >>
 
-param(name, type) ::= << <type> %<name>
+param(name, type) ::= << <type>* %.<name>
 >>
 
 
@@ -171,15 +171,21 @@ ret <type> %.<tmpNum>
 returnVoid() ::= "ret void"
 
 //?
-cast(varType, func, expr, castType, tmpNum) ::= <<
+cast(func, expr) ::= <<
 ;start cast
 <expr>
-%.<tmpNum> = <func> <varType> <expr> to <castType>
+<func>
 ;end cast
 
 >>
 
-call(funcName, retType) ::= "nope"
+call(funcName, retType, expr, varNames, varTypes) ::= <<
+;start call
+<expr>
+call <retType> ( <varTypes:{ a |<a>}; separator=", "> )* @<funcName>(<varTypes, varNames:{ a, b |<a>* %.<b>}; separator=", ">)
+;end call
+
+>>
 
 negative(tmpNum, expr, zero, result, operator) ::= <<
 ;start negative
