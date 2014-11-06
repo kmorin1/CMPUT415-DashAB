@@ -33,7 +33,7 @@ options {
       CommonTree tree = (CommonTree) input.LT(1);
       int line = tree.getLine();
       int chline = tree.getCharPositionInLine();
-      return getGrammarFileName() + "> In " + inputfile + ", " + line + ":" + chline + ": ";
+      return "In " + inputfile + ", " + line + ":" + chline + ": ";
   }
   
     private void checkGlobalName(String symbolName) {
