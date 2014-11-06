@@ -541,6 +541,20 @@ expr returns [Type stype]
       throw new RuntimeException(errorhead + " type promotion error");
     
   } -> ^(Divide Identifier[$stype.getName()] expr expr)
+  | ^(Mod a=expr b=expr) {
+    if ($a.stype.getName().equals("tuple") || $b.stype.getName().equals("tuple"))
+      throw new RuntimeException(errorhead + "can't perform this operation on a tuple");
+    Boolean lua = symtab.lookup($a.stype, $b.stype);
+    Boolean lub = symtab.lookup($b.stype, $a.stype);
+      
+    if (lua != null)
+      $stype = $b.stype;
+    else if (lub != null)
+      $stype = $a.stype;
+    else 
+      throw new RuntimeException(errorhead + " type promotion error");
+    
+  } -> ^(Mod Identifier[$stype.getName()] expr expr)
   | ^(Exponent a=expr b=expr) {
     if ($a.stype.getName().equals("tuple") || $b.stype.getName().equals("tuple"))
       throw new RuntimeException(errorhead + "can't perform this operation on a tuple");

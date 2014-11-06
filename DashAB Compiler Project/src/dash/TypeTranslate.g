@@ -203,6 +203,7 @@ expr
   | ^(Minus type expr expr)
   | ^(Multiply type expr expr)
   | ^(Divide type expr expr)
+  | ^(Mod type expr expr)
   | ^(Exponent type expr expr)
   | ^(Equals type expr expr)
   | ^(NEquals type expr expr)
