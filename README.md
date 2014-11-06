@@ -49,3 +49,11 @@ Craaaaazy ideas:
 	(when the templater goes down in a block it has no idea where the scope is)
 		differentiate between global and local scope
 	
+	
+TO TEST OUR SUBMISSION (on lab machines):
+	tar -xzvf DashAB_Part1.tar.gz
+	make
+	java DashAB_Part1_Test <dash_file> > <output_file>
+	llc-3.2 <output_file> -filetype=obj
+	clang <output_file>.o libruntime.a
+	./a.out
