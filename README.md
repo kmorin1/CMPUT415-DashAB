@@ -43,3 +43,9 @@ Active Files:
   All SymTab
   TypeExpand.g
   TypeTranslate.g
+
+Craaaaazy ideas:
+	-somehow get scope information in the templater 
+	(when the templater goes down in a block it has no idea where the scope is)
+		differentiate between global and local scope
+	
