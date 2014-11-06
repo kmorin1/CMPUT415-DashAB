@@ -171,10 +171,10 @@ ret <type> %.<tmpNum>
 returnVoid() ::= "ret void"
 
 //?
-cast(varType, func, expr, castType, tmpNum) ::= <<
+cast(func, expr) ::= <<
 ;start cast
 <expr>
-%.<tmpNum> = <func> <varType> <expr> to <castType>
+<func>
 ;end cast
 
 >>
