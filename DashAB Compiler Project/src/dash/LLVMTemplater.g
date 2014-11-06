@@ -52,7 +52,7 @@ options {
   }
   
   private String getCompOp(String type, String operation) {
-    if (type.toString().equals(IntType)) {
+    if (type.toString().equals(IntType) || type.toString().equals(BoolType)) {
     	if (operation.equals(EqOp) || operation.equals(NeOp))
     		return operation;
       return "s" + operation;
