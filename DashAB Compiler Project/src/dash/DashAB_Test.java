@@ -19,8 +19,8 @@ import org.antlr.stringtemplate.StringTemplateGroup;
 
 public class DashAB_Test {
 	public static void main(String[] args) throws RecognitionException {
-		if (args.length != 2) {
-			System.err.print("Usage: DashAB_Test <dash_file> > <output>");
+		if (args.length != 1) {
+			System.err.print("Usage: DashAB_Test <dash_file>");
 			System.exit(1);
 		}
 		String inputfile = null;
