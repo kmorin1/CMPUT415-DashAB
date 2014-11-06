@@ -179,11 +179,11 @@ cast(varType, func, expr, castType, tmpNum) ::= <<
 
 >>
 
-negative(tmpNum, expr, result, operator) ::= <<
+negative(tmpNum, expr, zero, result, operator) ::= <<
 ;start negative
 <expr>
 
-%.<result> = <operator> <type> 0, %.<tmpNum>
+%.<result> = <operator> <type> <zero>, %.<tmpNum>
 ;end negative
 
 >>
