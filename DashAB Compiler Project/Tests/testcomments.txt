@@ -1,0 +1,7 @@
+procedure main() returns integer {
+//comment test
+/*
+	comment test
+*/
+return 0;
+}

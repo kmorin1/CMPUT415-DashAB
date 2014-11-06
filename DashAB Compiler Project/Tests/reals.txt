@@ -1,0 +1,15 @@
+procedure main() returns integer {
+var a = .42;
+var b = 42.0;
+var c = 42e-10;
+var d = 42e10;
+var e = 42.e-10;
+var f = 42.e+10;
+var g = ._____42___;
+var h = 4_2_._0_;
+var i = 4_2_e_+_10_;
+var j = 4.2__e__10;
+var k = 4__.__2__e___-10___;
+
+return 0;
+}

@@ -1,0 +1,4 @@
+procedure main() returns integer {
+var no@twitter = 1;
+return 0;
+}
