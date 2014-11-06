@@ -273,7 +273,7 @@ expr returns [String stype]
   | ^(And type a=expr b=expr) {$stype = $type.st.toString();} -> arithmetic(expr1={$a.st}, expr2={$b.st}, operator={AndOp}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
   | ^(Not type a=expr) {$stype = $type.st.toString();}
   | ^(By type a=expr b=expr) {$stype = $type.st.toString();}
-  | ^(CALL Identifier ^(ARGLIST expr*))
+  | ^(CALL type Identifier ^(ARGLIST expr*))
   | ^(As type a=expr) {$stype = $type.st.toString();} -> cast(castType={$type.st}, func={getCastFunc($a.stype, $stype)}, varType={$a.stype}, expr={$a.st}, tmpNum={++counter})
   | type Identifier {$stype = $type.st.toString();} -> load_var(tmpNum={++counter}, var={$Identifier}, varType={$type.st})
   | type Number {$stype = $type.st.toString();} -> load_num(tmpNum={++counter}, value={$Number}, varType={$type.st})
