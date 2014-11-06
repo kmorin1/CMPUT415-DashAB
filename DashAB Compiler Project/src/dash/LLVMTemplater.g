@@ -194,7 +194,7 @@ callStatement
   ;
   
 returnStatement
-  : ^(Return expr) -> return(a={$expr.st})
+  : ^(Return expr) -> returnStat(expr={$expr.st}, tmpNum={counter}, type={$expr.stype})
   | Return
   ;
   

@@ -56,7 +56,6 @@ declareProcOrFunc(procName, procVars, procBody, retType, retNum) ::= <<
 define <retType> @<procName>(<procVars>) {
 entry:
   <procBody>
-  ret <retType> %.<retNum>
 }
 
 
@@ -161,9 +160,9 @@ streamState(tmpNum) ::= <<
 
 >>
 
-returnStat(val, tmpNum, type) ::= <<
+returnStat(expr, tmpNum, type) ::= <<
 ;start return
-<val>
+<expr>
 ret <type> %.<tmpNum>
 ;end return
 
