@@ -4,7 +4,6 @@ import java.io.FileNotFoundException;
 import SymTab.*;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.Arrays;
 
 import org.antlr.runtime.ANTLRFileStream;
 import org.antlr.runtime.CommonTokenStream;
@@ -76,7 +75,7 @@ public class DashAB_Test {
 
 		    LLVMTemplater templater = new LLVMTemplater(nodes, symtab);
 		    templater.setTemplateLib(stg);
-		    //System.out.println(templater.program().getTemplate().toString());				
+		    System.out.println(templater.program().getTemplate().toString());				
 		} catch (FileNotFoundException e) {
 		    System.out.print("The template file is missing:");
 		    System.out.println(templateFile);

@@ -32,7 +32,7 @@ options {
   
   String IntType = "i32"; String CharType = "i8"; String BoolType = "i1"; String FloatType = "float";
   
-  String AddOp = "add"; String SubOp = "sub"; String MulOp = "mul"; String DivOp = "div";
+  String AddOp = "add"; String SubOp = "sub"; String MulOp = "mul"; String DivOp = "div"; String ModOp = "rem";
   
   String Cmp = "icmp";
   String EqOp = "eq"; String NeOp = "ne";
@@ -42,7 +42,7 @@ options {
 
   private String getArithOp(String type, String operation) {
   	if (type.toString().equals(IntType)) {
-  	  if (operation.equals(DivOp))
+  	  if (operation.equals(DivOp) || operation.equals(ModOp))
   	    return "s" + operation;
   	  return operation;
   	}
@@ -255,6 +255,8 @@ expr returns [String stype]
     ->  arithmetic(expr1={$a.st}, expr2={$b.st}, operator={getArithOp($type.st.toString(), MulOp)}, type={$type.st}, tmpNum1={tmpcount}, tmpNum2={counter}, result={++counter})
   | ^(Divide type a=expr b=expr) {$stype = $type.st.toString(); tmpcount = getCounterValue(counter); unaryNeg = false;} 
     ->  arithmetic(expr1={$a.st}, expr2={$b.st}, operator={getArithOp($type.st.toString(), DivOp)}, type={$type.st}, tmpNum1={tmpcount}, tmpNum2={counter}, result={++counter})
+  | ^(Mod type a=expr b=expr) {$stype = $type.st.toString(); tmpcount = getCounterValue(counter); unaryNeg = false;} 
+    ->  arithmetic(expr1={$a.st}, expr2={$b.st}, operator={getArithOp($type.st.toString(), ModOp)}, type={$type.st}, tmpNum1={tmpcount}, tmpNum2={counter}, result={++counter})
   | ^(Exponent type a=expr b=expr) {$stype = $type.st.toString();}
   | ^(Equals type a=expr b=expr) {$stype = $type.st.toString(); tmpcount = getCounterValue(counter); unaryNeg = false;} 
     -> compare(expr1={$a.st}, expr2={$b.st}, comparison={Cmp}, operator={getCompOp($a.stype, EqOp)}, type={$a.stype}, tmpNum1={tmpcount}, tmpNum2={counter}, result={++counter})
@@ -268,9 +270,12 @@ expr returns [String stype]
     -> compare(expr1={$a.st}, expr2={$b.st}, comparison={Cmp}, operator={getCompOp($a.stype, GteOp)}, type={$a.stype}, tmpNum1={tmpcount}, tmpNum2={counter}, result={++counter})
   | ^(LThanE type a=expr b=expr) {$stype = $type.st.toString(); tmpcount = getCounterValue(counter); unaryNeg = false;} 
     -> compare(expr1={$a.st}, expr2={$b.st}, comparison={Cmp}, operator={getCompOp($a.stype, LteOp)}, type={$a.stype}, tmpNum1={tmpcount}, tmpNum2={counter}, result={++counter})
-  | ^(Or type a=expr b=expr) {$stype = $type.st.toString();} -> arithmetic(expr1={$a.st}, expr2={$b.st}, operator={OrOp}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
-  | ^(Xor type a=expr b=expr) {$stype = $type.st.toString();} -> arithmetic(expr1={$a.st}, expr2={$b.st}, operator={XorOp}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
-  | ^(And type a=expr b=expr) {$stype = $type.st.toString();} -> arithmetic(expr1={$a.st}, expr2={$b.st}, operator={AndOp}, type={$type.st}, tmpNum1={counter}, tmpNum2={counter-1}, result={++counter})
+  | ^(Or type a=expr b=expr) {$stype = $type.st.toString(); tmpcount = getCounterValue(counter); unaryNeg = false;} 
+    -> arithmetic(expr1={$a.st}, expr2={$b.st}, operator={OrOp}, type={$type.st}, tmpNum1={tmpcount}, tmpNum2={counter}, result={++counter})
+  | ^(Xor type a=expr b=expr) {$stype = $type.st.toString(); tmpcount = getCounterValue(counter); unaryNeg = false;} 
+    -> arithmetic(expr1={$a.st}, expr2={$b.st}, operator={XorOp}, type={$type.st}, tmpNum1={tmpcount}, tmpNum2={counter}, result={++counter})
+  | ^(And type a=expr b=expr) {$stype = $type.st.toString(); tmpcount = getCounterValue(counter); unaryNeg = false;} 
+    -> arithmetic(expr1={$a.st}, expr2={$b.st}, operator={AndOp}, type={$type.st}, tmpNum1={tmpcount}, tmpNum2={counter}, result={++counter})
   | ^(Not type a=expr) {$stype = $type.st.toString();}
   | ^(By type a=expr b=expr) {$stype = $type.st.toString();}
   | ^(CALL type Identifier ^(ARGLIST expr*))
