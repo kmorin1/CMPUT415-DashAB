@@ -40,7 +40,7 @@ statement returns [CFTNode cftn]
   | outputstream {$cftn = new CFTNode("generic", null);}
   | inputstream {$cftn = new CFTNode("generic", null);}
   | ifstatement {$cftn = $ifstatement.cftn;}
-  | loopstatement {$cftn = new CFTNode("generic", null);}
+  | loopstatement {$cftn = $loopstatement.cftn;}
   | block {$cftn = $block.cftn;}
   | callStatement {$cftn = new CFTNode("generic", null);}
   | returnStatement {$cftn = new CFTNode("return", null);}
@@ -121,10 +121,10 @@ ifstatement returns [CFTNode cftn]
   | ^(If expr slist) {$cftn = new CFTNode("generic", null);}
   ;
   
-loopstatement
-  : ^(Loop ^(While expr) slist)
-  | ^(Loop slist ^(While expr))
-  | ^(Loop slist)
+loopstatement returns [CFTNode cftn]
+  : ^(Loop ^(While expr) slist) {$cftn = new CFTNode("generic", null);}
+  | ^(Loop slist ^(While expr)) {$cftn = $slist.cftn;}
+  | ^(Loop slist) {$cftn = $slist.cftn;}
   ;
   
 slist returns [CFTNode cftn]
