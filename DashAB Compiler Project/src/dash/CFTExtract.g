@@ -131,7 +131,11 @@ loopstatement returns [CFTNode cftn]
   
 slist returns [CFTNode cftn]
   : block {$cftn = $block.cftn;}
-  | statement {$cftn = $statement.cftn;}
+  | statement {
+    CFTNode temp = $statement.cftn;
+    temp.addChildAtEnd(new CFTNode("endblock" + gencounter++, null));
+    $cftn = temp;
+  }
   ;
   
 type
