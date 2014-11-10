@@ -22,7 +22,6 @@ options {
     this(input);
     this.cfts = cfts;
   }
-  Integer gencounter = 0;
 }
 
 program
@@ -37,16 +36,16 @@ globalStatement
   ;
    
 statement returns [CFTNode cftn]
-  : assignment {$cftn = new CFTNode("generic" + gencounter++, null);}
-  | outputstream {$cftn = new CFTNode("generic" + gencounter++, null);}
-  | inputstream {$cftn = new CFTNode("generic" + gencounter++, null);}
+  : assignment {$cftn = new CFTNode("generic", null);}
+  | outputstream {$cftn = new CFTNode("generic", null);}
+  | inputstream {$cftn = new CFTNode("generic", null);}
   | ifstatement {$cftn = $ifstatement.cftn;}
   | loopstatement {$cftn = $loopstatement.cftn;}
-  | block {$cftn = $block.cftn.removeChildAtEnd();}
-  | callStatement {$cftn = new CFTNode("generic" + gencounter++, null);}
-  | returnStatement {$cftn = new CFTNode("return" + gencounter++, null);}
-  | Break {$cftn = new CFTNode("generic" + gencounter++, null);}
-  | Continue {$cftn = new CFTNode("generic" + gencounter++, null);}
+  | block {$cftn = $block.cftn;}
+  | callStatement {$cftn = new CFTNode("generic", null);}
+  | returnStatement {$cftn = new CFTNode("return", null);}
+  | Break {$cftn = new CFTNode("generic", null);}
+  | Continue {$cftn = new CFTNode("generic", null);}
   ;
   
 outputstream
@@ -70,10 +69,9 @@ typedef
 
 block returns [CFTNode cftn]
 @init {
-  CFTNode subroot = new CFTNode("subroot" + gencounter++, null);
+  CFTNode subroot = new CFTNode("subroot", null);
 }
 @after {
-  subroot.addChildAtEnd(new CFTNode("endblock" + gencounter++, null));
   $cftn = subroot;
 }
   : ^(BLOCK declaration* (s=statement {subroot.addChildAtEnd($s.cftn);})*)
@@ -81,16 +79,16 @@ block returns [CFTNode cftn]
   
 procedure
   : ^(Procedure id=Identifier paramlist ^(Returns type)
-    block) {cfts.add(new ControlFlowTree($id.text, $block.cftn.removeChildAtEnd()));}
+    block) {cfts.add(new ControlFlowTree($id.text, $block.cftn));}
   | ^(Procedure id=Identifier paramlist 
-    block) {cfts.add(new ControlFlowTree($id.text, $block.cftn.removeChildAtEnd()));}
+    block) {cfts.add(new ControlFlowTree($id.text, $block.cftn));}
   | ^(Procedure Identifier paramlist ^(Returns type))
   | ^(Procedure Identifier paramlist)
   ;
   
 function
   : ^(Function id=Identifier paramlist ^(Returns type) 
-    block) {cfts.add(new ControlFlowTree($id.text, $block.cftn.removeChildAtEnd()));}
+    block) {cfts.add(new ControlFlowTree($id.text, $block.cftn));}
   | ^(Function Identifier paramlist ^(Returns type) ^(Assign expr))
   | ^(Function Identifier paramlist ^(Returns type))
   ;
@@ -117,14 +115,14 @@ assignment
   
 ifstatement returns [CFTNode cftn]
 @init {
-  CFTNode ifnode = new CFTNode("ifnode" + gencounter++, null);
+  CFTNode ifnode = new CFTNode("ifnode", null);
 }
   : ^(If expr s1=slist {ifnode.addChild($s1.cftn);} ^(Else s2=slist {ifnode.addChild($s2.cftn); $cftn = ifnode;})) 
-  | ^(If expr slist) {$cftn = new CFTNode("generic" + gencounter++, null);}
+  | ^(If expr slist) {$cftn = new CFTNode("generic", null);}
   ;
   
 loopstatement returns [CFTNode cftn]
-  : ^(Loop ^(While expr) slist) {$cftn = new CFTNode("generic" + gencounter++, null);}
+  : ^(Loop ^(While expr) slist) {$cftn = new CFTNode("generic", null);}
   | ^(Loop slist ^(While expr)) {$cftn = $slist.cftn;}
   | ^(Loop slist) {$cftn = $slist.cftn;}
   ;
