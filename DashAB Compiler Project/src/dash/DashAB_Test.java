@@ -2,10 +2,12 @@ package dash;
 
 import java.io.FileNotFoundException;
 
+import CFT.ControlFlowTree;
 import SymTab.*;
 
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import org.antlr.runtime.ANTLRFileStream;
 import org.antlr.runtime.CommonTokenStream;
@@ -45,8 +47,17 @@ public class DashAB_Test {
         		DOTTreeGenerator gen = new DOTTreeGenerator();
         		StringTemplate st = gen.toDOT(ast);
         		//System.out.println(st);
-        			
+        		
         		CommonTreeNodeStream nodes = new CommonTreeNodeStream(ast);
+        		nodes.setTokenStream(tokenStream);
+        		ArrayList<ControlFlowTree> cfts = new ArrayList<ControlFlowTree>();
+        		CFTExtract cftex = new CFTExtract(nodes, cfts);
+        		cftex.program();
+        		//System.out.println(cfts.get(0).toString());
+        		for (int i=0; i<cfts.size(); i++) 
+        			cfts.get(i).returnScan();
+        			
+        		nodes = new CommonTreeNodeStream(ast);
         		nodes.setTokenStream(tokenStream);
         		TypeExpand te = new TypeExpand(nodes, symtab, inputfile);
         		TypeExpand.program_return teret = te.program();
