@@ -87,7 +87,7 @@ public class CFTNode {
 			else if (this.hasContinuation())
 				return this.getChild(0).returnScan();
 			else 
-				throw new RuntimeException("dead code after return statement");
+				return false;
 		} else {
 			if (this.getChildren().size() != 0)
 				return this.getChild(0).returnScan();
