@@ -71,19 +71,6 @@ public class CFTNode {
 		return null;
 	}
 	
-	protected void leafScan() {
-		if (this.getChildren().size() == 0 && !(this.getName().startsWith("return") || this.getName().startsWith("endblock")))
-			throw new RuntimeException("requires a return statement");
-		for (int i=0; i<this.getChildren().size(); i++) {
-			this.getChild(i).leafScan();
-		}
-	}
-	
-	protected void deadCodeScan() {
-		if (getName().startsWith("return") && !this.getChild(0).getName().startsWith("endblock"))
-			throw new RuntimeException("");
-	}
-	
 	protected Boolean returnScan() {
 		if (this.getName().startsWith("return"))
 			return true;
