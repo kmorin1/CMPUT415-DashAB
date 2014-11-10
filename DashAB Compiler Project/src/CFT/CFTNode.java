@@ -75,7 +75,7 @@ public class CFTNode {
 		if (this.getName().startsWith("return"))
 			return true;
 		if (this.getName().startsWith("ifnode")) {
-			Boolean b = this.getChild(0).returnScan() && this.getChild(1).returnScan();
+			Boolean b = this.getChild(1).returnScan() && this.getChild(2).returnScan();
 			if (b && this.hasContinuation())
 				throw new RuntimeException("has dead code after tautology in if block");
 			return b;
