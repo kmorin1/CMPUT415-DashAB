@@ -63,14 +63,24 @@ public class CFTNode {
 		for (int i=0; i<this.getChildren().size(); i++)
 			this.getChild(i).collapse();
 	}
-	private CFTNode getContinuation() {
-		if (this.getName().startsWith("endblock") && this.getChildren().size() != 0)
-			return this.getChild(0);
-		if (this.getChildren().size() != 0)
-			return this.getChild(0).getContinuation();
-		return null;
-	}
 	
+	private CFTNode getContinuation() {
+		CFTNode last = this.getLast();
+		if (last.getName().startsWith("endblock")) {
+			last.parent.getChildren().clear();
+			return null;
+		}
+		while (!last.parent.getName().startsWith("endblock"))
+			last = last.parent;
+		
+		return last;
+	}
+	public CFTNode getLast() {
+		if (this.getChildren().size() == 0)
+			return this;
+		else
+			return this.getChild(0).getLast();
+	}
 	protected Boolean returnScan() {
 		if (this.getName().startsWith("return")) {
 			if (this.getChildren().size() != 0 && !this.getChild(0).getName().startsWith("endblock"))
