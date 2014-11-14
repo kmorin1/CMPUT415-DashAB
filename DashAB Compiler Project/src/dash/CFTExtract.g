@@ -82,8 +82,7 @@ block returns [CFTNode cftn]
 procedure
   : ^(Procedure id=Identifier paramlist ^(Returns type)
     block) {cfts.add(new ControlFlowTree($id.text, $block.cftn.removeChildAtEnd()));}
-  | ^(Procedure id=Identifier paramlist 
-    block) {cfts.add(new ControlFlowTree($id.text, $block.cftn.removeChildAtEnd()));}
+  | ^(Procedure id=Identifier paramlist block) 
   | ^(Procedure Identifier paramlist ^(Returns type))
   | ^(Procedure Identifier paramlist)
   ;
