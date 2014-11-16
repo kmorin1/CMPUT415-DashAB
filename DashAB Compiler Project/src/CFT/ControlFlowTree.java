@@ -9,14 +9,13 @@ public class ControlFlowTree {
 		this(name, new CFTNode("root", null));
 	}
 	public ControlFlowTree(String name, CFTNode root) {
-		this.name = name;
-		this.root = root;
-		this.root.collapse();
-		this.hasreturns = true;
+		this(name, root, true);
 	}
 	public ControlFlowTree(String name, CFTNode root, boolean hasreturns) {
-		this(name, root);
+		this.name = name;
+		this.root = root;
 		this.hasreturns = hasreturns;
+		this.root.collapse();
 	}
 	
 	public CFTNode getRoot() {return root;}
@@ -24,7 +23,7 @@ public class ControlFlowTree {
 	public void returnScan() {
 		try {
 			if (!root.returnScan() && hasreturns)
-				throw new RuntimeException(name + " requires a return statement on all execution paths");
+				throw new RuntimeException("requires a return statement on all execution paths");
 		} catch (RuntimeException re) {
 			throw new RuntimeException(name + " " + re.getMessage());
 		}
