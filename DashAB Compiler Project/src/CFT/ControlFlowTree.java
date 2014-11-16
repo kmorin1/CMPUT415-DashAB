@@ -3,6 +3,7 @@ package CFT;
 public class ControlFlowTree {
 	String name;
 	CFTNode root;
+	Boolean hasreturns;
 	
 	public ControlFlowTree(String name) {
 		this(name, new CFTNode("root", null));
@@ -11,13 +12,18 @@ public class ControlFlowTree {
 		this.name = name;
 		this.root = root;
 		this.root.collapse();
+		this.hasreturns = true;
+	}
+	public ControlFlowTree(String name, CFTNode root, boolean hasreturns) {
+		this(name, root);
+		this.hasreturns = hasreturns;
 	}
 	
 	public CFTNode getRoot() {return root;}
 	
 	public void returnScan() {
 		try {
-			if (!root.returnScan())
+			if (!root.returnScan() && hasreturns)
 				throw new RuntimeException(name + " requires a return statement on all execution paths");
 		} catch (RuntimeException re) {
 			throw new RuntimeException(name + " " + re.getMessage());
