@@ -173,6 +173,7 @@ expr
   | ^(Minus expr expr)
   | ^(Multiply expr expr)
   | ^(Divide expr expr)
+  | ^(Mod expr expr)
   | ^(Exponent expr expr)
   | ^(Equals expr expr)
   | ^(NEquals expr expr)
