@@ -100,7 +100,7 @@ paramlist
   ;
   
 parameter
-  : ^(Identifier type)
+  : ^(Identifier specifier? type)
   ;
   
 callStatement
