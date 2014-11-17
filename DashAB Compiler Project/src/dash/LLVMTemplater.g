@@ -33,7 +33,7 @@ options {
   
   String AddOp = "add"; String SubOp = "sub"; String MulOp = "mul"; String DivOp = "div"; String ModOp = "rem";
   
-  String Cmp = "icmp";
+  String Cmp = "icmp"; String FloatCmp = "fcmp";
   String EqOp = "eq"; String NeOp = "ne";
   String GtOp = "gt"; String LtOp = "lt";
   String GteOp = "ge"; String LteOp = "le";
@@ -58,6 +58,15 @@ options {
     }
     else {
       return "o" + operation;
+    }
+  }
+  
+  private String getComp(String type) {
+    if (type.toString().equals(FloatType)) {
+      return FloatCmp;
+    }
+    else {
+      return Cmp;
     }
   }
   
@@ -282,17 +291,17 @@ expr returns [String stype, String resultVar]
   | ^(Exponent type a=expr {tmpNum1 = counter;} b=expr {tmpNum2 = counter;}) {$stype = $type.st.toString();}
     ->  exponent(expr1={$a.st}, expr2={$b.st}, type={$type.st}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
   | ^(Equals type a=expr {tmpNum1 = counter;} b=expr {tmpNum2 = counter;}) {$stype = $type.st.toString();} 
-    -> compare(expr1={$a.st}, expr2={$b.st}, comparison={Cmp}, operator={getCompOp($a.stype, EqOp)}, type={$a.stype}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
+    -> compare(expr1={$a.st}, expr2={$b.st}, comparison={getComp($a.stype)}, operator={getCompOp($a.stype, EqOp)}, type={$a.stype}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
   | ^(NEquals type a=expr {tmpNum1 = counter;} b=expr {tmpNum2 = counter;}) {$stype = $type.st.toString();} 
-    -> compare(expr1={$a.st}, expr2={$b.st}, comparison={Cmp}, operator={getCompOp($a.stype, NeOp)}, type={$a.stype}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
+    -> compare(expr1={$a.st}, expr2={$b.st}, comparison={getComp($a.stype)}, operator={getCompOp($a.stype, NeOp)}, type={$a.stype}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
   | ^(GThan type a=expr {tmpNum1 = counter;} b=expr {tmpNum2 = counter;}) {$stype = $type.st.toString();} 
-    -> compare(expr1={$a.st}, expr2={$b.st}, comparison={Cmp}, operator={getCompOp($a.stype, GtOp)}, type={$a.stype}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
+    -> compare(expr1={$a.st}, expr2={$b.st}, comparison={getComp($a.stype)}, operator={getCompOp($a.stype, GtOp)}, type={$a.stype}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
   | ^(LThan type a=expr {tmpNum1 = counter;} b=expr {tmpNum2 = counter;}) {$stype = $type.st.toString();} 
-    -> compare(expr1={$a.st}, expr2={$b.st}, comparison={Cmp}, operator={getCompOp($a.stype, LtOp)}, type={$a.stype}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
+    -> compare(expr1={$a.st}, expr2={$b.st}, comparison={getComp($a.stype)}, operator={getCompOp($a.stype, LtOp)}, type={$a.stype}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
   | ^(GThanE type a=expr {tmpNum1 = counter;} b=expr {tmpNum2 = counter;}) {$stype = $type.st.toString();} 
-    -> compare(expr1={$a.st}, expr2={$b.st}, comparison={Cmp}, operator={getCompOp($a.stype, GteOp)}, type={$a.stype}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
+    -> compare(expr1={$a.st}, expr2={$b.st}, comparison={getComp($a.stype)}, operator={getCompOp($a.stype, GteOp)}, type={$a.stype}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
   | ^(LThanE type a=expr {tmpNum1 = counter;} b=expr {tmpNum2 = counter;}) {$stype = $type.st.toString();} 
-    -> compare(expr1={$a.st}, expr2={$b.st}, comparison={Cmp}, operator={getCompOp($a.stype, LteOp)}, type={$a.stype}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
+    -> compare(expr1={$a.st}, expr2={$b.st}, comparison={getComp($a.stype)}, operator={getCompOp($a.stype, LteOp)}, type={$a.stype}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
   | ^(Or type a=expr {tmpNum1 = counter;} b=expr {tmpNum2 = counter;}) {$stype = $type.st.toString();} 
     -> arithmetic(expr1={$a.st}, expr2={$b.st}, operator={OrOp}, type={$type.st}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
   | ^(Xor type a=expr {tmpNum1 = counter;} b=expr {tmpNum2 = counter;}) {$stype = $type.st.toString();} 
