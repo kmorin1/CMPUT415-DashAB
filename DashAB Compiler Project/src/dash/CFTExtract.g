@@ -57,7 +57,10 @@ inputstream
   : ^(LArrow Identifier Identifier)
   ;
 
-declaration
+declaration returns [CFTNode cftn]
+@after {
+  $cftn = new CFTNode("generic" + gencounter++, null);
+}
   : ^(DECL specifier* type* Identifier)
   | ^(DECL specifier* type* ^(Assign Identifier expr))
   | ^(DECL specifier* ^(Assign Identifier StdInput))
@@ -133,6 +136,11 @@ slist returns [CFTNode cftn]
   : block {$cftn = $block.cftn;}
   | statement {
     CFTNode temp = $statement.cftn;
+    temp.addChildAtEnd(new CFTNode("endblock" + gencounter++, null));
+    $cftn = temp;
+  }
+  | declaration {
+    CFTNode temp = $declaration.cftn;
     temp.addChildAtEnd(new CFTNode("endblock" + gencounter++, null));
     $cftn = temp;
   }

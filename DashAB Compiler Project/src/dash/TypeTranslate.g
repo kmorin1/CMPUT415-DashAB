@@ -128,6 +128,7 @@ loopstatement
 slist
   : block
   | statement
+  | declaration
   ;
   
 type

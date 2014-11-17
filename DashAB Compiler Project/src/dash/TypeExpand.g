@@ -450,6 +450,7 @@ loopstatement
 slist
   : block
   | statement
+  | declaration
   ;
   
 type returns [Type tsym]

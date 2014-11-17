@@ -234,6 +234,7 @@ loopstatement
 slist
   : block -> return(a={$block.st})
   | statement -> return(a={$statement.st})
+  | declaration -> return(a={$declaration.st})
   ;
   
 type
