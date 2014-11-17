@@ -83,15 +83,13 @@ public class CFTNode {
 	}
 	protected Boolean returnScan() {
 		if (this.getName().startsWith("return")) {
-			if (this.getChildren().size() != 0 && !this.getChild(0).getName().startsWith("endblock"))
-				throw new RuntimeException("dead code after return statement");
-			else
-				return true;
+			return true;
 		}
 		if (this.getName().startsWith("ifnode")) {
 			Boolean b = this.getChild(this.getChildren().size()-2).returnScan() && this.getChild(this.getChildren().size()-1).returnScan();
-			if (b && this.hasContinuation())
+			/*if (b && this.hasContinuation())
 				throw new RuntimeException("has dead code after tautology in if block");
+			*/
 			if (b)
 				return true;
 			else if (this.hasContinuation())
