@@ -173,8 +173,8 @@ declaration
   currentscope.define(vs);
 }
   : ^(DECL (s=specifier {specs.add($s.tsym);})* (t=type {types.add($t.tsym);})* id=Identifier) {
-    if (specs.size() != 0) {
-        throw new RuntimeException(getErrorHeader() + "cannot have specifiers without assigning a variable");
+    if (specs.size() != 0 && types.size() == 0) {
+        throw new RuntimeException(getErrorHeader() + "cannot have only specifiers without assigning a variable");
     }
   } -> ^(DECL type* $id)
   | ^(DECL (s=specifier {specs.add($s.tsym);})* (t=type {types.add($t.tsym);})* ^(Assign id=Identifier e=expr)) {
