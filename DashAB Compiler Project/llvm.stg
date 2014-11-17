@@ -62,7 +62,7 @@ entry:
 >>
 
 declareVoidProcOrFunc(procName, procVars, procType, procBody) ::= <<
-define <retType> @<procName>(<procVars>) {
+define void @<procName>(<procVars>) {
 entry:
   <procBody>
   ret void

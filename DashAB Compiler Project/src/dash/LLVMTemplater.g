@@ -215,7 +215,7 @@ callStatement
   
 returnStatement
   : ^(Return expr) -> returnStat(expr={$expr.st}, tmpNum={counter}, type={$expr.stype})
-  | Return
+  | Return -> returnVoid()
   ;
   
 assignment
