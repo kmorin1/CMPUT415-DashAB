@@ -13,21 +13,21 @@ import java.util.List;
 ***/
 public class Symbol { // A generic programming language symbol
     String name;      // All symbols at least have a name
-    List<Type> types;
-    List<Type> specs;
+    Type type;
+    Type spec;
     public Symbol(String name) { this.name = name; }
-    public Symbol(String name, List<Type> types) {this(name); this.types = types; }
-    public Symbol(String name, List<Type> types, List<Type> specs) {
+    public Symbol(String name, Type type) {this(name); this.type = type; }
+    public Symbol(String name, Type type, Type spec) {
     	this(name); 
-    	this.types = types;
-    	this.specs = specs;
+    	this.type = type;
+    	this.spec = spec;
     }
     
     public String getName() { return name; }
     //public String getTypeName() { return type.toString(); }
-    public List getTypes() { return types; }
-    public List getSpecs() { return specs; }
-    public Type getSpec(int index) {return specs.get(index);}
-    public Type getType(int index) {return (Type) types.get(index);}
+    public Type getType() { return type; }
+    public Type getSpec() { return spec; }
+    //public Type getSpec(int index) {return specs.get(index);}
+    //public Type getType(int index) {return (Type) types.get(index);}
     
 }

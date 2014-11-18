@@ -95,7 +95,7 @@ outputstream
     if ($e.stype.getName().equals("tuple"))
       throw new RuntimeException(getErrorHeader() + "cannot send tuples to streams");
     
-    String stype = vs.getType(0).getName();
+    String stype = vs.getType().getName();
     if (!stype.equals("std_output"))
       throw new RuntimeException(getErrorHeader() + $stream.text + " is not an output stream");
   }
@@ -118,8 +118,8 @@ inputstream
     VariableSymbol streamVS = (VariableSymbol) streamSymbol;
     VariableSymbol varVS = (VariableSymbol) varSymbol;
     
-    String streamType = streamVS.getType(0).getName();
-    varType = varVS.getType(0).getName();
+    String streamType = streamVS.getType().getName();
+    varType = varVS.getType().getName();
     if (!streamType.equals("std_input"))
       throw new RuntimeException(getErrorHeader() + $stream.text + " is not an input stream");
     else if (varType.equals("std_input") || varType.equals("std_output") || varType.equals("tuple"))
@@ -136,7 +136,7 @@ streamstate
       throw new RuntimeException(getErrorHeader() + $stream.text + " is undefined");
   
     VariableSymbol streamVS = (VariableSymbol) streamSymbol;
-    String streamType = streamVS.getType(0).getName();
+    String streamType = streamVS.getType().getName();
     if (!streamType.equals("std_input"))
       throw new RuntimeException(getErrorHeader() + $stream.text + " is not an input stream");
   }
@@ -144,8 +144,8 @@ streamstate
 
 declaration
 @init {
-  ArrayList<Type> specs = new ArrayList<Type>();
-  ArrayList<Type> types = new ArrayList<Type>(); 
+  BuiltInTypeSymbol spec = null;
+  BuiltInTypeSymbol type = null; 
   VariableSymbol vs = null;
 }
 @after {
@@ -164,7 +164,7 @@ declaration
     throw new RuntimeException(getErrorHeader() + "variable " + $id.text + " defined more than once in same scope");
   }  
 
-  vs = new VariableSymbol($id.text, types, specs);
+  vs = new VariableSymbol($id.text, type, spec);
   
   if (!vs.isConst() && currentscope.getScopeName() == "global") {
     throw new RuntimeException(getErrorHeader() + "global variable " + vs.getName() + " must be const");
@@ -172,27 +172,31 @@ declaration
   
   currentscope.define(vs);
 }
-  : ^(DECL (s=specifier {specs.add($s.tsym);})* (t=type {types.add($t.tsym);})* id=Identifier) {
-    if (specs.size() != 0 && types.size() == 0) {
-        throw new RuntimeException(getErrorHeader() + "cannot have only specifiers without assigning a variable");
-    }
+
+  : ^(DECL specifier? (t=type {type = (BuiltInTypeSymbol) $t.tsym;}) id=Identifier) {
+    //TO-DO: add vector and matrix type expansion for rewrite rule
   } -> ^(DECL type* $id)
-  | ^(DECL (s=specifier {specs.add($s.tsym);})* (t=type {types.add($t.tsym);})* ^(Assign id=Identifier e=expr)) {
-    if (specs.size() > 1)
-      throw new RuntimeException(getErrorHeader() + "invalid use of specifiers");
-    //System.out.println(types.get(0).getName());
-    if (types.size() > 0 && symtab.lookup($e.stype, types.get(0)) == null)
-      throw new RuntimeException(getErrorHeader() + "assignment type error, expected " + types.get(0).getName() + " but got " + $e.stype.getName());
+  | ^(DECL (s=specifier {spec = (BuiltInTypeSymbol) $s.tsym;}) (t=type {type = (BuiltInTypeSymbol) $t.tsym;}) ^(Assign id=Identifier e=expr)) {
+    
+    if (type != null && symtab.lookup($e.stype, type) == null)
+      throw new RuntimeException(getErrorHeader() + "assignment type error, expected " + type.getName() + " but got " + $e.stype.getName());
       
     stream_DECL.reset();
     
-    if (types.size() == 0 && ($e.stype.getName() == "null" || $e.stype.getName() == "identity")) {
+    if (type == null && ($e.stype.getName() == "null" || $e.stype.getName() == "identity")) {
       throw new RuntimeException(getErrorHeader() + "cannot infer type for variable " + $id.text);
     }
-    VariableSymbol temp = new VariableSymbol($id.text, types, specs);
-    if (types.size() == 0 && (temp.isVar() || temp.isConst())) {
-      types.clear();
+    VariableSymbol temp = new VariableSymbol($id.text, type, spec);
+    ArrayList<Type> types = new ArrayList<Type>();
+    if (type == null && (temp.isVar() || temp.isConst())) {
       types.add($e.stype);
+    } else {
+      types.add(type);
+      if (type.getName().equals("vector")) {
+        VectorTypeSymbol vts = (VectorTypeSymbol) type;
+        types.add(vts.getVectorType());
+        types.add(new BuiltInTypeSymbol(vts.getVectorSize().toString()));
+      }
     }
       
     for (int i=0; i<types.size(); i++) {
@@ -205,9 +209,9 @@ declaration
     }
     
   } -> ^(DECL ^(DECL DECL*) ^(Assign $id $e))
-  | ^(DECL (s=specifier {specs.add($s.tsym);})* ^(Assign id=Identifier StdInput {types.add((Type) symtab.resolveType("std_input"));}))
+  | ^(DECL (s=specifier {spec = (BuiltInTypeSymbol) $s.tsym;})* ^(Assign id=Identifier StdInput {type = (BuiltInTypeSymbol) symtab.resolveType("std_input");}))
     -> ^(DECL StdInput["std_input"] ^(Assign $id StdInput))
-  | ^(DECL (s=specifier {specs.add($s.tsym);})* ^(Assign id=Identifier StdOutput {types.add((Type) symtab.resolveType("std_output"));}))
+  | ^(DECL (s=specifier {spec = (BuiltInTypeSymbol) $s.tsym;})* ^(Assign id=Identifier StdOutput {type = (BuiltInTypeSymbol) symtab.resolveType("std_output");}))
     -> ^(DECL StdOutput["std_output"] ^(Assign $id StdOutput))
   ;
   
@@ -245,7 +249,7 @@ block
 procedure
 @init {
   //ArrayList<Symbol> params = new ArrayList<Symbol>();
-  ArrayList<Type> type = new ArrayList<Type>();
+  BuiltInTypeSymbol type = null;
   Boolean def = false;
 }
 @after {
@@ -259,8 +263,8 @@ procedure
     if (check.getParamList().size() != ps.getParamList().size())
       throw new RuntimeException(getErrorHeader() + "mismatch in number of operators between prototype and definition");
     for (int i=0; i<ps.getParamList().size(); i++) {
-      if (symtab.lookup(ps.getParamList().get(i).getType(0), check.getParamList().get(i).getType(0)) == null &&
-        symtab.lookup(check.getParamList().get(i).getType(0), ps.getParamList().get(i).getType(0)) == null)
+      if (symtab.lookup(ps.getParamList().get(i).getType(), check.getParamList().get(i).getType()) == null &&
+        symtab.lookup(check.getParamList().get(i).getType(), ps.getParamList().get(i).getType()) == null)
         throw new RuntimeException(getErrorHeader() + "type mismatch between prototype and definition");
     }
   }
@@ -270,14 +274,16 @@ procedure
   currentscope = currentscope.getEnclosingScope();
   ret_type_stack.pop();
 }
-  : ^(Procedure id=Identifier pl=paramlist ^(Returns type {ret_type_stack.push($type.tsym);}) (block {def = true;})?) {type.add($type.tsym);}
-  | ^(Procedure id=Identifier pl=paramlist {ret_type_stack.push(new BuiltInTypeSymbol("void"));} (block {def = true;})?)
+  : ^(Procedure id=Identifier pl=paramlist ^(Returns type 
+    {ret_type_stack.push($type.tsym);}) (block {def = true;})?) {type = (BuiltInTypeSymbol) $type.tsym;}
+  | ^(Procedure id=Identifier pl=paramlist {ret_type_stack.push(new BuiltInTypeSymbol("void"));} 
+    (block {def = true;})?)
   ;
    
 function
 @init {
   //ArrayList<Symbol> params = new ArrayList<Symbol>();
-  ArrayList<Type> type = new ArrayList<Type>();
+  BuiltInTypeSymbol type = null;
   //currentscope = new NestedScope("funcscope", currentscope);
   Boolean def = false;
 }
@@ -299,8 +305,8 @@ function
     if (check.getParamList().size() != fs.getParamList().size())
       throw new RuntimeException(getErrorHeader() + "mismatch in number of operators between prototype and definition");
     for (int i=0; i<fs.getParamList().size(); i++) {
-      if (symtab.getBuiltInSymbol(check.getParamList().get(i).getType(0).getName()).getName().equals(
-        symtab.getBuiltInSymbol(fs.getParamList().get(i).getType(0).getName()).getName()))
+      if (symtab.getBuiltInSymbol(check.getParamList().get(i).getType().getName()).getName().equals(
+        symtab.getBuiltInSymbol(fs.getParamList().get(i).getType().getName()).getName()))
         throw new RuntimeException(getErrorHeader() + "type mismatch between prototype and definition");
     }
   }
@@ -311,13 +317,13 @@ function
   ret_type_stack.pop();
 }
   : ^(Function id=Identifier pl=paramlist ^(Returns type {ret_type_stack.push($type.tsym);}) {inFunction = true;} (
-    block {def = true;})? {inFunction = false;}) {type.add($type.tsym);}
+    block {def = true;})? {inFunction = false;}) {type = (BuiltInTypeSymbol) $type.tsym;}
   | ^(Function id=Identifier pl=paramlist ^(Returns type {ret_type_stack.push(new BuiltInTypeSymbol("N/A"));})
    {inFunction = true; def = true;} ^(Assign expr {
     if (symtab.lookup($expr.stype, $type.tsym) == null)
       throw new RuntimeException(getErrorHeader() + "type mismatch on function return");
   }
-  ) {inFunction = false;}) {type.add($type.tsym);}
+  ) {inFunction = false;}) {type = (BuiltInTypeSymbol) $type.tsym;}
   ;
   
 paramlist returns [ArrayList<Symbol> params]
@@ -330,15 +336,15 @@ paramlist returns [ArrayList<Symbol> params]
   ;
   
 parameter returns [VariableSymbol varsym]
-@init {ArrayList<Type> type = new ArrayList<Type>();}
+@init {BuiltInTypeSymbol type = null;}
 @after {
-  type.add($t.tsym);
-  ArrayList<Type> spec = new ArrayList<Type>();
+  type = (BuiltInTypeSymbol) $t.tsym;
+  Type spec;
   if ($s.text == null) {
-  	spec.add(new BuiltInTypeSymbol("const"));
+  	spec = new BuiltInTypeSymbol("const");
   }
   else {
-  	spec.add(new BuiltInTypeSymbol($s.text));
+  	spec = new BuiltInTypeSymbol($s.text);
   }
   
   VariableSymbol vs = new VariableSymbol($id.text, type, spec);
@@ -373,8 +379,8 @@ callStatement
       
       for (int i=0; i<argsyms.size(); i++) {
         VariableSymbol vs = (VariableSymbol) argsyms.get(i);
-        if (!vs.getType(0).getName().equals(argtypes.get(i).getName()))
-          throw new RuntimeException(getErrorHeader() + "type mismatch, expected " +  vs.getType(0).getName() + " but got " + argtypes.get(i).getName());
+        if (!vs.getType().getName().equals(argtypes.get(i).getName()))
+          throw new RuntimeException(getErrorHeader() + "type mismatch, expected " +  vs.getType().getName() + " but got " + argtypes.get(i).getName());
       }
     }
   }
@@ -410,12 +416,12 @@ assignment
     if (varVS.isConst())
       throw new RuntimeException(getErrorHeader() + "Cannot reassign a variable to a const");
     
-    String varType = varVS.getType(0).getName();
+    String varType = varVS.getType().getName();
     
     if (varType.equals("std_input") || varType.equals("std_output"))
       throw new RuntimeException(getErrorHeader() + "Cannot assign to stream " + $var.text);
       
-    if (symtab.lookup($e.stype, varVS.getType(0)) == null)
+    if (symtab.lookup($e.stype, varVS.getType()) == null)
       throw new RuntimeException(getErrorHeader() + "assignment type error, expected " + varType + " but got " + $e.stype.getName());
     
   }
@@ -453,6 +459,7 @@ slist
   | declaration
   ;
   
+  //TO-DO: change vector and matrix to return their own type objects
 type returns [Type tsym]
   : t=Boolean {$tsym = (Type) symtab.resolveType($t.text);}
   | t=Integer {$tsym = (Type) symtab.resolveType($t.text);}
@@ -693,25 +700,25 @@ expr returns [Type stype]
         throw new RuntimeException(errorhead + ps.getName() + ": calling a procedure inside a function");
       }
         
-      $stype = ps.getType(0);
+      $stype = ps.getType();
       ArrayList<Symbol> argsyms = ps.getParamList();
       if (argsyms.size() != argtypes.size())
         throw new RuntimeException(errorhead + ps.getName() + ": number of arguments doesn't match");
       for (int i=0; i<argsyms.size(); i++) {
         VariableSymbol vs = (VariableSymbol) argsyms.get(i);
         
-        if (symtab.lookup(argtypes.get(i), vs.getType(0)) == null)
-          throw new RuntimeException(errorhead + "type mismatch, expected " +  vs.getType(0).getName() + " but got " + argtypes.get(i).getName());
+        if (symtab.lookup(argtypes.get(i), vs.getType()) == null)
+          throw new RuntimeException(errorhead + "type mismatch, expected " +  vs.getType().getName() + " but got " + argtypes.get(i).getName());
       }
     } else if (fs != null && ps == null) {
-      $stype = fs.getType(0);
+      $stype = fs.getType();
       ArrayList<Symbol> argsyms = fs.getParamList();
       if (argsyms.size() != argtypes.size())
         throw new RuntimeException(errorhead + fs.getName() + ": number of arguments doesn't match");
       for (int i=0; i<argsyms.size(); i++) {
         VariableSymbol vs = (VariableSymbol) argsyms.get(i);
-        if (symtab.lookup(argtypes.get(i), vs.getType(0)) == null)
-          throw new RuntimeException(errorhead + "type mismatch, expected " +  vs.getType(0).getName() + " but got " + argtypes.get(i).getName());
+        if (symtab.lookup(argtypes.get(i), vs.getType()) == null)
+          throw new RuntimeException(errorhead + "type mismatch, expected " +  vs.getType().getName() + " but got " + argtypes.get(i).getName());
       }
     } else 
       throw new RuntimeException(errorhead + "Multiple defined error");
@@ -722,13 +729,13 @@ expr returns [Type stype]
     if (s == null)
       throw new RuntimeException(errorhead+ $id.text + " is undefined");
     VariableSymbol vs = (VariableSymbol) s;
-    $stype = symtab.getBuiltInSymbol(vs.getType(0).getName());
+    $stype = symtab.getBuiltInSymbol(vs.getType().getName());
     if ($stype.getName().equals("std_input") || $stype.getName().equals("std_output"))
       throw new RuntimeException(errorhead + "stream " + $id.text + " cannot occur in an expression");
     stream_Identifier.reset();
     //System.out.println($stype.getName());
-    if (symtab.getBuiltInSymbol(vs.getType(0).getName()).equals("tuple")) {
-      ts = (TupleSymbol) vs.getType(0);
+    if (symtab.getBuiltInSymbol(vs.getType().getName()).equals("tuple")) {
+      ts = (TupleSymbol) vs.getType();
       
       for (int i=0; i<ts.getFieldNames().size(); i++) {
         stream_Identifier.add((CommonTree) adaptor.create(Identifier, ts.getFieldNames().get(i).type.getName()));
@@ -775,9 +782,9 @@ expr returns [Type stype]
     if (s == null)
       throw new RuntimeException(errorhead+ $id.text + " is undefined");
     VariableSymbol vs = (VariableSymbol) s;
-    if (!vs.getType(0).getName().equals("tuple"))
+    if (!vs.getType().getName().equals("tuple"))
       throw new RuntimeException(errorhead + ". operator must be used on a tuple");
-    ts = (TupleSymbol) vs.getType(0);
+    ts = (TupleSymbol) vs.getType();
     index = -1; } 
     (eid=Identifier {
     for (Integer i=0; i<ts.getFieldNames().size(); i++) {

@@ -6,21 +6,24 @@ import java.util.List;
 public class VariableSymbol extends Symbol {
 	boolean isconst;
 	boolean isvar;
-	public VariableSymbol(String name, List<Type> type) { 
+	public VariableSymbol(String name, Type type) { 
 		super(name, type); 
 		isconst = false;
 		isvar = false;
 	}
-	public VariableSymbol(String name, List<Type> type, List<Type> specs) {
-		super(name, type, specs);
-		isconst = false;
-		isvar = false;
-		for (int i=0; i<specs.size(); i++) {
-			//System.out.println(specs.get(i));
-			if (specs.get(i).getName().equals("const")) 
-				isconst = true;
-			if (specs.get(i).getName().equals("var"))
-				isvar = true;
+	public VariableSymbol(String name, Type type, Type spec) {
+		super(name, type, spec);
+		if (spec != null && spec.getName().equals("const"))
+			isconst = true;
+		else 
+			isconst = false;
+		if (spec != null && spec.getName().equals("var"))
+			isvar = true;
+		else 
+			isvar = false;
+		if (spec == null) {
+			isconst = false;
+			isvar = false;
 		}
 	}
 	
