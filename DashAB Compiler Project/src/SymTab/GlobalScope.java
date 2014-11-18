@@ -5,10 +5,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class GlobalScope implements Scope {
-	public Map<String, Symbol> symbols = new HashMap<String, Symbol>();
-	
+    public int scopeNum = 0;
+        public Map<String, Symbol> symbols = new HashMap<String, Symbol>();
+        
     //protected ArrayList<Scope> children = new ArrayList<Scope>();
-	
+        
     // Satisfy Scope interface
     //public void addScopeChild(Scope scope) {children.add(scope);}
     public String getScopeName() { return "global"; }
