@@ -32,6 +32,10 @@ uint32_t power_i32(uint32_t base, uint32_t exp) {
     return result;
 }
 
+float power_float(float base, float exp) {
+    return pow(base, exp);
+}
+
 uint32_t print_i32(uint32_t x) {
     return printf("%d", x);
 }
