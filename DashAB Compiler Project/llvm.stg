@@ -77,29 +77,29 @@ param(name, type) ::= << <type>* %.<name>
 >>
 
 
-outputDecl(varName, varType, expr, tmpNum) ::= <<
+outputDecl(sym, varName, scopeNum, varType, expr, tmpNum) ::= <<
 ;start outputDecl
 <expr>
 
-%.<varName> = alloca <varType>, align 4
-store <varType> %.<tmpNum>, <varType>* %.<varName>
+<sym>.<varName>.<scopeNum> = alloca <varType>, align 4
+store <varType> %.<tmpNum>, <varType>* <sym>.<varName>.<scopeNum>
 ;end outputDecl
 
 >>
 
-outputEmptyDecl(varName, varType, value) ::= <<
+outputEmptyDecl(sym, varName, scopeNum, varType, value) ::= <<
 ;start outputEmptyDecl
-%.<varName> = alloca <varType>, align 4
-store <varType> <value>, <varType>* %.<varName>
+<sym>.<varName>.<scopeNum> = alloca <varType>, align 4
+store <varType> <value>, <varType>* <sym>.<varName>.<scopeNum>
 ;end outputEmptyDecl
 
 >>
 
-outputAssi(varName, varType, expr, tmpNum) ::= <<
+outputAssi(sym, varName, varType, scopeNum, expr, tmpNum) ::= <<
 ;start outputAssi
 <expr>
 
-store <varType> %.<tmpNum>, <varType>* %.<varName>
+store <varType> %.<tmpNum>, <varType>* <sym>.<varName>.<scopeNum>
 ;end outputAssi
 
 >>
@@ -113,9 +113,9 @@ store <varType> <value>, <varType>* %.temp<tmpNum>
 
 >>
 
-load_var(tmpNum, var, varType) ::= <<
+load_var(tmpNum, sym, var, scopeNum, varType) ::= <<
 ;start load_var
-%.<tmpNum> = load <varType>* %.<var>
+%.<tmpNum> = load <varType>* <sym>.<var>.<scopeNum>
 ;end load_var
 
 >>

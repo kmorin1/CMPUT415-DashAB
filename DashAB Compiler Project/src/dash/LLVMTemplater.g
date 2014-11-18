@@ -23,10 +23,11 @@ options {
     int tmpcount= 0;
     int scopeCounter = 0;
     int numLoop = 0;
-    public LLVMTemplater(TreeNodeStream input, SymbolTable symtab) {
+    int scopeNum = 0;
+    public LLVMTemplater(TreeNodeStream input, SymbolTable unused) {
         this(input);
-        this.symtab = symtab;
-        currentscope = symtab.globals;
+        this.symtab = new SymbolTable();
+        currentscope = this.symtab.globals;
     }
   
   String IntType = "i32"; String CharType = "i8"; String BoolType = "i1"; String FloatType = "float";
@@ -143,6 +144,16 @@ options {
 	  }
     return "";
   }
+  
+  private String getLLVMvarSymbol(int scopeNum) {
+  	if (scopeNum == 0) {
+  		return "@";
+  	}
+  	else {
+  		return "\%";
+  	}
+  	
+  }
 }
 
 program
@@ -181,27 +192,60 @@ streamstate
 	;
 
 declaration
-  : ^(DECL type* Identifier) -> outputEmptyDecl(varName={$Identifier}, varType={$type.st}, value={getEmptyValue($type.st.toString())})
-  | ^(DECL type* ^(Assign Identifier expr)) -> outputDecl(varName={$Identifier}, varType={$type.st}, expr={$expr.st}, tmpNum={counter})
-  | ^(DECL StdInput ^(Assign Identifier StdInput))
-  | ^(DECL StdOutput ^(Assign Identifier StdOutput))
+@init {
+	VariableSymbol vs = null;
+	int currentScopeNum = 0;
+	if (currentscope instanceof NestedScope) {
+  	NestedScope ns = (NestedScope)currentscope;
+    currentScopeNum = ns.scopeNum;
+  }
+  else if (currentscope instanceof GlobalScope) {
+  	GlobalScope gs = (GlobalScope)currentscope;
+  	currentScopeNum = gs.scopeNum;
+  }
+}
+@after {
+  vs = new VariableSymbol($id.text, new ArrayList<Type>(), new ArrayList<Type>());
+  vs.scopeNum = currentScopeNum;
+  
+  currentscope.define(vs);
+}
+  : ^(DECL type* id=Identifier) -> outputEmptyDecl(sym={getLLVMvarSymbol(currentScopeNum)}, varName={$Identifier}, scopeNum={currentScopeNum}, varType={$type.st}, value={getEmptyValue($type.st.toString())})
+  | ^(DECL type* ^(Assign id=Identifier expr)) -> outputDecl(sym={getLLVMvarSymbol(currentScopeNum)}, varName={$Identifier}, scopeNum={currentScopeNum}, varType={$type.st}, expr={$expr.st}, tmpNum={counter})
+  | ^(DECL StdInput ^(Assign id=Identifier StdInput))
+  | ^(DECL StdOutput ^(Assign id=Identifier StdOutput))
   ;
 
 block
+@init {
+	scopeNum++;
+	currentscope = new NestedScope("blockscope", currentscope, scopeNum);
+}
+@after {currentscope = currentscope.getEnclosingScope();}
   : ^(BLOCK d+=declaration* s+=statement*) -> returnTwo(a={$d}, b={$s})
   ;
   
 procedure
+@after {
+	currentscope = currentscope.getEnclosingScope();
+}
   : ^(Procedure Identifier paramlist ^(Returns type) block) -> declareProcOrFunc(procName={$Identifier}, procVars={$paramlist.st}, procBody={$block.st}, retType={$type.st}, retNum={counter++})
   | ^(Procedure Identifier paramlist block) -> declareVoidProcOrFunc(procName={$Identifier}, procVars={$paramlist.st}, procBody={$block.st})
   ;
   
 function
+@after {
+	currentscope = currentscope.getEnclosingScope();
+}
   : ^(Function Identifier paramlist ^(Returns type) block) -> declareProcOrFunc(procName={$Identifier}, procVars={$paramlist.st}, procBody={$block.st}, retType={$type.st}, retNum={counter++})
   | ^(Function Identifier paramlist ^(Returns type) ^(Assign expr)) -> declareProcOrFunc(procName={$Identifier}, procVars={$paramlist.st}, procBody={$expr.st}, retType={$type.st}, retNum={counter++})
   ;
   
 paramlist
+@init {
+	scopeNum++;
+	currentscope = new NestedScope("paramscope", currentscope, scopeNum);
+}
   : ^(PARAMLIST p+=parameter*) -> paramsep(params={$p})
   ;
   
@@ -219,7 +263,22 @@ returnStatement
   ;
   
 assignment
-  : ^(Assign Identifier expr) -> outputAssi(varName={$Identifier}, varType={$expr.stype}, expr={$expr.st}, tmpNum={counter++})
+@init {
+	VariableSymbol vs = null;
+}
+  : ^(Assign Identifier
+  {
+  	vs = (VariableSymbol) currentscope.resolve($Identifier.text);
+  	if (currentscope instanceof NestedScope) {
+  		NestedScope ns = (NestedScope)currentscope;
+  		vs.scopeNum = ns.scopeNum;
+  		}
+  		else if (currentscope instanceof GlobalScope) {
+  		GlobalScope gs = (GlobalScope)currentscope;
+  		vs.scopeNum = gs.scopeNum;
+  		}
+  }
+  expr) -> outputAssi(sym={getLLVMvarSymbol(vs.scopeNum)}, varName={$Identifier}, varType={$expr.stype}, scopeNum = {vs.scopeNum}, expr={$expr.st}, tmpNum={counter++})
   ;
   
 ifstatement
@@ -274,6 +333,7 @@ expr returns [String stype, String resultVar]
 	List<String> varNums = new ArrayList<String>();
 	List<String> expressions = new ArrayList<String>();
 	List<String> varTypes = new ArrayList<String>();
+	VariableSymbol vs = null;
 }
 @after {
 	$resultVar = ""+counter;
@@ -312,7 +372,11 @@ expr returns [String stype, String resultVar]
   | ^(By type a=expr {tmpNum1 = counter;} b=expr {tmpNum2 = counter;}) {$stype = $type.st.toString();}
   | ^(CALL type Identifier ^(ARGLIST (e=expr {varNums.add($e.resultVar); expressions.add($e.st.toString()); varTypes.add($e.stype);})*)) -> call(funcName={$Identifier}, retType={$type.st}, expr={expressions}, varNames={varNums}, varTypes={varTypes})
   | ^(As type a=expr {tmpNum1 = counter;}) {$stype = $type.st.toString();} -> cast(func={getCastFunc($a.stype, $stype, tmpNum1, ++counter)}, expr={$a.st})
-  | type Identifier {$stype = $type.st.toString();} -> load_var(tmpNum={++counter}, var={$Identifier}, varType={$type.st})
+  | type Identifier
+  {
+  	$stype = $type.st.toString();
+  	vs = (VariableSymbol) currentscope.resolve($Identifier.text);
+  } -> load_var(tmpNum={++counter}, sym={getLLVMvarSymbol(vs.scopeNum)}, var={$Identifier}, scopeNum={vs.scopeNum}, varType={$type.st})
   | type Number {$stype = $type.st.toString();} -> load_num(tmpNum={++counter}, value={$Number}, varType={$type.st})
   | type FPNumber {$stype = $type.st.toString();} -> load_num(tmpNum={++counter}, value={"0x"+Long.toHexString((Double.doubleToLongBits(Float.parseFloat($FPNumber.toString()))))}, varType={$type.st})
   | type True {$stype = $type.st.toString();} -> load_bool(tmpNum={++counter}, value={"true"}, varType={$type.st})
