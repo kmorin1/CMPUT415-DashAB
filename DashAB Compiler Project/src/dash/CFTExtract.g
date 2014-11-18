@@ -187,6 +187,7 @@ expr
   | ^(Not expr)
   | ^(By expr expr)
   | ^(CALL Identifier ^(ARGLIST expr*))
+  | ^(As type expr)
   | Identifier
   | Number
   | FPNumber
