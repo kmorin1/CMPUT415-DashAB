@@ -8,7 +8,7 @@ options {
   backtrack = true;
   memoize = true;
 }
- 
+
 @header
 {
   package dash; 
@@ -131,7 +131,7 @@ slist
   | declaration
   ;
   
-type
+type returns [String tsym]
   : id=Identifier 
   {
     $id.text.equals("boolean") ||
@@ -140,7 +140,7 @@ type
   | id=Identifier {
     $id.text.equals("integer") ||
     symtab.resolveTDType($id.text).getSourceSymbol().getName().equals("integer")
-  }? -> Integer["integer"]
+  }? {$tsym = "integer";}-> Integer["integer"]
   | id=Identifier {
     $id.text.equals("matrix") ||
     symtab.resolveTDType($id.text).getSourceSymbol().getName().equals("matrix")
@@ -160,7 +160,7 @@ type
   | id=Identifier {
     $id.text.equals("real") ||
     symtab.resolveTDType($id.text).getSourceSymbol().getName().equals("real")
-  }? -> Real["real"]
+  }? {$tsym = "real";} -> Real["real"]
   | id=Identifier {
     $id.text.equals("character") ||
     symtab.resolveTDType($id.text).getSourceSymbol().getName().equals("character")
@@ -199,29 +199,59 @@ specifier
   | Var
   ;
   
-expr
-  : ^(Plus type expr expr)
-  | ^(Minus type expr expr)
-  | ^(Multiply type expr expr)
-  | ^(Divide type expr expr)
-  | ^(Mod type expr expr)
-  | ^(Exponent type expr expr)
-  | ^(Equals type expr expr)
-  | ^(NEquals type expr expr)
-  | ^(GThan type expr expr)
-  | ^(LThan type expr expr)
-  | ^(GThanE type expr expr)
-  | ^(LThanE type expr expr)
-  | ^(Or type expr expr)
-  | ^(Xor type expr expr)
-  | ^(And type expr expr)
+expr returns [String stype]
+  : ^(Plus type a=expr b=expr)     -> {$a.stype.equals("integer") && $b.stype.equals("real")}? ^(Plus type ^(As Real $a) $b)
+                                   -> {$a.stype.equals("real") && $b.stype.equals("integer")}? ^(Plus type $a ^(As Real $b))
+                                   -> ^(Plus type $a $b)
+  | ^(Minus type a=expr b=expr)    -> {$a.stype.equals("integer") && $b.stype.equals("real")}? ^(Minus type ^(As Real $a) $b)
+                                   -> {$a.stype.equals("real") && $b.stype.equals("integer")}? ^(Minus type $a ^(As Real $b))
+                                   -> ^(Minus type $a $b) 
+  | ^(Multiply type a=expr b=expr) -> {$a.stype.equals("integer") && $b.stype.equals("real")}? ^(Multiply type ^(As Real $a) $b)
+                                   -> {$a.stype.equals("real") && $b.stype.equals("integer")}? ^(Multiply type $a ^(As Real $b))
+                                   -> ^(Multiply type $a $b)
+  | ^(Divide type a=expr b=expr)   -> {$a.stype.equals("integer") && $b.stype.equals("real")}? ^(Divide type ^(As Real $a) $b)
+                                   -> {$a.stype.equals("real") && $b.stype.equals("integer")}? ^(Divide type $a ^(As Real $b))
+                                   -> ^(Divide type $a $b)
+  | ^(Mod type a=expr b=expr)      -> {$a.stype.equals("integer") && $b.stype.equals("real")}? ^(Mod type ^(As Real $a) $b)
+                                   -> {$a.stype.equals("real") && $b.stype.equals("integer")}? ^(Mod type $a ^(As Real $b))
+                                   -> ^(Mod type $a $b) 
+  | ^(Exponent type a=expr b=expr) -> {$a.stype.equals("integer") && $b.stype.equals("real")}? ^(Exponent type ^(As Real $a) $b)
+                                   -> {$a.stype.equals("real") && $b.stype.equals("integer")}? ^(Exponent type $a ^(As Real $b))
+                                   -> ^(Exponent type $a $b)
+  | ^(Equals type a=expr b=expr)   -> {$a.stype.equals("integer") && $b.stype.equals("real")}? ^(Equals type ^(As Real $a) $b)
+                                   -> {$a.stype.equals("real") && $b.stype.equals("integer")}? ^(Equals type $a ^(As Real $b))
+                                   -> ^(Equals type $a $b)
+  | ^(NEquals type a=expr b=expr)  -> {$a.stype.equals("integer") && $b.stype.equals("real")}? ^(NEquals type ^(As Real $a) $b)
+                                   -> {$a.stype.equals("real") && $b.stype.equals("integer")}? ^(NEquals type $a ^(As Real $b))
+                                   -> ^(NEquals type $a $b)
+  | ^(GThan type a=expr b=expr)    -> {$a.stype.equals("integer") && $b.stype.equals("real")}? ^(GThan type ^(As Real $a) $b)
+                                   -> {$a.stype.equals("real") && $b.stype.equals("integer")}? ^(GThan type $a ^(As Real $b))
+                                   -> ^(GThan type $a $b) 
+  | ^(LThan type a=expr b=expr)    -> {$a.stype.equals("integer") && $b.stype.equals("real")}? ^(LThan type ^(As Real $a) $b)
+                                   -> {$a.stype.equals("real") && $b.stype.equals("integer")}? ^(LThan type $a ^(As Real $b))
+                                   -> ^(LThan type $a $b) 
+  | ^(GThanE type a=expr b=expr)   -> {$a.stype.equals("integer") && $b.stype.equals("real")}? ^(GThanE type ^(As Real $a) $b)
+                                   -> {$a.stype.equals("real") && $b.stype.equals("integer")}? ^(GThanE type $a ^(As Real $b))
+                                   -> ^(GThanE type $a $b)
+  | ^(LThanE type a=expr b=expr)   -> {$a.stype.equals("integer") && $b.stype.equals("real")}? ^(LThanE type ^(As Real $a) $b)
+                                   -> {$a.stype.equals("real") && $b.stype.equals("integer")}? ^(LThanE type $a ^(As Real $b))
+                                   -> ^(LThanE type $a $b) 
+  | ^(Or type a=expr b=expr)       -> {$a.stype.equals("integer") && $b.stype.equals("real")}? ^(Or type ^(As Real $a) $b)
+                                   -> {$a.stype.equals("real") && $b.stype.equals("integer")}? ^(Or type $a ^(As Real $b))
+                                   -> ^(Or type $a $b)
+  | ^(Xor type a=expr b=expr)      -> {$a.stype.equals("integer") && $b.stype.equals("real")}? ^(Xor type ^(As Real $a) $b)
+                                   -> {$a.stype.equals("real") && $b.stype.equals("integer")}? ^(Xor type $a ^(As Real $b))
+                                   -> ^(Xor type $a $b) 
+  | ^(And type a=expr b=expr)      -> {$a.stype.equals("integer") && $b.stype.equals("real")}? ^(And type ^(As Real $a) $b)
+                                   -> {$a.stype.equals("real") && $b.stype.equals("integer")}? ^(And type $a ^(As Real $b))
+                                   -> ^(And type $a $b)
   | ^(Not type expr)
   | ^(By type expr expr)
   | ^(CALL type Identifier ^(ARGLIST expr*))
-  | ^(As a=type expr)
-  | type Identifier
-  | type Number
-  | type FPNumber
+  | ^(As type expr)
+  | type {$stype = $type.tsym;} Identifier
+  | type {$stype = $type.tsym;} Number
+  | type {$stype = $type.tsym;} FPNumber
   | type True
   | type False
   | type Null
