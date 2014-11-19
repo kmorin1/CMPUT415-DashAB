@@ -176,7 +176,7 @@ declaration
   : ^(DECL specifier? (t=type {type = (BuiltInTypeSymbol) $t.tsym;}) id=Identifier) {
     //TO-DO: add vector and matrix type expansion for rewrite rule
   } -> ^(DECL type* $id)
-  | ^(DECL (s=specifier {spec = (BuiltInTypeSymbol) $s.tsym;}) (t=type {type = (BuiltInTypeSymbol) $t.tsym;}) ^(Assign id=Identifier e=expr)) {
+  | ^(DECL (s=specifier {spec = (BuiltInTypeSymbol) $s.tsym;})? (t=type {type = (BuiltInTypeSymbol) $t.tsym;}) ^(Assign id=Identifier e=expr)) {
     
     if (type != null && symtab.lookup($e.stype, type) == null)
       throw new RuntimeException(getErrorHeader() + "assignment type error, expected " + type.getName() + " but got " + $e.stype.getName());
