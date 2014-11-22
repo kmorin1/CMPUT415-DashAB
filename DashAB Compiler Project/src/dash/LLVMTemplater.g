@@ -205,7 +205,8 @@ declaration
   }
 }
 @after {
-  vs = new VariableSymbol($id.text, new ArrayList<Type>(), new ArrayList<Type>());
+	// Variable Symbol won't have type information for now
+  vs = new VariableSymbol($id.text, null, null);
   vs.scopeNum = currentScopeNum;
   
   currentscope.define(vs);
