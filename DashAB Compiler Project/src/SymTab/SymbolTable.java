@@ -79,7 +79,9 @@ public class SymbolTable {
         
         ArrayList<Symbol> params = new ArrayList<Symbol>();
         params.add(new VariableSymbol("v", new VectorTypeSymbol("vector")));
-        defineFunction(new FunctionSymbol("length", new BuiltInTypeSymbol("integer"), params));
+        FunctionSymbol fs = new FunctionSymbol("length", new BuiltInTypeSymbol("integer"), params);
+        fs.setDefined();
+        defineFunction(fs);
         
         defineSpec(new BuiltInTypeSymbol("var"));
         defineSpec(new BuiltInTypeSymbol("const"));
