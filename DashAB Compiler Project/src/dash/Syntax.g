@@ -254,6 +254,11 @@ atom
   | generator
   | LParen expr RParen -> expr
   | As LThan type GThan LParen expr RParen -> ^(As type expr)
+  | vectorconst -> ^(Vector vectorconst)
+  ;
+  
+vectorconst
+  : LBracket! e1=expr (Comma! e2=expr)* RBracket!
   ;
 
 filter
