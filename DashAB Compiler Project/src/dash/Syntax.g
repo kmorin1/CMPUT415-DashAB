@@ -20,6 +20,8 @@ tokens {
   POS;
   NEG;
   VCONST;
+  ROW;
+  COLUMN;
 }
 
 @header
@@ -98,8 +100,13 @@ declaration
   | specifier type* Identifier SemiColon -> ^(DECL specifier type* Identifier)
   | specifier? type+ Identifier Assign expr SemiColon -> ^(DECL specifier? type+ ^(Assign Identifier expr))
   | specifier type* Identifier Assign expr SemiColon -> ^(DECL specifier type* ^(Assign Identifier expr))
-  | specifier? type Vector? Identifier LBracket size=expr RBracket Assign a=expr SemiColon
+  | specifier? type Vector? Identifier LBracket size=(expr|'*') RBracket SemiColon -> ^(DECL specifier? ^(Vector type $size))
+  | specifier? type Vector? Identifier LBracket size=(expr|'*') RBracket Assign a=expr SemiColon
     -> ^(DECL specifier? ^(Vector type $size) ^(Assign Identifier $a))
+  | specifier? type Matrix? Identifier LBracket rowsize=(expr|'*') Comma columnsize=(expr|'*') RBracket SemiColon
+    -> ^(DECL specifier? ^(Matrix type $rowsize $columnsize))  
+  | specifier? type Matrix? Identifier LBracket rowsize=(expr|'*') Comma columnsize=(expr|'*') RBracket  Assign a=expr SemiColon
+    -> ^(DECL specifier? ^(Matrix type $rowsize $columnsize) ^(Assign Identifier $a))
   | streamDecl
   ;
   
@@ -269,14 +276,16 @@ filter
   ;
   
 generator
-  : LBracket Identifier In vector=expr Bar apply=expr RBracket -> ^(GENERATOR Identifier $vector $apply)   
+  : LBracket Identifier In vector=expr Bar apply=expr RBracket -> ^(GENERATOR Identifier $vector $apply)
+  | LBracket id1=Identifier In e1=expr Comma id2=Identifier In e2=expr Bar apply=expr RBracket 
+    -> ^(GENERATOR ^(ROW $id1 $e1) ^(COLUMN $id2 $e2) $apply)    
   ;
 
 vectorOperation
   : 'length' LParen Identifier RParen
 //  | expr Bar Bar expr
-//  | expr Multiply Multiply expr
-//  | expr By expr
+//  | atom Multiply Multiply expr
+//  |  By expr
   ;
   
 // DashAB Keywords
