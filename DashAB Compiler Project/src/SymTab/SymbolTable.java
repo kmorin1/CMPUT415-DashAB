@@ -77,6 +77,10 @@ public class SymbolTable {
         defineRes("stream_state");
         defineRes("reverse");
         
+        ArrayList<Symbol> params = new ArrayList<Symbol>();
+        params.add(new VariableSymbol("v", new VectorTypeSymbol("vector")));
+        defineFunction(new FunctionSymbol("length", new BuiltInTypeSymbol("integer"), params));
+        
         defineSpec(new BuiltInTypeSymbol("var"));
         defineSpec(new BuiltInTypeSymbol("const"));
         defineRes("var");
