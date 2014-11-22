@@ -98,6 +98,8 @@ declaration
   | specifier type* Identifier SemiColon -> ^(DECL specifier type* Identifier)
   | specifier? type+ Identifier Assign expr SemiColon -> ^(DECL specifier? type+ ^(Assign Identifier expr))
   | specifier type* Identifier Assign expr SemiColon -> ^(DECL specifier type* ^(Assign Identifier expr))
+  | specifier? type Vector? Identifier LBracket size=expr RBracket Assign a=expr SemiColon
+    -> ^(DECL specifier? ^(Vector type $size) ^(Assign Identifier $a))
   | streamDecl
   ;
   
