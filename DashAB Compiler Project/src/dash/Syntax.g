@@ -19,6 +19,7 @@ tokens {
   TUPLEEX;
   POS;
   NEG;
+  VCONST;
 }
 
 @header
@@ -254,7 +255,7 @@ atom
   | generator
   | LParen expr RParen -> expr
   | As LThan type GThan LParen expr RParen -> ^(As type expr)
-  | vectorconst -> ^(Vector vectorconst)
+  | vectorconst -> ^(VCONST vectorconst)
   ;
   
 vectorconst
