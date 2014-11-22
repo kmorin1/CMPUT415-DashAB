@@ -467,7 +467,9 @@ type returns [Type tsym]
   | t=Matrix {$tsym = (Type) symtab.resolveType($t.text);}
   | t=Interval {$tsym = (Type) symtab.resolveType($t.text);}
   | t=String {$tsym = (Type) symtab.resolveType($t.text);}
-  | t=Vector {$tsym = (Type) symtab.resolveType($t.text);}
+  | ^(Vector vt=type expr) {
+    $tsym = new VectorTypeSymbol("vector", (Type) symtab.resolveType($vt.text));
+  }
   | t=Real {$tsym = (Type) symtab.resolveType($t.text);}
   | t=Character {$tsym = (Type) symtab.resolveType($t.text);}
   | tuple {$tsym = $tuple.ts;}

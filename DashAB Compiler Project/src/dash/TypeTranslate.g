@@ -75,7 +75,7 @@ declaration
   | ^(DECL specifier* StdInput ^(Assign Identifier StdInput)) -> ^(DECL StdInput ^(Assign Identifier StdInput))
   | ^(DECL specifier* StdOutput ^(Assign Identifier StdOutput)) -> ^(DECL StdOutput ^(Assign Identifier StdOutput))
   ;
-  
+   
 typedef
   : ^(Typedef type Identifier) ->
   ;
@@ -180,7 +180,7 @@ type returns [String tsym]
   | Matrix {$tsym = "matrix";}
   | Interval {$tsym = "interval";}
   | String {$tsym = "string";}
-  | Vector {$tsym = "vector";}
+  | ^(Vector type expr) {$tsym = "vector";}
   | Real {$tsym = "real";}
   | Character {$tsym = "character";}
   | StdInput
