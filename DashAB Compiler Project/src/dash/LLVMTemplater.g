@@ -236,10 +236,13 @@ procedure
   
 function
 @after {
+	// Function Symbol won't have type information with it
+	FunctionSymbol fs = new FunctionSymbol($id.text, null);
+	symtab.defineFunction(fs);
 	currentscope = currentscope.getEnclosingScope();
 }
-  : ^(Function Identifier paramlist ^(Returns type) block) -> declareProcOrFunc(procName={$Identifier}, procVars={$paramlist.st}, procBody={$block.st}, retType={$type.st}, retNum={counter++})
-  | ^(Function Identifier paramlist ^(Returns type) ^(Assign expr)) -> declareProcOrFunc(procName={$Identifier}, procVars={$paramlist.st}, procBody={$expr.st}, retType={$type.st}, retNum={counter++})
+  : ^(Function id=Identifier paramlist ^(Returns type) block) -> declareProcOrFunc(procName={$Identifier}, procVars={$paramlist.st}, procBody={$block.st}, retType={$type.st}, retNum={counter++})
+  | ^(Function id=Identifier paramlist ^(Returns type) ^(Assign expr)) -> declareProcOrFunc(procName={$Identifier}, procVars={$paramlist.st}, procBody={$expr.st}, retType={$type.st}, retNum={counter++})
   ;
   
 paramlist
@@ -371,7 +374,10 @@ expr returns [String stype, String resultVar]
     -> arithmetic(expr1={$a.st}, expr2={$b.st}, operator={AndOp}, type={$type.st}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
   | ^(Not type a=expr {tmpNum1 = counter;}) {$stype = $type.st.toString();} -> not(expr={$a.st}, type={$type.st}, tmpNum={tmpNum1}, result={++counter})
   | ^(By type a=expr {tmpNum1 = counter;} b=expr {tmpNum2 = counter;}) {$stype = $type.st.toString();}
-  | ^(CALL type Identifier ^(ARGLIST (e=expr {varNums.add($e.resultVar); expressions.add($e.st.toString()); varTypes.add($e.stype);})*)) -> call(funcName={$Identifier}, retType={$type.st}, expr={expressions}, varNames={varNums}, varTypes={varTypes})
+  | ^(CALL type id=Identifier ^(ARGLIST (e=expr {varNums.add($e.resultVar); expressions.add($e.st.toString()); varTypes.add($e.stype);})*))
+    -> {symtab.resolveFunction($id.text) != null}? callFunc(funcName={$Identifier}, retType={$type.st}, expr={expressions}, varNames={varNums}, varTypes={varTypes}, result={++counter})
+    -> callFunc()
+  
   | ^(As type a=expr {tmpNum1 = counter;}) {$stype = $type.st.toString();} -> cast(func={getCastFunc($a.stype, $stype, tmpNum1, ++counter)}, expr={$a.st})
   | type Identifier
   {
