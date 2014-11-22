@@ -190,6 +190,7 @@ declaration
     ArrayList<Type> types = new ArrayList<Type>();
     if (type == null && (temp.isVar() || temp.isConst())) {
       types.add($e.stype);
+      type = (BuiltInTypeSymbol) $e.stype;
     } else {
       types.add(type);
       if (type.getName().equals("vector")) {
