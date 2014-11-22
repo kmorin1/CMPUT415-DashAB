@@ -175,7 +175,7 @@ declaration
 
   : ^(DECL specifier? (t=type {type = (BuiltInTypeSymbol) $t.tsym;})? id=Identifier) {
     //TO-DO: add vector and matrix type expansion for rewrite rule
-  } -> ^(DECL type* $id)
+  } -> ^(DECL specifier? type? $id)
   | ^(DECL (s=specifier {spec = (BuiltInTypeSymbol) $s.tsym;})? (t=type {type = (BuiltInTypeSymbol) $t.tsym;})? ^(Assign id=Identifier e=expr)) {
     
     if (type != null && symtab.lookup($e.stype, type) == null)
@@ -208,11 +208,11 @@ declaration
       } 
     }
     
-  } -> ^(DECL ^(DECL DECL*) ^(Assign $id $e))
-  | ^(DECL (s=specifier {spec = (BuiltInTypeSymbol) $s.tsym;})* ^(Assign id=Identifier StdInput {type = (BuiltInTypeSymbol) symtab.resolveType("std_input");}))
-    -> ^(DECL StdInput["std_input"] ^(Assign $id StdInput))
-  | ^(DECL (s=specifier {spec = (BuiltInTypeSymbol) $s.tsym;})* ^(Assign id=Identifier StdOutput {type = (BuiltInTypeSymbol) symtab.resolveType("std_output");}))
-    -> ^(DECL StdOutput["std_output"] ^(Assign $id StdOutput))
+  } -> ^(DECL specifier? ^(DECL DECL*) ^(Assign $id $e))
+  | ^(DECL (s=specifier {spec = (BuiltInTypeSymbol) $s.tsym;}) ^(Assign id=Identifier StdInput {type = (BuiltInTypeSymbol) symtab.resolveType("std_input");}))
+    -> ^(DECL specifier StdInput["std_input"] ^(Assign $id StdInput))
+  | ^(DECL (s=specifier {spec = (BuiltInTypeSymbol) $s.tsym;}) ^(Assign id=Identifier StdOutput {type = (BuiltInTypeSymbol) symtab.resolveType("std_output");}))
+    -> ^(DECL specifier StdOutput["std_output"] ^(Assign $id StdOutput))
   ;
   
 typedef
