@@ -468,7 +468,7 @@ type returns [Type tsym]
   | t=Interval {$tsym = (Type) symtab.resolveType($t.text);}
   | t=String {$tsym = (Type) symtab.resolveType($t.text);}
   | ^(Vector vt=type expr) {
-    $tsym = new VectorTypeSymbol("vector", (Type) symtab.resolveType($vt.text));
+    $tsym = new VectorTypeSymbol("vector", $vt.tsym);
   }
   | t=Real {$tsym = (Type) symtab.resolveType($t.text);}
   | t=Character {$tsym = (Type) symtab.resolveType($t.text);}
