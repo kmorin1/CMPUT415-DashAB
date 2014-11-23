@@ -152,11 +152,16 @@ type
   | Matrix
   | Interval
   | String
-  | Vector
+  | ^(Vector type size)
   | Real
   | Character
   | tuple
   | Identifier
+  ;
+  
+size
+  : '*'
+  | expr
   ;
   
 tuple
@@ -167,7 +172,7 @@ specifier
   : Const
   | Var
   ;
-  
+   
 expr
   : ^(Plus expr expr)
   | ^(Minus expr expr)
@@ -198,5 +203,9 @@ expr
   | Char
   | ^(TUPLEEX expr)
   | ^(Dot Identifier)
+  | ^(VCONST expr+)
+  | ^(Filter Identifier expr expr) 
+  | ^(GENERATOR Identifier expr expr)
+  | ^(GENERATOR ^(ROW Identifer expr) ^(COLUMN Identifier expr) expr)    
   ;
   
