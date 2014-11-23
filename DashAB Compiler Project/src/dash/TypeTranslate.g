@@ -180,7 +180,7 @@ type returns [String tsym]
   | Matrix {$tsym = "matrix";}
   | Interval {$tsym = "interval";}
   | String {$tsym = "string";}
-  | ^(Vector type expr) {$tsym = "vector";}
+  | ^(Vector type size) {$tsym = "vector";}
   | Real {$tsym = "real";}
   | Character {$tsym = "character";}
   | StdInput
@@ -188,6 +188,11 @@ type returns [String tsym]
   | Null {$tsym = "null";}
   | Identity {$tsym = "identity";}
   | tuple {$tsym = "tuple";}
+  ;
+  
+size
+  : '*'
+  | expr
   ;
   
 tuple
@@ -262,5 +267,9 @@ expr returns [String stype]
   | ^(NEG a=expr) {$stype = $a.stype;}
   | ^(POS a=expr) {$stype = $a.stype;}
   | type {$stype = $type.tsym;} streamstate 
+  | ^(VCONST expr+)
+  | ^(Filter Identifier expr expr) 
+  | ^(GENERATOR Identifier expr expr)
+  | ^(GENERATOR ^(ROW Identifer expr) ^(COLUMN Identifier expr) expr)    
   ;
   

@@ -191,12 +191,12 @@ declaration
     if (type == null && (temp.isVar() || temp.isConst())) {
       types.add($e.stype);
       type = (BuiltInTypeSymbol) $e.stype;
-    } else {
+    } /*else {
       types.add(type);
       if (type.getName().equals("vector")) {
         VectorTypeSymbol vts = (VectorTypeSymbol) type;
         types.add(vts.getVectorType());
-        types.add(new BuiltInTypeSymbol(vts.getVectorSize().toString()));
+        //types.add(new BuiltInTypeSymbol(vts.getVectorSize().toString()));
       }
     }
       
@@ -207,9 +207,9 @@ declaration
         for (int j=0; j<ts.getFieldNames().size(); j++)
           stream_DECL.add((CommonTree) adaptor.create(Identifier, ts.getFieldNames().get(j).type.getName()));
       } 
-    }
+    }*/
     
-  } -> ^(DECL specifier? ^(DECL DECL*) ^(Assign $id $e))
+  } -> ^(DECL specifier? type ^(Assign $id $e))
   | ^(DECL (s=specifier {spec = (BuiltInTypeSymbol) $s.tsym;}) ^(Assign id=Identifier StdInput {type = (BuiltInTypeSymbol) symtab.resolveType("std_input");}))
     -> ^(DECL specifier StdInput["std_input"] ^(Assign $id StdInput))
   | ^(DECL (s=specifier {spec = (BuiltInTypeSymbol) $s.tsym;}) ^(Assign id=Identifier StdOutput {type = (BuiltInTypeSymbol) symtab.resolveType("std_output");}))
@@ -467,13 +467,18 @@ type returns [Type tsym]
   | t=Matrix {$tsym = (Type) symtab.resolveType($t.text);}
   | t=Interval {$tsym = (Type) symtab.resolveType($t.text);}
   | t=String {$tsym = (Type) symtab.resolveType($t.text);}
-  | ^(Vector vt=type expr) {
+  | ^(Vector vt=type size) {
     $tsym = new VectorTypeSymbol("vector", $vt.tsym);
   }
   | t=Real {$tsym = (Type) symtab.resolveType($t.text);}
   | t=Character {$tsym = (Type) symtab.resolveType($t.text);}
   | tuple {$tsym = $tuple.ts;}
   | t=Identifier {$tsym = (Type) symtab.resolveType($t.text);}
+  ;
+  
+size
+  : '*'
+  | expr
   ;
   
 tuple returns [TupleSymbol ts]
@@ -494,6 +499,7 @@ expr returns [Type stype]
   TupleSymbol ts = null; 
   ArrayList<FieldPair> tuplepairs = new ArrayList<FieldPair>();
   ArrayList<Type> argtypes = new ArrayList<Type>();
+  ArrayList<Type> vtypes = new ArrayList<Type>();
   String errorhead = getErrorHeader();
 }
   : ^(Plus a=expr b=expr) {
@@ -817,5 +823,27 @@ expr returns [Type stype]
       $stype = $e.stype;
   }
   | streamstate { $stype = new BuiltInTypeSymbol("integer");} -> Identifier[$stype.getName()] streamstate
+  | ^(VCONST {vtypes.clear();} (e=expr {vtypes.add($e.stype);})+) {
+    if (vtypes.get(0).getName().equals("tuple") ||
+        vtypes.get(0).getName().equals("vector") ||
+        vtypes.get(0).getName().equals("matrix") ||
+        vtypes.get(0).getName().equals("interval"))
+          throw new RuntimeException(errorhead + "invalid vector type");
+    BuiltInTypeSymbol comtype = new BuiltInTypeSymbol(vtypes.get(0).getName());
+    for (int i=0; i<vtypes.size(); i++) {
+      Boolean lua = symtab.lookup(vtypes.get(i), comtype);
+      Boolean lub = symtab.lookup(comtype, vtypes.get(i));
+      if (lua == null && lub == null)
+        throw new RuntimeException(errorhead = "cannot find common type in vector constructor");
+      if (lub != null && lub) {
+        comtype = (BuiltInTypeSymbol) vtypes.get(i);
+        i=0;
+      } 
+    }
+    $stype = new VectorTypeSymbol("vector", comtype, vtypes.size());
+  } 
+  | ^(Filter Identifier expr expr) 
+  | ^(GENERATOR Identifier expr expr)
+  | ^(GENERATOR ^(ROW Identifer expr) ^(COLUMN Identifier expr) expr)    
   ;
   
