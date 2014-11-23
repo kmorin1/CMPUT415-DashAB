@@ -100,12 +100,12 @@ declaration
   | specifier type* Identifier SemiColon -> ^(DECL specifier type* Identifier)
   | specifier? type+ Identifier Assign expr SemiColon -> ^(DECL specifier? type+ ^(Assign Identifier expr))
   | specifier type* Identifier Assign expr SemiColon -> ^(DECL specifier type* ^(Assign Identifier expr))
-  | specifier? type Vector? Identifier LBracket size RBracket SemiColon -> ^(DECL specifier? ^(Vector type size))
-  | specifier? type Vector? Identifier LBracket size RBracket Assign a=expr SemiColon
+  | specifier? type? Vector? Identifier LBracket size RBracket SemiColon -> ^(DECL specifier? ^(Vector type size))
+  | specifier? type? Vector? Identifier LBracket size RBracket Assign a=expr SemiColon
     -> ^(DECL specifier? ^(Vector type size) ^(Assign Identifier $a))
-  | specifier? type Matrix? Identifier LBracket rowsize=size Comma columnsize=size RBracket SemiColon
+  | specifier? type? Matrix? Identifier LBracket rowsize=size Comma columnsize=size RBracket SemiColon
     -> ^(DECL specifier? ^(Matrix type $rowsize $columnsize))  
-  | specifier? type Matrix? Identifier LBracket rowsize=size Comma columnsize=size RBracket  Assign a=expr SemiColon
+  | specifier? type? Matrix? Identifier LBracket rowsize=size Comma columnsize=size RBracket  Assign a=expr SemiColon
     -> ^(DECL specifier? ^(Matrix type $rowsize $columnsize) ^(Assign Identifier $a))
   | streamDecl
   ;
@@ -273,11 +273,12 @@ atom
   ;
   
 vectorconst
-  : LBracket! e1=expr (Comma! e2=expr)* RBracket!
+  : LBracket! expr (Comma! expr)* RBracket!
   ;
 
 filter
-  : Filter LParen Identifier In vector=expr Bar condition=expr RParen -> ^(Filter Identifier $vector $condition)        
+  : Filter LParen Identifier In vector=expr Bar condition=expr (Comma condition2+=expr)* RParen 
+    -> ^(Filter Identifier $vector $condition $condition2*)        
   ;
   
 generator
