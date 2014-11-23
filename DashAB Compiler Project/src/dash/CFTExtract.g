@@ -61,10 +61,10 @@ declaration returns [CFTNode cftn]
 @after {
   $cftn = new CFTNode("generic" + gencounter++, null);
 }
-  : ^(DECL specifier* type* Identifier)
-  | ^(DECL specifier* type* ^(Assign Identifier expr))
-  | ^(DECL specifier* ^(Assign Identifier StdInput))
-  | ^(DECL specifier* ^(Assign Identifier StdOutput))
+  : ^(DECL specifier? type* Identifier)
+  | ^(DECL specifier? type* ^(Assign Identifier expr))
+  | ^(DECL specifier ^(Assign Identifier StdInput))
+  | ^(DECL specifier ^(Assign Identifier StdOutput))
   ;
   
 typedef

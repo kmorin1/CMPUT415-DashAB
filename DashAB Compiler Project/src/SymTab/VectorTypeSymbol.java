@@ -6,7 +6,10 @@ public class VectorTypeSymbol extends BuiltInTypeSymbol {
 	Type vectype;
 	Integer vecsize;
 	public VectorTypeSymbol(String name) {
-		super(name);
+		this(name, null, null);
+	}
+	public VectorTypeSymbol(String name, Type vectype) {
+		this(name, vectype, null);
 	}
 	public VectorTypeSymbol(String name, Type vectype, Integer vecsize) {
 		super(name);

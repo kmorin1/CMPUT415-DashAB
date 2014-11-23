@@ -63,7 +63,7 @@ entry:
 
 >>
 
-declareVoidProcOrFunc(procName, procVars, procType, procBody) ::= <<
+declareVoidProc(procName, procVars, procType, procBody) ::= <<
 define void @<procName>(<procVars>) {
 entry:
   <procBody>
@@ -75,7 +75,7 @@ entry:
 
 paramsep(params) ::= << <params:{ a |<a>}; separator=", "> >>
 
-param(name, type) ::= << <type>* %.<name>
+param(name, type, scopeNum) ::= << <type> %.<name>.<scopeNum>
 >>
 
 
@@ -122,20 +122,29 @@ load_var(tmpNum, sym, var, scopeNum, varType) ::= <<
 
 >>
 
+load_const(tmpNum, sym, var, scopeNum, varType) ::= <<
+;start load const
+%.const<tmpNum> = alloca <varType>, align 4
+store <varType> <sym>.<var>.<scopeNum>, <varType>* %.const<tmpNum>
+%.<tmpNum> = load <varType>* %.const<tmpNum>
+;end load_const
+
+>>
+
 load_bool(tmpNum, value, varType) ::= <<
 ;start load_bool
-%.temp<tmpNum> = alloca <varType>, align 1
-store <varType> <value>, <varType>* %.temp<tmpNum>
-%.<tmpNum> = load <varType>* %.temp<tmpNum>
+%.bool<tmpNum> = alloca <varType>, align 1
+store <varType> <value>, <varType>* %.bool<tmpNum>
+%.<tmpNum> = load <varType>* %.bool<tmpNum>
 ;end load_bool
 
 >>
 
 load_char(tmpNum, value, varType) ::= <<
 ;start load_char
-%.temp<tmpNum> = alloca <varType>, align 1
-store <varType> <value>, <varType>* %.temp<tmpNum>
-%.<tmpNum> = load <varType>* %.temp<tmpNum>
+%.char<tmpNum> = alloca <varType>, align 1
+store <varType> <value>, <varType>* %.char<tmpNum>
+%.<tmpNum> = load <varType>* %.char<tmpNum>
 ;end load_char
 
 >>
@@ -194,7 +203,7 @@ cast(func, expr) ::= <<
 callFunc(funcName, retType, exprs, varNames, varTypes, result) ::= <<
 ;start function call
 <exprs>
-%.<result> = call <retType> ( <varTypes:{ a |<a>}; separator=", "> )* @<funcName>(<varTypes, varNames:{ a, b |<a>* %.<b>}; separator=", ">)
+%.<result> = call <retType> ( <varTypes:{ a |<a>}; separator=", "> )* @<funcName>(<varTypes, varNames:{ a, b |<a> %.<b>}; separator=", ">)
 ;end function call
 
 >>
