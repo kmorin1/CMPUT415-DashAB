@@ -1,0 +1,5 @@
+DASH COMPILER COMMAND:
+gcc
+
+OUR COMPILER COMMAND:
+gcc --version

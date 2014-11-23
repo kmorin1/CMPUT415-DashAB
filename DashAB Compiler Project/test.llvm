@@ -1,0 +1,144 @@
+target datalayout = "e-p:64:64:64-i1:8:8-i8:8:8-i16:16:16-i32:32:32-i64:64:64-f32:32:32-f64:64:64-v64:64:64-v128:128:128-a0:0:64-s0:64:64-f80:128:128-n8:16:32:64-S128"
+target triple = "x86_64-unknown-linux-gnu"
+
+define i32 @main( ) {
+entry:
+  ;start outputDecl
+  ;start load_num
+  %.temp1 = alloca i32, align 4
+  store i32 1, i32* %.temp1
+  %.1 = load i32* %.temp1
+  ;end load_num
+
+
+  %.a = alloca i32, align 4
+  store i32 %.1, i32* %.a
+  ;end outputDecl
+  ;start outputDecl
+  ;start load_num
+  %.temp2 = alloca i32, align 4
+  store i32 1, i32* %.temp2
+  %.2 = load i32* %.temp2
+  ;end load_num
+
+
+  %.b = alloca i32, align 4
+  store i32 %.2, i32* %.b
+  ;end outputDecl
+
+  ;start print
+  ;start arithmetic
+  ;start load_var
+  %.3 = load i32* %.a
+  ;end load_var
+
+  ;start load_var
+  %.4 = load i32* %.b
+  ;end load_var
+
+  %.5 = srem i32 %.3, %.4
+  ;end arithmetic
+
+  call i32 (i32)* @print_i32(i32 %.5)
+  ;end print
+  ;start print
+  ;start load_char
+  %.temp6 = alloca i8, align 1
+  store i8 97, i8* %.temp6
+  %.6 = load i8* %.temp6
+  ;end load_char
+
+  call i8 (i8)* @print_i8(i8 %.6)
+  ;end print
+  ;start print
+  ;start load_char
+  %.temp7 = alloca i8, align 1
+  store i8 65, i8* %.temp7
+  %.7 = load i8* %.temp7
+  ;end load_char
+
+  call i8 (i8)* @print_i8(i8 %.7)
+  ;end print
+  ;start print
+  ;start load_char
+  %.temp8 = alloca i8, align 1
+  store i8 49, i8* %.temp8
+  %.8 = load i8* %.temp8
+  ;end load_char
+
+  call i8 (i8)* @print_i8(i8 %.8)
+  ;end print
+  ;start print
+  ;start load_char
+  %.temp9 = alloca i8, align 1
+  store i8 33, i8* %.temp9
+  %.9 = load i8* %.temp9
+  ;end load_char
+
+  call i8 (i8)* @print_i8(i8 %.9)
+  ;end print
+  ;start print
+  ;start load_char
+  %.temp10 = alloca i8, align 1
+  store i8 59, i8* %.temp10
+  %.10 = load i8* %.temp10
+  ;end load_char
+
+  call i8 (i8)* @print_i8(i8 %.10)
+  ;end print
+  ;start print
+  ;start load_char
+  %.temp11 = alloca i8, align 1
+  store i8 10, i8* %.temp11
+  %.11 = load i8* %.temp11
+  ;end load_char
+
+  call i8 (i8)* @print_i8(i8 %.11)
+  ;end print
+  ;start print
+  ;start load_char
+  %.temp12 = alloca i8, align 1
+  store i8 90, i8* %.temp12
+  %.12 = load i8* %.temp12
+  ;end load_char
+
+  call i8 (i8)* @print_i8(i8 %.12)
+  ;end print
+  ;start return
+  ;start load_num
+  %.temp13 = alloca i32, align 4
+  store i32 0, i32* %.temp13
+  %.13 = load i32* %.temp13
+  ;end load_num
+
+  ret i32 %.13
+  ;end return
+
+
+}
+
+
+
+declare i32 @printf(i8*, ...)
+
+declare i32 @power_i32(i32, i32)
+
+declare i32 @print_i32(i32)
+
+declare float @print_float(float)
+
+declare i1 @print_i1(i1)
+
+declare i8 @print_i8(i8)
+
+declare i32 @input_i32(i32*)
+
+declare float @input_float(float*)
+
+declare i1 @input_i1(i1*)
+
+declare i8 @input_i8(i8*)
+
+declare i32 @stream_state()
+
+declare float @implicit_promotion(i32)

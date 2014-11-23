@@ -1,10 +1,4 @@
 procedure main() returns integer {
-var a = 1;
-var b = 1;
-
-var out = std_output();
-
-a % b -> out;
 
 
 return 0;
