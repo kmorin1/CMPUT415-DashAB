@@ -100,14 +100,19 @@ declaration
   | specifier type* Identifier SemiColon -> ^(DECL specifier type* Identifier)
   | specifier? type+ Identifier Assign expr SemiColon -> ^(DECL specifier? type+ ^(Assign Identifier expr))
   | specifier type* Identifier Assign expr SemiColon -> ^(DECL specifier type* ^(Assign Identifier expr))
-  | specifier? type Vector? Identifier LBracket size=(expr|'*') RBracket SemiColon -> ^(DECL specifier? ^(Vector type $size))
-  | specifier? type Vector? Identifier LBracket size=(expr|'*') RBracket Assign a=expr SemiColon
-    -> ^(DECL specifier? ^(Vector type $size) ^(Assign Identifier $a))
-  | specifier? type Matrix? Identifier LBracket rowsize=(expr|'*') Comma columnsize=(expr|'*') RBracket SemiColon
+  | specifier? type Vector? Identifier LBracket size RBracket SemiColon -> ^(DECL specifier? ^(Vector type size))
+  | specifier? type Vector? Identifier LBracket size RBracket Assign a=expr SemiColon
+    -> ^(DECL specifier? ^(Vector type size) ^(Assign Identifier $a))
+  | specifier? type Matrix? Identifier LBracket rowsize=size Comma columnsize=size RBracket SemiColon
     -> ^(DECL specifier? ^(Matrix type $rowsize $columnsize))  
-  | specifier? type Matrix? Identifier LBracket rowsize=(expr|'*') Comma columnsize=(expr|'*') RBracket  Assign a=expr SemiColon
+  | specifier? type Matrix? Identifier LBracket rowsize=size Comma columnsize=size RBracket  Assign a=expr SemiColon
     -> ^(DECL specifier? ^(Matrix type $rowsize $columnsize) ^(Assign Identifier $a))
   | streamDecl
+  ;
+  
+size
+  : '*'
+  | expr
   ;
   
 typedef
@@ -187,12 +192,11 @@ specifier
   ;
 
 expr
-  : vectorOperation
-  | orExpr
+  : concatExpr
   ;
   
-orExpr
-  : (x=xorExpr -> $x) ((Bar Bar) y=orExpr -> ^(Or $x $y))*
+concatExpr
+  : (x=xorExpr -> $x) ((Concat) y=concatExpr -> ^(Concat $x $y))*
   ;
   
 xorExpr
@@ -265,6 +269,7 @@ atom
   | LParen expr RParen -> expr
   | As LThan type GThan LParen expr RParen -> ^(As type expr)
   | vectorconst -> ^(VCONST vectorconst)
+  | 'length' LParen Identifier RParen
   ;
   
 vectorconst
@@ -279,13 +284,6 @@ generator
   : LBracket Identifier In vector=expr Bar apply=expr RBracket -> ^(GENERATOR Identifier $vector $apply)
   | LBracket id1=Identifier In e1=expr Comma id2=Identifier In e2=expr Bar apply=expr RBracket 
     -> ^(GENERATOR ^(ROW $id1 $e1) ^(COLUMN $id2 $e2) $apply)    
-  ;
-
-vectorOperation
-  : 'length' LParen Identifier RParen
-//  | expr Bar Bar expr
-//  | atom Multiply Multiply expr
-//  |  By expr
   ;
   
 // DashAB Keywords
@@ -360,6 +358,7 @@ Assign    : '=';
 SemiColon : ';';
 Comma     : ',';
 Range     : '..';
+Concat    : '||';
 Bar       : '|';
 Dot       : '.';
 
