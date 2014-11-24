@@ -114,6 +114,8 @@ public class SymbolTable {
         return (BuiltInTypeSymbol) resolveType(oldname);
       }
     public Boolean lookup(Type tst1, Type tst2) {
+    	if (tst1.getName().equals("vector") && tst2.getName().equals("vector"))
+    		return false;
     	Integer i1 = null;
     	Integer i2 = null;
     	String st1 = "";
