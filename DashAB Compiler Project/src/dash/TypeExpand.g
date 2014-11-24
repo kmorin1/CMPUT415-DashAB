@@ -56,7 +56,7 @@ program
 }
   : ^(PROGRAM globalStatement*)
   ;
-  
+   
 globalStatement
   : declaration
   | typedef
@@ -190,14 +190,14 @@ declaration
     ArrayList<Type> types = new ArrayList<Type>();
     if (type == null && (temp.isVar() || temp.isConst())) {
       //types.add($e.stype);
-      stream_DECL.add((CommonTree) adaptor.create(Identifer, $e.stype.getName()));
+      stream_DECL.add((CommonTree) adaptor.create(Identifier, $e.stype.getName()));
       type = (BuiltInTypeSymbol) $e.stype;
     } else {
       //types.add(type);
-      stream_DECL.add((CommonTree) adaptor.create(Identifer, type.getName()));
+      stream_DECL.add((CommonTree) adaptor.create(Identifier, type.getName()));
       if (type.getName().equals("vector")) {
         VectorTypeSymbol vts = (VectorTypeSymbol) type;
-        stream_DECL.add((CommonTree) adaptor.create(Identifer, vts.getVectorType().getName()));
+        stream_DECL.add((CommonTree) adaptor.create(Identifier, vts.getVectorType().getName()));
         stream_DECL.add((CommonTree) vts.getVectorSize());
         //types.add(vts.getVectorType());
         //types.add(new BuiltInTypeSymbol(vts.getVectorSize().toString()));
