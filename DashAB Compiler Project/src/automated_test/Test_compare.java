@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 
 public class Test_compare {
 //work on this later
+//ok, looks like this feature is not possible, but keep code for the future
 	public static int run(String test){
 		System.out.println("Comparing output for " + test);
 		String line = null;
