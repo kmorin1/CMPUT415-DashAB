@@ -473,11 +473,8 @@ type returns [Type tsym]
   | t=Interval {$tsym = (Type) symtab.resolveType($t.text);}
   | t=String {$tsym = (Type) symtab.resolveType($t.text);}
   | ^(Vector vt=type s=size {size = root_1.getChild(root_1.getChildCount()-1);}) {
-    //System.out.println($vt.tsym.getName());
     VectorTypeSymbol vts = new VectorTypeSymbol("vector", $vt.tsym, size);
-    System.out.println(vts.getVectorSize());
     $tsym = vts;
-    //System.out.println(vts.getVectorType().getName());
   }
   | t=Real {$tsym = (Type) symtab.resolveType($t.text);}
   | t=Character {$tsym = (Type) symtab.resolveType($t.text);}
