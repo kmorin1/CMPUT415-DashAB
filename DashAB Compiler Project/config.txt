@@ -1,8 +1,10 @@
-DASH COMPILER COMMAND:
+DASH compiler command:
 dash
 
-OUR COMPILER COMMAND:
+Our compiler command:
 dash
 
-LLC VERSION:
+LLC that we are using:
 llc-3.2
+
+DEBUG MODE: ON

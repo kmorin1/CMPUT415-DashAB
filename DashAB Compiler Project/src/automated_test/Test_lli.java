@@ -12,12 +12,16 @@ public class Test_lli {
 		try{
 			//Initialize writer
 			PrintWriter writer = new PrintWriter("test.llvm", "UTF-8");
-			
+
 			//Write llvm-ir to file
+			if(Tester.debug == 1)	//Debug Code
+				System.out.println("LLC COMMAND EXECUTED >>> " + Tester.our + " Tests/" + test);
+
 			Process p = Runtime.getRuntime().exec(Tester.our + " Tests/" + test);
 			BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
 			while ((line = stdInput.readLine()) != null) {
-				//System.out.println(line);
+				if(Tester.debug == 1)
+					System.out.println(line);
 				writer.println(line);
 			}
 
@@ -26,18 +30,18 @@ public class Test_lli {
 			p = Runtime.getRuntime().exec("clang test.llvm.o libruntime.a -lm");
 			p = Runtime.getRuntime().exec("./a.out");
 			//Detect for errors...
-			
+
 			// Do we need to? If it compiles into ./a.out we are good?
 			// error = -1;
-			
+
 			//Close writer...
 			writer.close();
-			
+
 			//and clean-up...
 			p = Runtime.getRuntime().exec("rm test.llvm");
 			p = Runtime.getRuntime().exec("rm test.llvm.o");
 			p = Runtime.getRuntime().exec("rm a.out");
-			
+
 		}catch (IOException e) {
 			System.out.println("IO Error");
 			error = -1;

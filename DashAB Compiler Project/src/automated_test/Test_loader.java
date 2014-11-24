@@ -11,15 +11,15 @@ public class Test_loader {
 		System.out.print("Getting list of tests... ");
 		
 		//List of tests to do
-		List <String> tests = new ArrayList();
+		List <String> tests = new ArrayList<String>();
 		
 		//Test result list
-		List <Integer> compare_result = new ArrayList();
-		List <Integer> lli_result = new ArrayList();
-		List <Integer> dash_result = new ArrayList();
+		//List <Integer> compare_result = new ArrayList<Integer>();
+		List <Integer> lli_result = new ArrayList<Integer>();
+		List <Integer> dash_result = new ArrayList<Integer>();
 		
 		//Error counters for statistics
-		int compare_err = 0;
+		//int compare_err = 0;
 		int lli_err = 0;
 		int dash_err = 0;
 		

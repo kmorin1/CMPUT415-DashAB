@@ -7,6 +7,7 @@ public class Tester {
 	public static String dash;
 	public static String our;
 	public static String llc;
+	public static int debug;
 
 	public static void main(String[] args) {
 
@@ -18,14 +19,17 @@ public class Tester {
 			BufferedReader reader = new BufferedReader(file);
 
 			while ((line = reader.readLine()) != null) {
-				if(line.indexOf("DASH COMPILER COMMAND:") != -1){
+				if(line.indexOf("DASH compiler command:") != -1){
 					dash = reader.readLine();
 				}
-				if(line.indexOf("OUR COMPILER COMMAND:") != -1){
+				if(line.indexOf("Our compiler command:") != -1){
 					our = reader.readLine();
 				}
-				if(line.indexOf("LLC VERSION:") != -1){
+				if(line.indexOf("LLC that we are using:") != -1){
 					llc = reader.readLine();
+				}
+				if(line.indexOf("DEBUG MODE: ON") != -1){
+					debug = 1;
 				}
 			}
 		} catch (FileNotFoundException e) {
