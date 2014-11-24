@@ -72,8 +72,8 @@ streamstate
 declaration
   : ^(DECL specifier? type? Identifier) -> ^(DECL specifier? type? Identifier)
   | ^(DECL specifier? type? ^(Assign Identifier expr)) -> ^(DECL specifier? type? ^(Assign Identifier expr))
-  //| ^(DECL specifier StdInput ^(Assign Identifier StdInput)) -> ^(DECL specifier StdInput ^(Assign Identifier StdInput))
-  //| ^(DECL specifier StdOutput ^(Assign Identifier StdOutput)) -> ^(DECL specifier StdOutput ^(Assign Identifier StdOutput))
+  | ^(DECL specifier StdInput ^(Assign Identifier StdInput)) -> ^(DECL specifier StdInput ^(Assign Identifier StdInput))
+  | ^(DECL specifier StdOutput ^(Assign Identifier StdOutput)) -> ^(DECL specifier StdOutput ^(Assign Identifier StdOutput))
   ;
    
 typedef
@@ -86,7 +86,7 @@ block
   
 procedure
   : ^(Procedure Identifier paramlist ^(Returns type) block?)
-  //| ^(Procedure Identifier paramlist block?)
+  | ^(Procedure Identifier paramlist block?)
   ;
   
 function
