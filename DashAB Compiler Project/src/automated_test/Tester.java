@@ -6,6 +6,7 @@ public class Tester {
 
 	public static String dash;
 	public static String our;
+	public static String llc;
 
 	public static void main(String[] args) {
 
@@ -22,6 +23,9 @@ public class Tester {
 				}
 				if(line.indexOf("OUR COMPILER COMMAND:") != -1){
 					our = reader.readLine();
+				}
+				if(line.indexOf("LLC VERSION:") != -1){
+					llc = reader.readLine();
 				}
 			}
 		} catch (FileNotFoundException e) {

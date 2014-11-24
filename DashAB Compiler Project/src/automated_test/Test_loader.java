@@ -33,7 +33,7 @@ public class Test_loader {
 				if(line.indexOf(".ds") != -1)
 					tests.add(line);
 			}
-			System.out.println("Done " + tests.size() + " tests loaded\n");
+			System.out.println("Done, " + tests.size() + " tests loaded\n");
 		}catch (IOException e) {
 			System.out.println("Error starting process");
 		}
@@ -47,6 +47,8 @@ public class Test_loader {
 
 
 		//Show warnings
+		System.out.println("\n### Summary ###");
+		System.out.println("### WARNING LLC TESTING MIGHT BE VERY BROKEN AT THIS POINT ###");		//Delete me when fixed
 		/*
 		System.out.println("The following tests does not match DASH: ");
 		for(int i = 0; i < tests.size(); i++){
@@ -56,23 +58,24 @@ public class Test_loader {
 			}
 		}
 		*/
-		System.out.println("The following tests does not work with lli: ");
+		System.out.println("\nThe following tests does not work with lli: ");
 		for(int i = 0; i < tests.size(); i++){
 			if(lli_result.get(i) == -1){
-				System.out.println(tests.get(i));
+				System.out.println(" - " + tests.get(i));
 				lli_err++;
 			}
 		}
 		
-		System.out.println("The following test does not work with dash:");
+		System.out.println("\nThe following test does not work with dash:");
 		for(int i = 0; i < tests.size(); i++){
 			if(dash_result.get(i) == -1){
-				System.out.println(tests.get(i));
+				System.out.println(" - " + tests.get(i));
 				dash_err++;
 			}
 		}
 		
 		//Print Statistics
+		System.out.println("\n### Score ###");
 		//System.out.println(compare_err + " of " + tests.size() + " didn't match with DASH");
 		System.out.println(lli_err + " of " + tests.size() + " didn't work with lli");
 		System.out.println(dash_err + " of " + tests.size() + " didn't work with dash");

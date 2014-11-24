@@ -1,5 +1,8 @@
 DASH COMPILER COMMAND:
-gcc
+dash
 
 OUR COMPILER COMMAND:
-gcc --version
+dash
+
+LLC VERSION:
+llc-3.2
