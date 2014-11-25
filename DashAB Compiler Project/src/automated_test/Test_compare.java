@@ -19,6 +19,6 @@ public class Test_compare {
 		}catch (IOException e) {
 			System.out.println("Error starting process");
 		}
-		return 0;
+		return 1;
 	}
 }

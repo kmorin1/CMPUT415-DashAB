@@ -1,10 +1,13 @@
-DASH compiler command:
-dashc
+#1# DASH compiler command:
+gcc
 
-Our compiler command:
+#2# Our compiler command:
 java -cp antlr-3.3-complete.jar:bin/ dash.DashAB_Test
 
-LLC that we are using:
-llc-3.2
+#3# LLC that we are using:
+llc-3.0
 
-DEBUG MODE: ON
+#4# DEBUG MODE: ON
+#5# DASH testing: ON
+#6# LLC testing: ON
+#7# Compare output: ON
