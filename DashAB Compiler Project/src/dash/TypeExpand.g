@@ -201,32 +201,11 @@ declaration
       }
       if ($e.stype.getName().equals("vector")) {
         //TO-DO: add type inference completion for vectors
-        VectorTypeSymbol vts = (VectorTypeSymbol) $e.stype;
-        VectorTypeSymbol vtype = (VectorTypeSymbol) type;
-        //System.out.println(vtype.getVectorType().getName());
-       // System.out.println(vtype.getTypeTree());
-        if (vtype.getVectorType() == null)
-          stream_DECL.add((CommonTree) adaptor.create(Identifier, vts.getVectorType().getName()));
-        else
-          stream_DECL.add((CommonTree) adaptor.create(Identifier, vtype.getVectorType().getName()));
-        
-        //System.out.println(vtype.getVectorSize());
-        stream_DECL.add((CommonTree) adaptor.create(Integer, "integer"));
-        if (vtype.getVectorSize() == null) 
-          stream_DECL.add((CommonTree) vts.getVectorSize());
-        else 
-          stream_DECL.add((CommonTree) vtype.getVectorSize());
-
-        type = vts;
+        type = (VectorTypeSymbol) $e.stype;
       } else {
         type = (BuiltInTypeSymbol) $e.stype;
       }
-    } else {
-      stream_DECL=new RewriteRuleNodeStream(adaptor,"token DECL");
-      stream_DECL.add(DECL22);
-    
-    }  
-     // stream_type.reset();
+    }
     
   } -> ^(DECL specifier? type ^(Assign $id $e))
     //-> ^(DECL specifier? type? ^(Assign $id $e))
