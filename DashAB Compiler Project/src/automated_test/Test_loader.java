@@ -52,9 +52,18 @@ public class Test_loader {
 		//Show warnings
 		System.out.println("\n### Summary ###");
 		if(Tester.compare_test == 1){
-			System.out.println("The following tests does not match DASH: ");
+			System.out.println("The following tests does not match expected output: ");
 			for(int i = 0; i < tests.size(); i++){
 				if(compare_result.get(i) == -1){
+					System.out.println(tests.get(i));
+					compare_err++;
+				}
+			}
+		}
+		if(Tester.compare_test == 1){
+			System.out.println("The following tests match expected output: ");
+			for(int i = 0; i < tests.size(); i++){
+				if(compare_result.get(i) == 0){
 					System.out.println(tests.get(i));
 					compare_err++;
 				}
@@ -69,10 +78,28 @@ public class Test_loader {
 				}
 			}
 		}
+		if(Tester.llc_test == 1){
+			System.out.println("\nThe following tests works with llc: ");
+			for(int i = 0; i < tests.size(); i++){
+				if(llc_result.get(i) == 0 && Tester.llc_test == 1){
+					System.out.println(" - " + tests.get(i));
+					llc_err++;
+				}
+			}
+		}
 		if(Tester.dash_test == 1){
 			System.out.println("\nThe following test does not work with dash:");
 			for(int i = 0; i < tests.size(); i++){
 				if(dash_result.get(i) == -1 && Tester.dash_test == 1){
+					System.out.println(" - " + tests.get(i));
+					dash_err++;
+				}
+			}
+		}
+		if(Tester.dash_test == 1){
+			System.out.println("\nThe following test works with dash:");
+			for(int i = 0; i < tests.size(); i++){
+				if(dash_result.get(i) == 0 && Tester.dash_test == 1){
 					System.out.println(" - " + tests.get(i));
 					dash_err++;
 				}
