@@ -1,8 +1,8 @@
 DASH compiler command:
-dash
+dashc
 
 Our compiler command:
-dash
+java -cp antlr-3.3-complete.jar:bin/ dash.DashAB_Test
 
 LLC that we are using:
 llc-3.2
