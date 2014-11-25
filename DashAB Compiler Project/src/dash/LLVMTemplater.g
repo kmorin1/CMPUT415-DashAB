@@ -296,7 +296,7 @@ callStatement
 	List<String> varTypes = new ArrayList<String>();
 	VariableSymbol vs = null;
 }
-  : ^(CALL type id=Identifier {System.out.println("type: " + $type.st);} ^(ARGLIST (e=expr {varNums.add($e.resultVar); expressions.add($e.st.toString()); varTypes.add($e.stype);})*))
+  : ^(CALL type id=Identifier ^(ARGLIST (e=expr {varNums.add($e.resultVar); expressions.add($e.st.toString()); varTypes.add($e.stype);})*))
   -> {$type.st.toString().equals("void")}? callVoidProc(procName={$Identifier}, exprs={expressions}, varNames={varNums}, paramScope={getCurrentScopeNum()}, varTypes={varTypes}, result={++counter})
   -> callProc(procName={$Identifier}, retType={$type.st}, exprs={expressions}, varNames={varNums}, paramScope={getCurrentScopeNum()}, varTypes={varTypes}, result={++counter})
   ;
