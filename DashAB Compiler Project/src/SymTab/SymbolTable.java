@@ -89,20 +89,24 @@ public class SymbolTable {
         defineRes("const");
     }
     Boolean[][] promotelookup = {
-			{false, null, null, null, null, null},
-			{null, false, true, null, null, null},
-			{null, null, false, null, null, null},
-			{null, null, null, false, null, null},
-			{null, null, null, null, false, null},
-			{null, null, null, null, null, false}
-	};
+			{false, null, null, null, null, null, null, null}, //boolean
+			{null, false, true, null, null, null, null, null}, //integer
+			{null, null, false, null, null, null, null, null}, //real
+			{null, null, null, false, null, null, true, null}, //interval
+			{null, null, null, null, false, null, null, null}, //character
+			{null, null, null, null, null, false, null, null}, //tuple
+			{null, null, null, null, null, null, false, null}, //vector
+			{null, null, null, null, null, null, null, false}  //matrix
+	}; 
     Boolean[][] expromotelookup = {
-			{false, true, true, null, true, null},
-			{true, false, true, null, true, null},
-			{null, true, false, null, null, null},
-			{null, null, null, false, null, null},
-			{true, true, true, null, false, null},
-			{null, null, null, null, null, false}
+			{false, true, true, null, true, null, null, null},
+			{true, false, true, null, true, null, null, null},
+			{null, true, false, null, null, null, null, null},
+			{null, null, null, false, null, null, null, null},
+			{true, true, true, null, false, null, null, null},
+			{null, null, null, null, null, false, null, null},
+			{null, null, null, null, null, null, false, null},
+			{null, null, null, null, null, null, null, false}
 	};
     public BuiltInTypeSymbol getBuiltInSymbol(String name) {
         String bitname = name;
@@ -114,8 +118,6 @@ public class SymbolTable {
         return (BuiltInTypeSymbol) resolveType(oldname);
       }
     public Boolean lookup(Type tst1, Type tst2) {
-    	if (tst1.getName().equals("vector") && tst2.getName().equals("vector"))
-    		return false;
     	Integer i1 = null;
     	Integer i2 = null;
     	String st1 = "";
@@ -143,6 +145,10 @@ public class SymbolTable {
     	}
     	else if (st1.equals("tuple")) {
     		i1 = 5;
+    	} else if (st1.equals("vector")) {
+    		i1 = 6;
+    	} else if (st1.equals("matrix")) {
+    		i1 = 7;
     	}
     	
     	if (st2.equals("boolean")) {
@@ -162,6 +168,10 @@ public class SymbolTable {
     	}
     	else if (st2.equals("tuple")) {
     		i2 = 5;
+    	} else if (st2.equals("vector")) {
+    		i2 = 6;
+    	} else if (st2.equals("matrix")) {
+    		i2 = 7;
     	}
     	
     	//System.out.println(tst1.getName() + " " + tst2.getName());
@@ -187,7 +197,11 @@ public class SymbolTable {
         }
         else if (st1.equals("character")) {
                 i1 = 4;
-        }
+        } else if (st1.equals("vector")) {
+    		i1 = 6;
+    	} else if (st1.equals("matrix")) {
+    		i1 = 7;
+    	}
 
     	if (st2.equals("boolean")) {
             i2 = 0;
@@ -203,10 +217,13 @@ public class SymbolTable {
         }
         else if (st2.equals("character")) {
                 i2 = 4;
-        }
-        else if (st2.equals("tuple")) {
+        } else if (st2.equals("tuple")) {
                 i2 = 5;
-        }
+        } else if (st2.equals("vector")) {
+    		i2 = 6;
+    	} else if (st2.equals("matrix")) {
+    		i2 = 7;
+    	}
     	
     	return expromotelookup[i2][i1];
 	}
