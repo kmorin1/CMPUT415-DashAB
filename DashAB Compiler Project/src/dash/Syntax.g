@@ -100,12 +100,17 @@ declaration
   | specifier type* Identifier SemiColon -> ^(DECL specifier type* Identifier)
   | specifier? type+ Identifier Assign expr SemiColon -> ^(DECL specifier? type+ ^(Assign Identifier expr))
   | specifier type* Identifier Assign expr SemiColon -> ^(DECL specifier type* ^(Assign Identifier expr))
-  | specifier? type? Vector? Identifier LBracket size RBracket SemiColon -> ^(DECL specifier? ^(Vector type size))
-  | specifier? type? Vector? Identifier LBracket size RBracket Assign a=expr SemiColon
+  | specifier? type? 'vector'? Identifier LBracket size RBracket SemiColon 
+    -> {$type.text.equals("vector")}? ^(DECL specifier? ^(Vector size))
+    -> ^(DECL specifier? ^(Vector type size))
+  | specifier? type? 'vector'? Identifier LBracket size RBracket Assign a=expr SemiColon
+    -> {$type.text.equals("vector")}? ^(DECL specifier? ^(Vector size) ^(Assign Identifier $a))
     -> ^(DECL specifier? ^(Vector type size) ^(Assign Identifier $a))
-  | specifier? type? Matrix? Identifier LBracket rowsize=size Comma columnsize=size RBracket SemiColon
+  | specifier? type? 'matrix'? Identifier LBracket rowsize=size Comma columnsize=size RBracket SemiColon
+    -> {$type.text.equals("matrix")}? ^(DECL specifier? ^(Matrix $rowsize $columnsize)) 
     -> ^(DECL specifier? ^(Matrix type $rowsize $columnsize))  
-  | specifier? type? Matrix? Identifier LBracket rowsize=size Comma columnsize=size RBracket  Assign a=expr SemiColon
+  | specifier? type? 'matrix'? Identifier LBracket rowsize=size Comma columnsize=size RBracket  Assign a=expr SemiColon
+    -> {$type.text.equals("matrix")}? ^(DECL specifier? ^(Matrix $rowsize $columnsize) ^(Assign Identifier $a))
     -> ^(DECL specifier? ^(Matrix type $rowsize $columnsize) ^(Assign Identifier $a))
   | streamDecl
   ;
@@ -239,16 +244,16 @@ unaryExpr
   ;
   
 rangeExpr
-  : indexExpr (Range^ indexExpr)?  
+  : indexExpr (Range^ indexExpr)? 
   ;
   
 indexExpr
-  : atom (index^)?
+  : atom (index)?
   ;
 
 index
-  : (LBracket expr)=> LBracket expr RBracket
-  | LBracket atom RBracket
+  : (LBracket expr)=> LBracket! expr RBracket!
+  | LBracket! atom RBracket!
   ;   
   
 atom
@@ -361,36 +366,40 @@ Comma     : ',';
 Range     : '..';
 Concat    : '||';
 Bar       : '|';
-Dot       : '.';
 
-Number 
-  : Digit (Digit|'_')*
+fragment Dot       
+  : '.'
   ;
-  
-FPNumber
-  : (Digit|'_')* Dot (Digit|'_')+
-  | (Digit|'_')+ Dot
-  | (Digit|'_')+ 'e' (Digit|'_')+
-  | (Digit|'_')+ 'e' '_'* (Minus|Plus) (Digit|'_')+
-  | (Digit|'_')* Dot (Digit|'_')* 'e' (Digit|'_')+
-  | (Digit|'_')* Dot (Digit|'_')* 'e' (Minus|Plus) (Digit|'_')+
-  | ((Digit|'_')* Dot (Digit|'_')* 'e' '_'+ (Minus|Plus) (Digit|'_')+) 
-    => ((Digit|'_')* Dot (Digit|'_')* 'e' '_'+ (Minus|Plus) (Digit|'_')+)
+fragment Digit
+  : '0'..'9'
   ;
-  
-Char
-  : '\'' ('A'..'Z'|'a'..'z'|'0'..'9'|' '|'!'|'#'|'$'|'%'|'&'|'('|')'|
-          '*'|'+'|','|'-'|'.'|'/'|':'|';'|'<'|'='|'>'|'?'|'@'|'['|']'|
-          '^'|'_'|'`'|'{'|'|'|'}'|'~') '\''
-  | '\'\\' ('a'|'b'|'n'|'r'|'t'|'\\'|'\''|'\"'|'0') '\''
+fragment Exp
+  : ('e' | 'E') '_'* Digit+ '_'*
+  | ('e' | 'E') '_'* (Minus|Plus) '_'* Digit+ '_'*
   ;
 
 Identifier
   : ('A'..'Z' | 'a'..'z' | '_') ('A'..'Z'| 'a'..'z'| '_' | Digit)*
   ;
 
-fragment Digit
-  : '0'..'9'
+Number 
+  : Digit (Digit|'_')*
+  ;
+  
+FPNumber
+  : (Digit|'_')* 
+      ( (Range)=>      {$type=Number;}
+      | (Dot (Digit|'_'|Exp)+)=> Dot (Digit|'_')* Exp? 
+// {input.LA(1) == '.' && input.LA(2) != '.'}? => Dot (Digit|'_')* Exp?       
+      | Exp
+      )
+  ;
+
+Char
+  : '\'' ('A'..'Z'|'a'..'z'|'0'..'9'|' '|'!'|'#'|'$'|'%'|'&'|'('|')'|
+          '*'|'+'|','|'-'|'.'|'/'|':'|';'|'<'|'='|'>'|'?'|'@'|'['|']'|
+          '^'|'_'|'`'|'{'|'|'|'}'|'~') '\''
+  | '\'\\' ('a'|'b'|'n'|'r'|'t'|'\\'|'\''|'\"'|'0') '\''
   ;
   
 MULTILINE_COMMENT : '/*' .* '*/' {$channel = HIDDEN;} ;
