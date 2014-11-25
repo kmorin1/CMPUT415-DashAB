@@ -9,6 +9,10 @@ options {
   memoize = true;
 }
 
+tokens {
+  VOID;
+}
+
 @header
 {
   package dash; 
@@ -103,7 +107,7 @@ parameter
   ;
   
 callStatement
-  : ^(CALL Identifier ^(ARGLIST expr*))
+  : ^(CALL type Identifier ^(ARGLIST expr*))
   ;
   
 returnStatement
@@ -165,6 +169,10 @@ type returns [String tsym]
     $id.text.equals("character") ||
     symtab.resolveTDType($id.text).getSourceSymbol().getName().equals("character")
   }? {$tsym = "character";} -> Character["character"]
+  | id=Identifier {
+    $id.text.equals("void") ||
+    symtab.resolveTDType($id.text).getSourceSymbol().getName().equals("void")
+  }? {$tsym = "void";} -> VOID["void"]
   | id=Identifier {
     $id.text.equals("null") ||
     symtab.resolveTDType($id.text).getSourceSymbol().getName().equals("null")

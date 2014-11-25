@@ -273,7 +273,7 @@ procedure
 }
   : ^(Procedure id=Identifier pl=paramlist ^(Returns type 
     {ret_type_stack.push($type.tsym);}) (block {def = true;})?) {type = (BuiltInTypeSymbol) $type.tsym;}
-  | ^(Procedure id=Identifier pl=paramlist {ret_type_stack.push(new BuiltInTypeSymbol("void"));} 
+  | ^(Procedure id=Identifier pl=paramlist {type = new BuiltInTypeSymbol("void"); ret_type_stack.push(new BuiltInTypeSymbol("void"));} 
     (block {def = true;})?)
   ;
    
@@ -354,10 +354,13 @@ parameter returns [VariableSymbol varsym]
 callStatement
 @init {
   ArrayList<Type> argtypes = new ArrayList<Type>();
+  Type retType = null;
 }
   : ^(CALL id=Identifier ^(ARGLIST (e=expr {argtypes.add($e.stype);})*)) {
+  	
     ProcedureSymbol ps = symtab.resolveProcedure($id.text);
     FunctionSymbol fs = symtab.resolveFunction($id.text);
+    
     if (fs != null) {
       throw new RuntimeException(getErrorHeader() + "functions cannot be used as a statement");
     }
@@ -368,8 +371,8 @@ callStatement
       if (inFunction) {
         throw new RuntimeException(getErrorHeader() + ps.getName() + ": calling procedure inside a function");
       }
-    
-    
+      
+      retType = ps.getType();
       ArrayList<Symbol> argsyms = ps.getParamList();
       if (argsyms.size() != argtypes.size())
         throw new RuntimeException(getErrorHeader() + ps.getName() + ": number of arguments doesn't match");
@@ -380,7 +383,7 @@ callStatement
           throw new RuntimeException(getErrorHeader() + "type mismatch, expected " +  vs.getType().getName() + " but got " + argtypes.get(i).getName());
       }
     }
-  }
+  } -> ^(CALL Identifier[retType.getName()] Identifier[$id.text] ^(ARGLIST expr*))
   ;
   
 returnStatement
