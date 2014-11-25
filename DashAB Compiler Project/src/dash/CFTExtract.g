@@ -152,7 +152,7 @@ type
   | Matrix
   | Interval
   | String
-  | ^(Vector type size)
+  | ^(Vector type? size?)
   | Real
   | Character
   | tuple

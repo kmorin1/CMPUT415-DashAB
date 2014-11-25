@@ -189,8 +189,16 @@ declaration
     VariableSymbol temp = new VariableSymbol($id.text, type, spec);
     //ArrayList<Type> types = new ArrayList<Type>();
     if ((type == null || type.getName().equals("vector")) && (temp.isVar() || temp.isConst())) {
-      stream_type=new RewriteRuleSubtreeStream(adaptor,"rule type");
-      stream_DECL.add((CommonTree) adaptor.create(Identifier, $e.stype.getName()));
+      if (stream_type.hasNext()) {
+        CommonTree tre = (CommonTree) stream_type.nextTree();
+        CommonTree child = (CommonTree) tre.getChild(0);
+        tre.replaceChildren(0, 0, adaptor.create(Identifier, "integer"));
+        adaptor.addChild(tre, child);
+        stream_type=new RewriteRuleSubtreeStream(adaptor,"rule type");
+        stream_type.add(tre);
+      } else {
+        stream_type.add((CommonTree) adaptor.create(Identifier, $e.stype.getName()));
+      }
       if ($e.stype.getName().equals("vector")) {
         //TO-DO: add type inference completion for vectors
         VectorTypeSymbol vts = (VectorTypeSymbol) $e.stype;
@@ -218,9 +226,9 @@ declaration
       stream_DECL.add(DECL22);
     
     }  
-      
+     // stream_type.reset();
     
-  } -> ^(DECL specifier? type? ^(DECL DECL*)? ^(Assign $id $e))
+  } -> ^(DECL specifier? type ^(Assign $id $e))
     //-> ^(DECL specifier? type? ^(Assign $id $e))
   | ^(DECL (s=specifier {spec = (BuiltInTypeSymbol) $s.tsym;}) ^(Assign id=Identifier StdInput {type = (BuiltInTypeSymbol) symtab.resolveType("std_input");}))
     -> ^(DECL specifier StdInput["std_input"] ^(Assign $id StdInput))
