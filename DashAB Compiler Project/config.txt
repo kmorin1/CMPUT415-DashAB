@@ -8,6 +8,6 @@ java -cp antlr-3.3-complete.jar:bin/ dash.DashAB_Test
 llc-3.0
 
 #4# DEBUG MODE: ON
-#5# DASH testing: ON
+#5# DASH testing: 
 #6# LLC testing: ON
-#7# Compare output: ON
+#7# Compare output: 

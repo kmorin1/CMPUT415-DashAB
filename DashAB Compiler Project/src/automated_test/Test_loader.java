@@ -15,12 +15,12 @@ public class Test_loader {
 
 		//Test result list
 		List <Integer> compare_result = new ArrayList<Integer>();
-		List <Integer> lli_result = new ArrayList<Integer>();
+		List <Integer> llc_result = new ArrayList<Integer>();
 		List <Integer> dash_result = new ArrayList<Integer>();
 
 		//Error counters for statistics
 		int compare_err = 0;
-		int lli_err = 0;
+		int llc_err = 0;
 		int dash_err = 0;
 
 		String line = null;
@@ -43,7 +43,7 @@ public class Test_loader {
 			if(Tester.compare_test == 1)
 				compare_result.add(Test_compare.run(tests.get(i)));
 			if(Tester.llc_test == 1)
-				lli_result.add(Test_lli.run(tests.get(i)));
+				llc_result.add(Test_llc.run(tests.get(i)));
 			if(Tester.dash_test == 1)
 				dash_result.add(Test_dash.run(tests.get(i)));
 		}
@@ -61,11 +61,11 @@ public class Test_loader {
 			}
 		}
 		if(Tester.llc_test == 1){
-			System.out.println("\nThe following tests does not work with lli: ");
+			System.out.println("\nThe following tests does not work with llc: ");
 			for(int i = 0; i < tests.size(); i++){
-				if(lli_result.get(i) == -1 && Tester.llc_test == 1){
+				if(llc_result.get(i) == -1 && Tester.llc_test == 1){
 					System.out.println(" - " + tests.get(i));
-					lli_err++;
+					llc_err++;
 				}
 			}
 		}
@@ -83,7 +83,7 @@ public class Test_loader {
 		if(Tester.compare_test == 1)
 		System.out.println(compare_err + " of " + tests.size() + " didn't match with expected output");
 		if(Tester.llc_test == 1)
-		System.out.println(lli_err + " of " + tests.size() + " didn't work with lli");
+		System.out.println(llc_err + " of " + tests.size() + " didn't work with llc");
 		if(Tester.dash_test == 1)
 		System.out.println(dash_err + " of " + tests.size() + " didn't work with dash");
 	}
