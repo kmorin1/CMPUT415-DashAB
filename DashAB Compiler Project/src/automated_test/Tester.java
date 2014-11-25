@@ -1,3 +1,4 @@
+//Tested to work
 package automated_test;
 
 import java.io.*;
@@ -61,7 +62,7 @@ public class Tester {
 		}
 
 		//Show info
-		System.out.println("\nWe are now going to start testing with the following:\n");
+		System.out.println("\nWe are now going to start testing with the following compilers:\n");
 
 		try{
 			Process p = Runtime.getRuntime().exec(dash + " --version");
@@ -94,7 +95,7 @@ public class Tester {
 			Test_loader.load();
 
 		} catch (IOException e) {
-			System.out.println("Error starting process");
+			System.out.println("Error starting process " + e);
 		} catch (Exception e) {
 			System.out.println(e +" command invalid");
 		}
