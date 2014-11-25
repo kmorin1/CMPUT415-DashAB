@@ -191,9 +191,19 @@ declaration
     if ((type == null || type.getName().equals("vector")) && (temp.isVar() || temp.isConst())) {
       if (stream_type.hasNext()) {
         CommonTree tre = (CommonTree) stream_type.nextTree();
-        CommonTree child = (CommonTree) tre.getChild(0);
-        tre.replaceChildren(0, 0, adaptor.create(Identifier, "integer"));
-        adaptor.addChild(tre, child);
+                              
+        List children = tre.getChildren();
+        CommonTree child1 = (CommonTree) children.get(0);
+        CommonTree child2 = null;
+        if (children.size() == 2)
+           child2 = (CommonTree) children.get(1);                      
+        tre.replaceChildren(0, tre.getChildCount()-1, adaptor.create(Identifier, "integer"));
+        adaptor.addChild(tre, (CommonTree) child1);
+        if (children.size() == 2) {
+          adaptor.addChild(tre, (CommonTree) child2);
+        } else if (children.size() > 2) {
+          throw new RuntimeException(getErrorHeader() + "a variable cannot have more than one type");
+        }
         stream_type=new RewriteRuleSubtreeStream(adaptor,"rule type");
         stream_type.add(tre);
       } else {
