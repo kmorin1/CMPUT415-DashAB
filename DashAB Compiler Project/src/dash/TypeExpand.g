@@ -844,8 +844,12 @@ expr returns [Type stype]
         i=0;
       } 
     }
-    $stype = new VectorTypeSymbol("vector", comtype, adaptor.create(Number, new Integer(vtypes.size()).toString()));
-  } 
+    VectorTypeSymbol vts = new VectorTypeSymbol("vector", comtype, null, adaptor.create(Number, new Integer(vtypes.size()).toString()));
+    $stype = vts;
+    stream_VCONST.add((CommonTree) adaptor.create(Identifier, comtype.getName()));
+    stream_VCONST.add((CommonTree) adaptor.create(Identifier, comtype.getName()));
+    stream_VCONST.add((CommonTree) vts.getVectorSize());
+  } -> ^(VCONST ^(Vector VCONST*) expr+)
   | ^(Filter Identifier expr expr) 
   | ^(GENERATOR Identifier expr expr)
   | ^(GENERATOR ^(ROW Identifier expr) ^(COLUMN Identifier expr) expr)    
