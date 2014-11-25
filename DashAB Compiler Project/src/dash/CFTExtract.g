@@ -202,6 +202,7 @@ expr
   | Identity
   | Char
   | ^(TUPLEEX expr)
+  | ^(Range expr expr)
   | ^(Dot Identifier)
   | ^(VCONST expr+)
   | ^(Filter Identifier expr expr) 

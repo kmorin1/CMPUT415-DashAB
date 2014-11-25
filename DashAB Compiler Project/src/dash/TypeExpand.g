@@ -180,14 +180,12 @@ declaration
     
     if (type != null && symtab.lookup($e.stype, type) == null)
       throw new RuntimeException(getErrorHeader() + "assignment type error, expected " + type.getName() + " but got " + $e.stype.getName());
-      
-    stream_DECL.reset();
     
     if (type == null && ($e.stype.getName() == "null" || $e.stype.getName() == "identity")) {
       throw new RuntimeException(getErrorHeader() + "cannot infer type for variable " + $id.text);
     }
     VariableSymbol temp = new VariableSymbol($id.text, type, spec);
-    //ArrayList<Type> types = new ArrayList<Type>();
+   
     if ((type == null || type.getName().equals("vector")) && (temp.isVar() || temp.isConst())) {
       if (stream_type.hasNext()) {
         CommonTree tre = (CommonTree) stream_type.nextTree();
@@ -215,6 +213,8 @@ declaration
       } else {
         type = (BuiltInTypeSymbol) $e.stype;
       }
+    } else {
+      
     }
     
   } -> ^(DECL specifier? type ^(Assign $id $e))
@@ -483,13 +483,16 @@ type returns [Type tsym]
   | t=Interval {$tsym = (Type) symtab.resolveType($t.text);}
   | t=String {$tsym = (Type) symtab.resolveType($t.text);}
   | ^(Vector (vt=type {vtype = $vt.tree;})? (s=size {size = $s.tree;})? ) {
-    if (size != null && $s.text.equals("*")) 
-      size = null;
+    //if (size != null && $s.text.equals("*")) 
+    //  size = null;
     if (size != null && adaptor.isNil(size))
-      size = null;
+      size = adaptor.create(Identifier, "*");
+    if (size == null)
+      size = adaptor.create(Identifier, "*");
+    
     if (vtype != null && !$vt.tsym.getName().equals("vector"))
       bits = (BuiltInTypeSymbol) $vt.tsym;
-    //System.out.println(vtype);
+    
     VectorTypeSymbol vts = new VectorTypeSymbol("vector", bits, vtype, size);
     $tsym = vts;
   }
@@ -870,6 +873,11 @@ expr returns [Type stype]
     stream_VCONST.add((CommonTree) adaptor.create(Identifier, comtype.getName()));
     stream_VCONST.add((CommonTree) vts.getVectorSize());
   } -> ^(VCONST ^(Vector VCONST*) expr+)
+  | ^(Range a=expr b=expr) {
+    if (!$a.stype.getName().equals("integer") || !$b.stype.getName().equals("integer"))
+      throw new RuntimeException(errorhead + "interval operands must be integer expressions");
+    $stype = new VectorTypeSymbol("interval", new BuiltInTypeSymbol("integer"), null, adaptor.create(Identifier, "*"));
+  }
   | ^(Filter Identifier expr expr) 
   | ^(GENERATOR Identifier expr expr)
   | ^(GENERATOR ^(ROW Identifier expr) ^(COLUMN Identifier expr) expr)    

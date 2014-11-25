@@ -276,6 +276,7 @@ expr returns [String stype]
   | ^(POS a=expr) {$stype = $a.stype;}
   | type {$stype = $type.tsym;} streamstate 
   | ^(VCONST type expr+)
+  | ^(Range expr expr)
   | ^(Filter Identifier expr expr) 
   | ^(GENERATOR Identifier expr expr)
   | ^(GENERATOR ^(ROW Identifer expr) ^(COLUMN Identifier expr) expr)    
