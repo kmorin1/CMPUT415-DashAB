@@ -187,13 +187,29 @@ declaration
       throw new RuntimeException(getErrorHeader() + "cannot infer type for variable " + $id.text);
     }
     VariableSymbol temp = new VariableSymbol($id.text, type, spec);
-    ArrayList<Type> types = new ArrayList<Type>();
+    //ArrayList<Type> types = new ArrayList<Type>();
     if ((type == null || type.getName().equals("vector")) && (temp.isVar() || temp.isConst())) {
       stream_type=new RewriteRuleSubtreeStream(adaptor,"rule type");
       stream_DECL.add((CommonTree) adaptor.create(Identifier, $e.stype.getName()));
       if ($e.stype.getName().equals("vector")) {
         //TO-DO: add type inference completion for vectors
-        type = (VectorTypeSymbol) $e.stype;
+        VectorTypeSymbol vts = (VectorTypeSymbol) $e.stype;
+        VectorTypeSymbol vtype = (VectorTypeSymbol) type;
+        //System.out.println(vtype.getVectorType().getName());
+       // System.out.println(vtype.getTypeTree());
+        if (vtype.getVectorType() == null)
+          stream_DECL.add((CommonTree) adaptor.create(Identifier, vts.getVectorType().getName()));
+        else
+          stream_DECL.add((CommonTree) adaptor.create(Identifier, vtype.getVectorType().getName()));
+        
+        //System.out.println(vtype.getVectorSize());
+        stream_DECL.add((CommonTree) adaptor.create(Integer, "integer"));
+        if (vtype.getVectorSize() == null) 
+          stream_DECL.add((CommonTree) vts.getVectorSize());
+        else 
+          stream_DECL.add((CommonTree) vtype.getVectorSize());
+
+        type = vts;
       } else {
         type = (BuiltInTypeSymbol) $e.stype;
       }
@@ -357,10 +373,8 @@ callStatement
   Type retType = null;
 }
   : ^(CALL id=Identifier ^(ARGLIST (e=expr {argtypes.add($e.stype);})*)) {
-  	
     ProcedureSymbol ps = symtab.resolveProcedure($id.text);
     FunctionSymbol fs = symtab.resolveFunction($id.text);
-    
     if (fs != null) {
       throw new RuntimeException(getErrorHeader() + "functions cannot be used as a statement");
     }
@@ -371,7 +385,7 @@ callStatement
       if (inFunction) {
         throw new RuntimeException(getErrorHeader() + ps.getName() + ": calling procedure inside a function");
       }
-      
+    
       retType = ps.getType();
       ArrayList<Symbol> argsyms = ps.getParamList();
       if (argsyms.size() != argtypes.size())
@@ -464,16 +478,22 @@ type returns [Type tsym]
 @init {
   Object size = null;
   Object vtype = null;
+  BuiltInTypeSymbol bits = null;
 }
   : t=Boolean {$tsym = (Type) symtab.resolveType($t.text);}
   | t=Integer {$tsym = (Type) symtab.resolveType($t.text);}
   | t=Matrix {$tsym = (Type) symtab.resolveType($t.text);}
   | t=Interval {$tsym = (Type) symtab.resolveType($t.text);}
   | t=String {$tsym = (Type) symtab.resolveType($t.text);}
-  | ^(Vector (vt=type {vtype = root_1.getChild(root_1.getChildCount()-1);}) 
-    s=size ) {
-    
-    VectorTypeSymbol vts = new VectorTypeSymbol("vector", $vt.tsym, vtype, $s.tree);
+  | ^(Vector (vt=type {vtype = $vt.tree;})? (s=size {size = $s.tree;})? ) {
+    if (size != null && $s.text.equals("*")) 
+      size = null;
+    if (size != null && adaptor.isNil(size))
+      size = null;
+    if (vtype != null && !$vt.tsym.getName().equals("vector"))
+      bits = (BuiltInTypeSymbol) $vt.tsym;
+    //System.out.println(vtype);
+    VectorTypeSymbol vts = new VectorTypeSymbol("vector", bits, vtype, size);
     $tsym = vts;
   }
   | t=Real {$tsym = (Type) symtab.resolveType($t.text);}

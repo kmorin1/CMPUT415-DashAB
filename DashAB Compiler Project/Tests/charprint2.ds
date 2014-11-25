@@ -1,0 +1,11 @@
+procedure main() returns integer {
+
+	var out = std_output();
+
+	'a' > 'b' -> out;
+	'a'>= 'a' -> out;
+	' ' == '\t' -> out;
+
+	return 0;
+
+}

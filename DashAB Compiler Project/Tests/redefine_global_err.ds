@@ -1,0 +1,11 @@
+const integer x = 10;
+
+procedure main() returns integer {
+	var out = std_output();
+
+	x = 5;
+
+	x -> out;
+
+	return 0;
+}

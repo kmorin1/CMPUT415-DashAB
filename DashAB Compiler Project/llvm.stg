@@ -208,11 +208,19 @@ callFunc(funcName, retType, exprs, varNames, varTypes, result) ::= <<
 
 >>
 
-call(funcName, retType, expr, varNames, varTypes) ::= <<
-;start call
-<expr>
-call <retType> ( <varTypes:{ a |<a>}; separator=", "> )* @<funcName>(<varTypes, varNames:{ a, b |<a>* %.<b>}; separator=", ">)
-;end call
+callProc(procName, retType, exprs, varNames, varTypes, result) ::= <<
+;start procedure call
+<exprs>
+%.<result> = call <retType> ( <varTypes:{ a |<a>}; separator=", "> )* @<procName>(<varTypes, varNames:{ a, b |<a> %.<b>}; separator=", ">)
+;end procedure call
+
+>>
+
+callVoidProc(funcName, exprs, varNames, varTypes, result) ::= <<
+;call void proc
+<exprs>
+call void ( <varTypes:{ a |<a>}; separator=", "> )* @<procName>(<varTypes, varNames:{ a, b |<a> %.<b>}; separator=", ">)
+;end call void proc
 
 >>
 

@@ -1,0 +1,17 @@
+
+procedure test() returns integer {
+	return 42;
+}
+
+function fail() returns integer {
+	call test();
+	return 0;
+}
+
+
+procedure main() returns integer {
+	integer x = fail();
+
+
+	return 0;
+}

@@ -1,0 +1,15 @@
+procedure main() returns integer {
+	var scan = std_input();
+	var display = std_output();
+	integer input;
+	integer result;
+
+	input <- scan;
+	result = stream_state(scan);
+
+	result -> display;
+	'\n' -> display;
+
+
+	return 0;
+}

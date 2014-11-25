@@ -1,0 +1,13 @@
+const integer x = 10;
+
+procedure main() returns integer {
+	var out = std_output();
+
+	integer i = 10;
+	if (i > 10) {
+  		i = i + 1;
+  		integer j = 0;
+	}
+
+	return 0;
+}

@@ -1,0 +1,11 @@
+
+function noReturn() {
+	var integer x = 10;
+}
+
+procedure main() returns integer {
+	
+	x -> out;
+
+	return 0;
+}

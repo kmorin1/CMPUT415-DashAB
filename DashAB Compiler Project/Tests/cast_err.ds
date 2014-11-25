@@ -1,0 +1,9 @@
+const out = std_output();
+
+procedure main() returns integer {
+	boolean a = as<boolean>(1.0);
+
+	a -> out;
+
+	return 0;
+}

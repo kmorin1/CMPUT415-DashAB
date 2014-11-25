@@ -9,6 +9,9 @@ procedure main() returns integer {
 	';' -> out;
 	'\n' -> out;
 	'Z' -> out;
+	'\'' -> out;
+	'\"' -> out;
+	'\\' -> out;
 
 	return 0;
 

@@ -1,0 +1,13 @@
+procedure main() returns integer {
+	var scan = std_input();
+	var display = std_output();
+	integer a;
+
+	a <- scan;
+
+	a -> display;
+	'\n' -> display;
+
+
+	return 0;
+}

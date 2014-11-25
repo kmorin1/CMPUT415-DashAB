@@ -1,0 +1,22 @@
+procedure main() returns integer {
+var print = std_output();
+
+var a = 3.7;
+var b = 1.2;
+
+a + b -> print;
+'\n' -> print;
+a - b -> print;
+'\n' -> print;
+a / b -> print;
+'\n' -> print;
+a * b -> print;
+'\n' -> print;
+-a - -b -> print;
+'\n' -> print;
+3.7 % 1.2 -> print;
+'\n' -> print;
+
+
+return 0;
+}

@@ -1,4 +1,4 @@
 procedure main() returns integer {
 	float f = 5.5;
-	
+	return 0;
 }

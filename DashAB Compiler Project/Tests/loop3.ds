@@ -1,0 +1,16 @@
+procedure main() returns integer {
+	var out = std_output();
+	var inp = std_input();
+	integer x;
+
+	loop {
+		x <- inp;
+		x -> out;
+		'\n' -> out;
+		if (x > 10)
+			break;
+	}
+
+
+	return 0;
+}
