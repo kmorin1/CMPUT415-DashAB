@@ -10,7 +10,8 @@ public class Tester {
 	public static int debug;
 	public static int dash_test;
 	public static int llc_test;
-	public static int compare_test;
+	public static int dash_compare_test;
+	public static int llc_compare_test;
 
 	public static void main(String[] args) {
 
@@ -21,6 +22,7 @@ public class Tester {
 			FileReader file = new FileReader("config.txt");
 			BufferedReader reader = new BufferedReader(file);
 
+			System.out.print("Parameters enabled: ");
 			while ((line = reader.readLine()) != null) {
 				if(line.indexOf("#1# DASH compiler command:") != -1){
 					dash = reader.readLine();
@@ -33,15 +35,23 @@ public class Tester {
 				}
 				if(line.indexOf("#4# DEBUG MODE: ON") != -1){
 					debug = 1;
+					System.out.print("[Debug] ");
 				}
 				if(line.indexOf("#5# DASH testing: ON") != -1){
 					dash_test = 1;
+					System.out.print("[Dash testing] ");
 				}
-				if(line.indexOf("#6# LLC testing: ON") != -1){
+				if(line.indexOf("#6# Compare output for DASH: ON") != -1){
+					dash_compare_test = 1;
+					System.out.print("[Expected output for DASH testing] ");
+				}
+				if(line.indexOf("#7# LLC testing: ON") != -1){
 					llc_test = 1;
+					System.out.print("[LLC testing] ");
 				}
-				if(line.indexOf("#7# Compare output: ON") != -1){
-					compare_test = 1;
+				if(line.indexOf("#8# Compare output for LLC: ON") != -1){
+					llc_compare_test = 1;
+					System.out.print("[Expected output for LLC testing] ");
 				}
 			}
 		} catch (FileNotFoundException e) {
@@ -51,7 +61,7 @@ public class Tester {
 		}
 
 		//Show info
-		System.out.println("We are now going to start testing with the following:\n");
+		System.out.println("\nWe are now going to start testing with the following:\n");
 
 		try{
 			Process p = Runtime.getRuntime().exec(dash + " --version");
@@ -65,7 +75,7 @@ public class Tester {
 			while ((line = stdError.readLine()) != null) {
 				throw new Exception("DASH");
 			}
-			
+
 
 			p = Runtime.getRuntime().exec(our);
 			stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));

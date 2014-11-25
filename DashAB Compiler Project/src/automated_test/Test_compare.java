@@ -1,24 +1,30 @@
 package automated_test;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 
 public class Test_compare {
-//work on this later
-//ok, looks like this feature is not possible, but keep code for the future
+	
 	public static int run(String test){
-		System.out.println("Comparing output for " + test);
+		
+		int error = 0;
 		String line = null;
-		try{
-			Process p = Runtime.getRuntime().exec("ls Tests");
+		
+		try {
+			Process p = Runtime.getRuntime().exec("diff output.txt Tests/" + test + ".exp");
+			System.out.println("diff output.txt Tests/" + test + ".exp");
 			BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
 			while ((line = stdInput.readLine()) != null) {
-				//do something here
+				System.out.println(line);
+				error = -1;
 			}
-		}catch (IOException e) {
-			System.out.println("Error starting process");
+			
+			
+			
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
-		return 1;
+		
+		return error;
 	}
+	
 }

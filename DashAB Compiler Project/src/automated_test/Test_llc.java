@@ -6,12 +6,13 @@ public class Test_llc {
 
 	public static int run(String test){
 		int error = 0;
-
-		System.out.println(test + " with LLC");
+		Test_compare.run(test);
+		System.out.println("\n"+test + " with LLC");
 		String line = null;
 		try{
 			//Initialize writer
 			PrintWriter writer = new PrintWriter("test.llvm", "UTF-8");
+			PrintWriter output = new PrintWriter("output.txt", "UTF-8");
 
 			//Write llvm-ir to file
 			if(Tester.debug == 1)	//Debug Code
@@ -20,30 +21,47 @@ public class Test_llc {
 			Process p = Runtime.getRuntime().exec(Tester.our + " Tests/" + test);
 			BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
 			while ((line = stdInput.readLine()) != null) {
+				if(line.indexOf("A problem has occured with the dash input file:") != -1){
+					stdInput.readLine();
+					output.println("//fail");
+				}
+				else
+					writer.println(line);
 				if(Tester.debug == 1)
 					System.out.println(line);
-				writer.println(line);
 			}
-
+			
 			//See if the llvm works or not...
 			p = Runtime.getRuntime().exec(Tester.llc + " test.llvm -filetype=obj");
+			//Now we link it into an executable
 			p = Runtime.getRuntime().exec("clang test.llvm.o libruntime.a -lm");
+			output.println("//pass");
+			//Now run it
 			p = Runtime.getRuntime().exec("./a.out");
-			//Detect for errors...
+			System.out.println("executable generated");
+			//Output results into a file
+			stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
+			while ((line = stdInput.readLine()) != null) {
+				if(Tester.debug == 1)
+					System.out.println(line);
+				output.println(line);
+			}
 
-			// Do we need to? If it compiles into ./a.out we are good?
-			// error = -1;
+			if(Tester.llc_compare_test == 1)
+				error = Test_compare.run(test);
 
 			//Close writer...
 			writer.close();
+			output.close();
 
 			//and clean-up...
 			p = Runtime.getRuntime().exec("rm test.llvm");
 			p = Runtime.getRuntime().exec("rm test.llvm.o");
 			p = Runtime.getRuntime().exec("rm a.out");
+			p = Runtime.getRuntime().exec("rm output.txt");
 
 		}catch (IOException e) {
-			System.out.println("IO Error");
+			System.out.println("Invalid LLVM code");
 			error = -1;
 		}
 
