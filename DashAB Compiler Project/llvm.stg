@@ -167,9 +167,9 @@ exponent(expr1, expr2, type, tmpNum1, tmpNum2, result) ::= <<
 
 >>
 
-input(varName, varType) ::= <<
+input(varName, varType, scopeNum) ::= <<
 ;start input
-call <varType> (<varType>*)* @input_<varType>(<varType>* %.<varName>)
+call <varType> (<varType>*)* @input_<varType>(<varType>* %.<varName>.<scopeNum>)
 ;end input
 
 >>

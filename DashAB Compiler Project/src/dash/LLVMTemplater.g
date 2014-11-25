@@ -23,7 +23,7 @@ options {
     int tmpcount= 0;
     int scopeCounter = 0;
     int numLoop = 0;
-    int scopeNum = 0;
+    int scopeNumber = 0;
     public LLVMTemplater(TreeNodeStream input, SymbolTable unused) {
         this(input);
         this.symtab = new SymbolTable();
@@ -156,16 +156,14 @@ options {
   }
   
   private int getCurrentScopeNum() {
-  	int currentScopeNum = 0;
   	if (currentscope instanceof NestedScope) {
   		NestedScope ns = (NestedScope)currentscope;
-  		currentScopeNum = ns.scopeNum;
+  		return ns.scopeNum + 1;
     }
     else if (currentscope instanceof GlobalScope) {
-    	GlobalScope gs = (GlobalScope)currentscope;
-    	currentScopeNum = gs.scopeNum;
+    	return 0;
     }
-    return currentScopeNum;
+    return -1;
   }
 }
 
@@ -197,7 +195,10 @@ outputstream
   ;
 
 inputstream
-  : ^(LArrow type var=Identifier stream=Identifier) -> input(varName={$var}, varType={$type.st})
+@init {
+	VariableSymbol vs = null;
+}
+  : ^(LArrow type var=Identifier stream=Identifier) {vs = (VariableSymbol) currentscope.resolve($var.text);} -> input(varName={$var}, varType={$type.st}, scopeNum={vs.scopeNum})
   ;
   
 streamstate
@@ -231,12 +232,11 @@ declaration
   ;
 
 block
-@init {
-	scopeNum++;
-	currentscope = new NestedScope("blockscope", currentscope, scopeNum);
+@after {
+	currentscope = currentscope.getEnclosingScope();
+	scopeNumber++;
 }
-@after {currentscope = currentscope.getEnclosingScope();}
-  : ^(BLOCK d+=declaration* s+=statement*) -> returnTwo(a={$d}, b={$s})
+  : ^(BLOCK {	currentscope = new NestedScope("blockscope", currentscope, scopeNumber);} d+=declaration* s+=statement*) -> returnTwo(a={$d}, b={$s})
   ;
   
 procedure
@@ -259,11 +259,10 @@ function
   ;
   
 paramlist
-@init {
-	scopeNum++;
-	currentscope = new NestedScope("paramscope", currentscope, scopeNum);
+@after {
+	scopeNumber++;
 }
-  : ^(PARAMLIST p+=parameter*) -> paramsep(params={$p})
+  : ^(PARAMLIST {	currentscope = new NestedScope("paramscope", currentscope, scopeNumber);} p+=parameter*) -> paramsep(params={$p})
   ;
   
 parameter
@@ -313,14 +312,6 @@ assignment
   : ^(Assign Identifier
   {
   	vs = (VariableSymbol) currentscope.resolve($Identifier.text);
-  	if (currentscope instanceof NestedScope) {
-  		NestedScope ns = (NestedScope)currentscope;
-  		vs.scopeNum = ns.scopeNum;
-  		}
-  		else if (currentscope instanceof GlobalScope) {
-  		GlobalScope gs = (GlobalScope)currentscope;
-  		vs.scopeNum = gs.scopeNum;
-  		}
   }
   expr) -> outputAssi(sym={getLLVMvarSymbol(vs.scopeNum)}, varName={$Identifier}, varType={$expr.stype}, scopeNum = {vs.scopeNum}, expr={$expr.st}, tmpNum={counter++})
   ;
