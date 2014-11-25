@@ -1,0 +1,27 @@
+procedure main() returns integer {
+	var out = std_output();
+
+	boolean a = 10 > 9;
+	boolean b = ((5 <= 7) or (6 > 9)) and (4 > 5);
+	boolean c = ((true == false) or (false)) xor (true);
+	boolean d = ((3 != 2) and (3 == 3));
+	boolean e = not true;
+	boolean f = not (10 > 100);
+
+
+
+	a -> out;
+	'\n' -> out;
+	b -> out;
+	'\n' -> out;
+	c -> out;
+	'\n' -> out;
+	d -> out;
+	'\n' -> out;
+	e -> out;
+	'\n' -> out;
+	f -> out;
+	'\n' -> out;
+
+	return 0;
+}

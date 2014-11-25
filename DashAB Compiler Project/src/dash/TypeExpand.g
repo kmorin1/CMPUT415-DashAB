@@ -56,7 +56,7 @@ program
 }
   : ^(PROGRAM globalStatement*)
   ;
-  
+   
 globalStatement
   : declaration
   | typedef
@@ -187,29 +187,41 @@ declaration
       throw new RuntimeException(getErrorHeader() + "cannot infer type for variable " + $id.text);
     }
     VariableSymbol temp = new VariableSymbol($id.text, type, spec);
-    ArrayList<Type> types = new ArrayList<Type>();
-    if (type == null && (temp.isVar() || temp.isConst())) {
-      types.add($e.stype);
-      type = (BuiltInTypeSymbol) $e.stype;
-    } /*else {
-      types.add(type);
-      if (type.getName().equals("vector")) {
-        VectorTypeSymbol vts = (VectorTypeSymbol) type;
-        types.add(vts.getVectorType());
-        //types.add(new BuiltInTypeSymbol(vts.getVectorSize().toString()));
+    //ArrayList<Type> types = new ArrayList<Type>();
+    if ((type == null || type.getName().equals("vector")) && (temp.isVar() || temp.isConst())) {
+      stream_type=new RewriteRuleSubtreeStream(adaptor,"rule type");
+      stream_DECL.add((CommonTree) adaptor.create(Identifier, $e.stype.getName()));
+      if ($e.stype.getName().equals("vector")) {
+        //TO-DO: add type inference completion for vectors
+        VectorTypeSymbol vts = (VectorTypeSymbol) $e.stype;
+        VectorTypeSymbol vtype = (VectorTypeSymbol) type;
+        //System.out.println(vtype.getVectorType().getName());
+       // System.out.println(vtype.getTypeTree());
+        if (vtype.getVectorType() == null)
+          stream_DECL.add((CommonTree) adaptor.create(Identifier, vts.getVectorType().getName()));
+        else
+          stream_DECL.add((CommonTree) adaptor.create(Identifier, vtype.getVectorType().getName()));
+        
+        //System.out.println(vtype.getVectorSize());
+        stream_DECL.add((CommonTree) adaptor.create(Integer, "integer"));
+        if (vtype.getVectorSize() == null) 
+          stream_DECL.add((CommonTree) vts.getVectorSize());
+        else 
+          stream_DECL.add((CommonTree) vtype.getVectorSize());
+
+        type = vts;
+      } else {
+        type = (BuiltInTypeSymbol) $e.stype;
       }
-    }
-      
-    for (int i=0; i<types.size(); i++) {
-      stream_DECL.add((CommonTree) adaptor.create(Identifier, types.get(i).getName()));
-      if (types.get(i).getName().equals("tuple")) {
-        TupleSymbol ts = (TupleSymbol) types.get(i);
-        for (int j=0; j<ts.getFieldNames().size(); j++)
-          stream_DECL.add((CommonTree) adaptor.create(Identifier, ts.getFieldNames().get(j).type.getName()));
-      } 
-    }*/
+    } else {
+      stream_DECL=new RewriteRuleNodeStream(adaptor,"token DECL");
+      stream_DECL.add(DECL22);
     
-  } -> ^(DECL specifier? type ^(Assign $id $e))
+    }  
+      
+    
+  } -> ^(DECL specifier? type? ^(DECL DECL*)? ^(Assign $id $e))
+    //-> ^(DECL specifier? type? ^(Assign $id $e))
   | ^(DECL (s=specifier {spec = (BuiltInTypeSymbol) $s.tsym;}) ^(Assign id=Identifier StdInput {type = (BuiltInTypeSymbol) symtab.resolveType("std_input");}))
     -> ^(DECL specifier StdInput["std_input"] ^(Assign $id StdInput))
   | ^(DECL (s=specifier {spec = (BuiltInTypeSymbol) $s.tsym;}) ^(Assign id=Identifier StdOutput {type = (BuiltInTypeSymbol) symtab.resolveType("std_output");}))
@@ -277,7 +289,7 @@ procedure
 }
   : ^(Procedure id=Identifier pl=paramlist ^(Returns type 
     {ret_type_stack.push($type.tsym);}) (block {def = true;})?) {type = (BuiltInTypeSymbol) $type.tsym;}
-  | ^(Procedure id=Identifier pl=paramlist {ret_type_stack.push(new BuiltInTypeSymbol("void"));} 
+  | ^(Procedure id=Identifier pl=paramlist {type = new BuiltInTypeSymbol("void"); ret_type_stack.push(new BuiltInTypeSymbol("void"));} 
     (block {def = true;})?)
   ;
    
@@ -358,6 +370,7 @@ parameter returns [VariableSymbol varsym]
 callStatement
 @init {
   ArrayList<Type> argtypes = new ArrayList<Type>();
+  Type retType = null;
 }
   : ^(CALL id=Identifier ^(ARGLIST (e=expr {argtypes.add($e.stype);})*)) {
     ProcedureSymbol ps = symtab.resolveProcedure($id.text);
@@ -373,7 +386,7 @@ callStatement
         throw new RuntimeException(getErrorHeader() + ps.getName() + ": calling procedure inside a function");
       }
     
-    
+      retType = ps.getType();
       ArrayList<Symbol> argsyms = ps.getParamList();
       if (argsyms.size() != argtypes.size())
         throw new RuntimeException(getErrorHeader() + ps.getName() + ": number of arguments doesn't match");
@@ -384,7 +397,7 @@ callStatement
           throw new RuntimeException(getErrorHeader() + "type mismatch, expected " +  vs.getType().getName() + " but got " + argtypes.get(i).getName());
       }
     }
-  }
+  } -> ^(CALL Identifier[retType.getName()] Identifier[$id.text] ^(ARGLIST expr*))
   ;
   
 returnStatement
@@ -462,13 +475,26 @@ slist
   
   //TO-DO: change vector and matrix to return their own type objects
 type returns [Type tsym]
+@init {
+  Object size = null;
+  Object vtype = null;
+  BuiltInTypeSymbol bits = null;
+}
   : t=Boolean {$tsym = (Type) symtab.resolveType($t.text);}
   | t=Integer {$tsym = (Type) symtab.resolveType($t.text);}
   | t=Matrix {$tsym = (Type) symtab.resolveType($t.text);}
   | t=Interval {$tsym = (Type) symtab.resolveType($t.text);}
   | t=String {$tsym = (Type) symtab.resolveType($t.text);}
-  | ^(Vector vt=type size) {
-    $tsym = new VectorTypeSymbol("vector", $vt.tsym);
+  | ^(Vector (vt=type {vtype = $vt.tree;})? (s=size {size = $s.tree;})? ) {
+    if (size != null && $s.text.equals("*")) 
+      size = null;
+    if (size != null && adaptor.isNil(size))
+      size = null;
+    if (vtype != null && !$vt.tsym.getName().equals("vector"))
+      bits = (BuiltInTypeSymbol) $vt.tsym;
+    //System.out.println(vtype);
+    VectorTypeSymbol vts = new VectorTypeSymbol("vector", bits, vtype, size);
+    $tsym = vts;
   }
   | t=Real {$tsym = (Type) symtab.resolveType($t.text);}
   | t=Character {$tsym = (Type) symtab.resolveType($t.text);}
@@ -785,7 +811,8 @@ expr returns [Type stype]
     tuplepairs.add(new FieldPair("null", $e.stype));
     stream_TUPLEEX.reset();
     stream_TUPLEEX.add((CommonTree) adaptor.create(Identifier, $e.stype.getName()));
-  })+) {$stype = new TupleSymbol("tuple", tuplepairs);} -> ^(TUPLEEX ^(Identifier[$stype.getName()] TUPLEEX+) expr+)
+  })+) {$stype = new TupleSymbol("tuple", tuplepairs);} 
+    -> ^(TUPLEEX ^(Identifier[$stype.getName()] TUPLEEX+) expr+)
   | ^(Dot id=Identifier {
     Symbol s = currentscope.resolve($id.text);
     if (s == null)
@@ -840,10 +867,14 @@ expr returns [Type stype]
         i=0;
       } 
     }
-    $stype = new VectorTypeSymbol("vector", comtype, vtypes.size());
-  } 
+    VectorTypeSymbol vts = new VectorTypeSymbol("vector", comtype, null, adaptor.create(Number, new Integer(vtypes.size()).toString()));
+    $stype = vts;
+    stream_VCONST.add((CommonTree) adaptor.create(Identifier, comtype.getName()));
+    stream_VCONST.add((CommonTree) adaptor.create(Identifier, comtype.getName()));
+    stream_VCONST.add((CommonTree) vts.getVectorSize());
+  } -> ^(VCONST ^(Vector VCONST*) expr+)
   | ^(Filter Identifier expr expr) 
   | ^(GENERATOR Identifier expr expr)
-  | ^(GENERATOR ^(ROW Identifer expr) ^(COLUMN Identifier expr) expr)    
+  | ^(GENERATOR ^(ROW Identifier expr) ^(COLUMN Identifier expr) expr)    
   ;
   

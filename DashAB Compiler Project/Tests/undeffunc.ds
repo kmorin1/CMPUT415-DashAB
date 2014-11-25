@@ -1,5 +1,5 @@
 procedure main() returns integer {
 	real f = 5.5;
 	real r = add(2, 2.3);
-	
+	return 0;
 }

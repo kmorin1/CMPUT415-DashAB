@@ -1,0 +1,13 @@
+procedure main() returns integer {
+	var out = std_output();
+	
+	integer a = 1__2___34_5;
+	integer b = 1_________3_5____;
+
+	a -> out;
+	'\n' -> out;
+	b -> out;
+	'\n' -> out;
+
+	return 0;
+}

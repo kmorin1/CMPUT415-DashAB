@@ -1,0 +1,32 @@
+procedure main() returns integer {
+var out = std_output();
+var a = 3;
+var b = 2;
+
+a * b -> out;
+'\n' -> out;
+a - b -> out;
+'\n' -> out;
+a / b -> out;
+'\n' -> out;
+a + b -> out;
+'\n' -> out;
+a * -b -> out;
+'\n' -> out;
+a - -b -> out;
+'\n' -> out;
+a / -b -> out;
+'\n' -> out;
+a + -b -> out;
+'\n' -> out;
+a ^ b -> out;
+'\n' -> out;
+b ^ a -> out;
+'\n' -> out;
+a % b -> out;
+'\n' -> out;
+b % a -> out;
+'\n' -> out;
+
+return 0;
+}

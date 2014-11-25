@@ -1,0 +1,10 @@
+const out = std_output();
+
+procedure main() returns integer {
+	real x = 1.;
+
+	x -> out;
+	'\n' -> out;
+
+	return 0;
+}

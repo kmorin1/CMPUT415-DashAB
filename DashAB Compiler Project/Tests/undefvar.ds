@@ -3,5 +3,5 @@ typedef real float;
 procedure main() returns integer {
 	float f = 5.5;
 	real r = f + x;
-	
+	return 0;
 }

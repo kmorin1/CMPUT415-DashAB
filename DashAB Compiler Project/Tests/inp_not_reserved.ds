@@ -1,0 +1,10 @@
+typedef integer inp;
+
+procedure main() returns integer {
+	var out = std_output();
+	inp x = 10;
+
+	x -> out;
+
+	return 0;
+}

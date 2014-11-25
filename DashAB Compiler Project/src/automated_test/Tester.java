@@ -6,6 +6,11 @@ public class Tester {
 
 	public static String dash;
 	public static String our;
+	public static String llc;
+	public static int debug;
+	public static int dash_test;
+	public static int llc_test;
+	public static int compare_test;
 
 	public static void main(String[] args) {
 
@@ -17,11 +22,26 @@ public class Tester {
 			BufferedReader reader = new BufferedReader(file);
 
 			while ((line = reader.readLine()) != null) {
-				if(line.indexOf("DASH COMPILER COMMAND:") != -1){
+				if(line.indexOf("#1# DASH compiler command:") != -1){
 					dash = reader.readLine();
 				}
-				if(line.indexOf("OUR COMPILER COMMAND:") != -1){
+				if(line.indexOf("#2# Our compiler command:") != -1){
 					our = reader.readLine();
+				}
+				if(line.indexOf("#3# LLC that we are using:") != -1){
+					llc = reader.readLine();
+				}
+				if(line.indexOf("#4# DEBUG MODE: ON") != -1){
+					debug = 1;
+				}
+				if(line.indexOf("#5# DASH testing: ON") != -1){
+					dash_test = 1;
+				}
+				if(line.indexOf("#6# LLC testing: ON") != -1){
+					llc_test = 1;
+				}
+				if(line.indexOf("#7# Compare output: ON") != -1){
+					compare_test = 1;
 				}
 			}
 		} catch (FileNotFoundException e) {
@@ -56,7 +76,7 @@ public class Tester {
 
 			stdError = new BufferedReader(new InputStreamReader(p.getErrorStream()));
 			while ((line = stdError.readLine()) != null) {
-				throw new Exception("Our compiler");
+				//throw new Exception("Our compiler");
 			}
 
 			//Start loading all the test files

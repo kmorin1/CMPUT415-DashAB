@@ -1,0 +1,21 @@
+procedure main() returns integer {
+	var scan = std_input();
+	var display = std_output();
+	integer input;
+	integer result1;
+	integer result2;
+
+	input <- scan;
+	result1 = stream_state(scan);
+
+	input <- scan;
+	result2 = stream_state(scan);
+
+	result1 -> display;
+	'\n' -> display;
+	result2 -> display;
+	'\n' -> display;
+
+
+	return 0;
+}

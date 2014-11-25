@@ -9,6 +9,10 @@ options {
   memoize = true;
 }
 
+tokens {
+  VOID;
+}
+
 @header
 {
   package dash; 
@@ -43,7 +47,7 @@ globalStatement
   | procedure
   | function
   ;
-    
+     
 statement
   : assignment 
   | outputstream
@@ -68,10 +72,10 @@ inputstream
 streamstate
   : ^(Stream stream=Identifier)
   ;
-
+ 
 declaration
-  : ^(DECL specifier? type* Identifier) -> ^(DECL specifier? type* Identifier)
-  | ^(DECL specifier? type* ^(Assign Identifier expr)) -> ^(DECL specifier? type* ^(Assign Identifier expr))
+  : ^(DECL specifier? type? Identifier) -> ^(DECL specifier? type? Identifier)
+  | ^(DECL specifier? type? ^(Assign Identifier expr)) -> ^(DECL specifier? type? ^(Assign Identifier expr))
   | ^(DECL specifier StdInput ^(Assign Identifier StdInput)) -> ^(DECL specifier StdInput ^(Assign Identifier StdInput))
   | ^(DECL specifier StdOutput ^(Assign Identifier StdOutput)) -> ^(DECL specifier StdOutput ^(Assign Identifier StdOutput))
   ;
@@ -103,7 +107,7 @@ parameter
   ;
   
 callStatement
-  : ^(CALL Identifier ^(ARGLIST expr*))
+  : ^(CALL type Identifier ^(ARGLIST expr*))
   ;
   
 returnStatement
@@ -165,6 +169,10 @@ type returns [String tsym]
     $id.text.equals("character") ||
     symtab.resolveTDType($id.text).getSourceSymbol().getName().equals("character")
   }? {$tsym = "character";} -> Character["character"]
+  | id=Identifier {
+    $id.text.equals("void") ||
+    symtab.resolveTDType($id.text).getSourceSymbol().getName().equals("void")
+  }? {$tsym = "void";} -> VOID["void"]
   | id=Identifier {
     $id.text.equals("null") ||
     symtab.resolveTDType($id.text).getSourceSymbol().getName().equals("null")
@@ -267,7 +275,7 @@ expr returns [String stype]
   | ^(NEG a=expr) {$stype = $a.stype;}
   | ^(POS a=expr) {$stype = $a.stype;}
   | type {$stype = $type.tsym;} streamstate 
-  | ^(VCONST expr+)
+  | ^(VCONST type expr+)
   | ^(Filter Identifier expr expr) 
   | ^(GENERATOR Identifier expr expr)
   | ^(GENERATOR ^(ROW Identifer expr) ^(COLUMN Identifier expr) expr)    
