@@ -47,13 +47,15 @@ public class Test_llc {
 
 			//See if the llvm works or not...
 			p = Runtime.getRuntime().exec(Tester.llc + " test.llvm -filetype=obj");
+			System.out.println("***LLC likes it");
 			//Now we link it into an executable
 			p = Runtime.getRuntime().exec("clang test.llvm.o libruntime.a -lm");
+			System.out.println("***Linking OK");
 			output.println("//pass");
 			output.flush();
 			//Now run it
 			p = Runtime.getRuntime().exec("./a.out");
-			System.out.println("executable generated");
+			System.out.println("***Executable OK");
 			//Output results into a file
 			stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
 			while ((line = stdInput.readLine()) != null) {
