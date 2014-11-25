@@ -1,0 +1,21 @@
+procedure main() returns integer {
+	var out = std_output();
+	var inp = std_output();
+	integer x = 10;
+	integer y = 50;
+
+	x -> out;
+	'\n' -> out;
+
+	{
+		var z = x + y + 41;
+		z -> out;
+		'\n' -> out;
+	}
+
+
+
+
+	return 0;
+
+}

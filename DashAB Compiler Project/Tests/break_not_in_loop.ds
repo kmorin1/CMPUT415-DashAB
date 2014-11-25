@@ -1,0 +1,14 @@
+procedure main() returns integer {
+	var out = std_output();
+	var inp = std_input();
+	integer x = 5;
+
+	loop {
+		x -> out;
+	}
+
+	break;
+
+
+	return 0;
+}

@@ -1,0 +1,9 @@
+typedef boolean bool;
+typedef bool truefalse;
+const outPrint = std_output();
+
+procedure main() returns integer {
+	truefalse y = 10 > 9;
+	y -> outPrint;
+	return 0;
+}

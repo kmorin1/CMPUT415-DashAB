@@ -1,20 +1,19 @@
-procedure c() {
-	b();
-}
-
 procedure b() {
 
+}
+
+procedure c() {
+	b();
 }
 
 procedure a() {
 	c();	
 }
 
-
 procedure main() returns integer {
 
 	a();
 
-	returns 0;	
+	return 0;	
 }
 

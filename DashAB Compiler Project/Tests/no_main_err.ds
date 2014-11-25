@@ -1,0 +1,4 @@
+procedure start() returns integer {
+	integer x = 10;
+	return 0;
+}

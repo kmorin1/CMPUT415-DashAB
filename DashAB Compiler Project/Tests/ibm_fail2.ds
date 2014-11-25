@@ -1,0 +1,11 @@
+const out = std_output();
+
+procedure main() returns integer {
+	integer x = 10;
+
+	if true {
+		x -> out;
+	}
+
+	return 0;
+}

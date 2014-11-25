@@ -1,0 +1,10 @@
+procedure main() returns integer {
+	integer x = 3;
+	integer y = 5;
+	var out = std_output();
+
+	x -> y;
+
+	return 0;
+
+}

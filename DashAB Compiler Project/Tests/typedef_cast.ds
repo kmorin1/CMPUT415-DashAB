@@ -1,0 +1,15 @@
+typedef integer int;
+typedef int num;
+
+procedure main() returns integer {
+	const out = std_output();
+	num x = 5;
+	num y = as<num>(true);
+
+	x -> out;
+	'\n' -> out;
+	y -> out;
+	'\n' -> out;
+
+	return 0;
+}

@@ -1,0 +1,52 @@
+const out = std_output();
+
+procedure main() returns integer {
+	boolean a = as<boolean>(5 > 10);
+	boolean b = as<boolean>(9 - 9);
+	boolean d = as<boolean>(9 + 9);
+	
+	integer e = as<integer>(100 > 1000);
+	integer f = as<integer>(-50 + -50);
+	integer g = as<integer>(3.5 * 2.0);
+	integer h = as<integer>(100 < 1000);
+	
+	real i = as<real>(5 > 6);
+	real j = as<real>(100 - 50);
+	real k = as<real>(0.1 + 0.1);
+	real l = as<real>(' ');
+	
+	character m = as<character>('a' > 'b');
+	character n = as<character>(256 + 65 + 5);
+	character p = as<character>('\'');
+
+	a -> out;
+	'\n' -> out;
+	b -> out;
+	'\n' -> out;
+	d -> out;
+	'\n' -> out;
+	e -> out;
+	'\n' -> out;
+	f -> out;
+	'\n' -> out;
+	g -> out;
+	'\n' -> out;
+	h -> out;
+	'\n' -> out;
+	i -> out;
+	'\n' -> out;
+	j -> out;
+	'\n' -> out;
+	k -> out;
+	'\n' -> out;
+	l -> out;
+	'\n' -> out;
+	m -> out;
+	'\n' -> out;
+	n -> out;
+	'\n' -> out;
+	p -> out;
+	'\n' -> out;
+
+	return 0;
+}

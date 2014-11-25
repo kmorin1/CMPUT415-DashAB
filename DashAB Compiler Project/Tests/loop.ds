@@ -1,0 +1,21 @@
+procedure main() returns integer {
+	var out = std_output();	
+	integer x = 3;
+
+	loop while x > 0 {
+		x = x - 1;
+		x -> out;
+		'\n' -> out;
+	}
+
+	'\n' -> out;
+
+	x = 13;
+	loop {
+		x = x - 1;
+		x -> out;
+		'\n' -> out;
+	} while x > 10
+
+	return 0;
+}

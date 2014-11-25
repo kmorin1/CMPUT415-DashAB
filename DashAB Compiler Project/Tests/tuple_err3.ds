@@ -1,0 +1,11 @@
+procedure main() returns integer {
+
+	tuple(integer, integer) x = (3, 5);
+	var out = std_output();
+	var inp = std_input();
+
+	x <- inp;
+
+	return 0;
+
+}
