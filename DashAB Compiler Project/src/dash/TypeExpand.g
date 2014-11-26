@@ -483,13 +483,12 @@ type returns [Type tsym]
   | t=Interval {$tsym = (Type) symtab.resolveType($t.text);}
   | t=String {$tsym = (Type) symtab.resolveType($t.text);}
   | ^(Vector (vt=type {vtype = $vt.tree;})? (s=size {size = $s.tree;})? ) {
-    //if (size != null && $s.text.equals("*")) 
-    //  size = null;
+    
     if (size != null && adaptor.isNil(size))
       size = adaptor.create(Identifier, "*");
     if (size == null)
       size = adaptor.create(Identifier, "*");
-    
+     
     if (vtype != null && !$vt.tsym.getName().equals("vector"))
       bits = (BuiltInTypeSymbol) $vt.tsym;
     
