@@ -56,7 +56,7 @@ program
 }
   : ^(PROGRAM globalStatement*)
   ;
-   
+    
 globalStatement
   : declaration
   | typedef
@@ -144,6 +144,7 @@ streamstate
 
 declaration
 @init {
+  String errorhead = getErrorHeader();
   BuiltInTypeSymbol spec = null;
   BuiltInTypeSymbol type = null; 
   VariableSymbol vs = null;
@@ -179,10 +180,15 @@ declaration
   | ^(DECL (s=specifier {spec = (BuiltInTypeSymbol) $s.tsym;})? (t=type {type = (BuiltInTypeSymbol) $t.tsym;})? ^(Assign id=Identifier e=expr)) {
     
     if (type != null && symtab.lookup($e.stype, type) == null)
-      throw new RuntimeException(getErrorHeader() + "assignment type error, expected " + type.getName() + " but got " + $e.stype.getName());
-    
+      throw new RuntimeException(errorhead + "assignment type error, expected " + type.getName() + " but got " + $e.stype.getName());
+    if (type.getName().equals("vector")) {
+      VectorTypeSymbol vtype = (VectorTypeSymbol) type;
+      VectorTypeSymbol extype = (VectorTypeSymbol) $e.stype;
+      if (vtype.getVectorType() != null && symtab.lookup(extype.getVectorType(), vtype.getVectorType()) == null)
+        throw new RuntimeException(errorhead + "invalid vector types");
+    }
     if (type == null && ($e.stype.getName() == "null" || $e.stype.getName() == "identity")) {
-      throw new RuntimeException(getErrorHeader() + "cannot infer type for variable " + $id.text);
+      throw new RuntimeException(errorhead + "cannot infer type for variable " + $id.text);
     }
     VariableSymbol temp = new VariableSymbol($id.text, type, spec);
    
