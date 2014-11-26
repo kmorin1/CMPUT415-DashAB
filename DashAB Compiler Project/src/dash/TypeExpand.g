@@ -181,11 +181,13 @@ declaration
     
     if (type != null && symtab.lookup($e.stype, type) == null)
       throw new RuntimeException(errorhead + "assignment type error, expected " + type.getName() + " but got " + $e.stype.getName());
-    if (type.getName().equals("vector")) {
+    if (type != null && type.getName().equals("vector")) {
       VectorTypeSymbol vtype = (VectorTypeSymbol) type;
       VectorTypeSymbol extype = (VectorTypeSymbol) $e.stype;
       if (vtype.getVectorType() != null && symtab.lookup(extype.getVectorType(), vtype.getVectorType()) == null)
-        throw new RuntimeException(errorhead + "invalid vector types");
+        throw new RuntimeException(errorhead + "invalid vector types, expecting '" + 
+          vtype.getVectorType().getName() + "' but got '" + 
+          extype.getVectorType().getName() + "'");
     }
     if (type == null && ($e.stype.getName() == "null" || $e.stype.getName() == "identity")) {
       throw new RuntimeException(errorhead + "cannot infer type for variable " + $id.text);
