@@ -424,25 +424,34 @@ returnStatement
   ;
   
 assignment
+@init {String errorhead = getErrorHeader();}
   : ^(Assign var=Identifier e=expr)
   {
     Symbol varSymbol = currentscope.resolve($var.text);
     
     if (varSymbol == null)
-      throw new RuntimeException(getErrorHeader() + $var.text + " is undefined");
+      throw new RuntimeException(errorhead + $var.text + " is undefined");
       
     VariableSymbol varVS = (VariableSymbol) varSymbol;
     if (varVS.isConst())
-      throw new RuntimeException(getErrorHeader() + "Cannot reassign a variable to a const");
+      throw new RuntimeException(errorhead + "Cannot reassign a variable to a const");
     
     String varType = varVS.getType().getName();
     
     if (varType.equals("std_input") || varType.equals("std_output"))
-      throw new RuntimeException(getErrorHeader() + "Cannot assign to stream " + $var.text);
+      throw new RuntimeException(errorhead + "Cannot assign to stream " + $var.text);
       
     if (symtab.lookup($e.stype, varVS.getType()) == null)
-      throw new RuntimeException(getErrorHeader() + "assignment type error, expected " + varType + " but got " + $e.stype.getName());
+      throw new RuntimeException(errorhead + "assignment type error, expected " + varType + " but got " + $e.stype.getName());
     
+    if (varVS.getType().getName().equals("vector")) {
+      VectorTypeSymbol vtype = (VectorTypeSymbol) varVS.getType();
+      VectorTypeSymbol extype = (VectorTypeSymbol) $e.stype;
+      if (symtab.lookup(extype.getVectorType(), vtype.getVectorType()) == null)
+        throw new RuntimeException(errorhead + "invalid vector types, expecting '" + 
+          vtype.getVectorType().getName() + "' but got '" + 
+          extype.getVectorType().getName() + "'");
+    }
   }
   ;
   
