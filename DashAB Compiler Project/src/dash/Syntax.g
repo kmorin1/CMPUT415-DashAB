@@ -100,18 +100,14 @@ declaration
   | specifier type* Identifier SemiColon -> ^(DECL specifier type* Identifier)
   | specifier? type+ Identifier Assign expr SemiColon -> ^(DECL specifier? type+ ^(Assign Identifier expr))
   | specifier type* Identifier Assign expr SemiColon -> ^(DECL specifier type* ^(Assign Identifier expr))
-  | specifier? type? 'vector'? Identifier LBracket size RBracket SemiColon 
-    -> {$type.text.equals("vector")}? ^(DECL specifier? ^(Vector size))
-    -> ^(DECL specifier? ^(Vector type size))
-  | specifier? type? 'vector'? Identifier LBracket size RBracket Assign a=expr SemiColon
-    -> {$type.text.equals("vector")}? ^(DECL specifier? ^(Vector size) ^(Assign Identifier $a))
-    -> ^(DECL specifier? ^(Vector type size) ^(Assign Identifier $a))
-  | specifier? type? 'matrix'? Identifier LBracket rowsize=size Comma columnsize=size RBracket SemiColon
-    -> {$type.text.equals("matrix")}? ^(DECL specifier? ^(Matrix $rowsize $columnsize)) 
-    -> ^(DECL specifier? ^(Matrix type $rowsize $columnsize))  
-  | specifier? type? 'matrix'? Identifier LBracket rowsize=size Comma columnsize=size RBracket  Assign a=expr SemiColon
-    -> {$type.text.equals("matrix")}? ^(DECL specifier? ^(Matrix $rowsize $columnsize) ^(Assign Identifier $a))
-    -> ^(DECL specifier? ^(Matrix type $rowsize $columnsize) ^(Assign Identifier $a))
+  | specifier? type? Identifier LBracket size RBracket SemiColon 
+    -> ^(DECL specifier? type size Identifier)
+  | specifier? type? Identifier LBracket size RBracket Assign a=expr SemiColon
+    -> ^(DECL specifier? type size ^(Assign Identifier $a))
+  | specifier? type? Identifier LBracket rowsize=size Comma columnsize=size RBracket SemiColon
+    -> ^(DECL specifier? type $rowsize $columnsize Identifier)  
+  | specifier? type? Identifier LBracket rowsize=size Comma columnsize=size RBracket  Assign a=expr SemiColon
+    -> ^(DECL specifier? type $rowsize $columnsize ^(Assign Identifier $a))
   | streamDecl
   ;
   
@@ -175,12 +171,18 @@ slist
   ;
   
 type
+  : scalar Vector
+  | scalar Matrix
+  | Vector
+  | Matrix
+  | scalar
+  ; 
+  
+scalar
   : Boolean
   | Integer
-  | Matrix
   | Interval
   | String
-  | Vector
   | Real
   | Character
   | tuple
