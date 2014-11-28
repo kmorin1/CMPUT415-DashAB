@@ -101,13 +101,13 @@ declaration
   | specifier? type+ Identifier Assign expr SemiColon -> ^(DECL specifier? type+ ^(Assign Identifier expr))
   | specifier type* Identifier Assign expr SemiColon -> ^(DECL specifier type* ^(Assign Identifier expr))
   | specifier? type? Identifier LBracket size RBracket SemiColon 
-    -> ^(DECL specifier? type size Identifier)
+    -> ^(DECL specifier? ^(Vector type size) Identifier)
   | specifier? type? Identifier LBracket size RBracket Assign a=expr SemiColon
-    -> ^(DECL specifier? type size ^(Assign Identifier $a))
+    -> ^(DECL specifier? ^(Vector type size) ^(Assign Identifier $a))
   | specifier? type? Identifier LBracket rowsize=size Comma columnsize=size RBracket SemiColon
-    -> ^(DECL specifier? type $rowsize $columnsize Identifier)  
+    -> ^(DECL specifier? ^(Matrix type $rowsize $columnsize) Identifier)  
   | specifier? type? Identifier LBracket rowsize=size Comma columnsize=size RBracket  Assign a=expr SemiColon
-    -> ^(DECL specifier? type $rowsize $columnsize ^(Assign Identifier $a))
+    -> ^(DECL specifier? ^(Matrix type $rowsize $columnsize) ^(Assign Identifier $a))
   | streamDecl
   ;
   
@@ -171,10 +171,10 @@ slist
   ;
   
 type
-  : scalar Vector
-  | scalar Matrix
-  | Vector
-  | Matrix
+  : scalar Vector!
+  | scalar Matrix!
+  | Vector!
+  | Matrix!
   | scalar
   ; 
   

@@ -188,7 +188,7 @@ type returns [String tsym]
   | Matrix {$tsym = "matrix";}
   | Interval {$tsym = "interval";}
   | String {$tsym = "string";}
-  | ^(Vector type size) {$tsym = "vector";}
+  | ^(Vector type type size) {$tsym = "vector";}
   | Real {$tsym = "real";}
   | Character {$tsym = "character";}
   | StdInput
