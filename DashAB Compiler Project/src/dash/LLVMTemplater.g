@@ -165,6 +165,18 @@ options {
     }
     return -1;
   }
+  
+  private String getParamType(String type, StringTemplate spec) {
+  	if (spec == null) {
+  		return type;
+  	}
+  	else if (spec.toString().equals("var")) {
+  		return type + "*";
+  	}
+  	else {
+  		return type;
+  	}
+  }
 }
 
 program
@@ -285,7 +297,7 @@ parameter
   
   currentscope.define(vs);
 }
-  : ^(id=Identifier s=specifier? type) -> param(name={$Identifier}, type={$type.st}, scopeNum={currentScopeNum})
+  : ^(id=Identifier s=specifier? type) -> param(name={$Identifier}, type={getParamType($type.st.toString(), $s.st)}, scopeNum={currentScopeNum})
   ;
   
 callStatement
@@ -295,9 +307,27 @@ callStatement
 	List<String> varTypes = new ArrayList<String>();
 	VariableSymbol vs = null;
 }
-  : ^(CALL type id=Identifier ^(ARGLIST (e=expr {varNums.add($e.resultVar); expressions.add($e.st.toString()); varTypes.add($e.stype);})*))
-  -> {$type.st.toString().equals("void")}? callVoidProc(procName={$Identifier}, exprs={expressions}, varNames={varNums}, paramScope={getCurrentScopeNum()}, varTypes={varTypes}, result={++counter})
-  -> callProc(procName={$Identifier}, retType={$type.st}, exprs={expressions}, varNames={varNums}, paramScope={getCurrentScopeNum()}, varTypes={varTypes}, result={++counter})
+  : ^(CALL procRet=type id=Identifier ^(ARGLIST 
+  (argType=type arg=Identifier
+  {
+  	// If argument is just an identifier, currently assumes it is var - pass by reference
+  	vs = (VariableSymbol) currentscope.resolve($arg.text);
+  	int varScope = vs.scopeNum;
+  	varNums.add($arg.text + "." + varScope);
+  	varTypes.add($argType.st.toString() + "*");
+  }
+  |
+  e=expr
+  {
+  	// Otherwise if the argument is an expression, assume it is const - pass by value
+  	varNums.add($e.resultVar);
+  	expressions.add($e.st.toString());
+  	varTypes.add($e.stype);
+  }
+  )*
+  ))
+  -> {$procRet.st.toString().equals("void")}? callVoidProc(procName={$id}, exprs={expressions}, varNames={varNums}, paramScope={getCurrentScopeNum()}, varTypes={varTypes}, result={++counter})
+  -> callProc(procName={$id}, retType={$procRet.st}, exprs={expressions}, varNames={varNums}, paramScope={getCurrentScopeNum()}, varTypes={varTypes}, result={++counter})
   ;
   
 returnStatement
@@ -363,8 +393,8 @@ tuple
   ;
   
 specifier
-  : Const
-  | Var
+  : Const -> return(a={"const"})
+  | Var -> return(a={"var"})
   ;
   
 expr returns [String stype, String resultVar]
@@ -411,9 +441,27 @@ expr returns [String stype, String resultVar]
     -> arithmetic(expr1={$a.st}, expr2={$b.st}, operator={AndOp}, type={$type.st}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
   | ^(Not type a=expr {tmpNum1 = counter;}) {$stype = $type.st.toString();} -> not(expr={$a.st}, type={$type.st}, tmpNum={tmpNum1}, result={++counter})
   | ^(By type a=expr {tmpNum1 = counter;} b=expr {tmpNum2 = counter;}) {$stype = $type.st.toString();}
-  | ^(CALL type id=Identifier ^(ARGLIST (e=expr {varNums.add($e.resultVar); expressions.add($e.st.toString()); varTypes.add($e.stype);})*))
-    -> {symtab.resolveFunction($id.text) != null}? callFunc(funcName={$Identifier}, retType={$type.st}, exprs={expressions}, varNames={varNums}, paramScope={getCurrentScopeNum()}, varTypes={varTypes}, result={++counter})
-    -> callProc(procName={$Identifier}, retType={$type.st}, exprs={expressions}, varNames={varNums}, paramScope={getCurrentScopeNum()}, varTypes={varTypes}, result={++counter})
+  | ^(CALL retType=type {$stype=$retType.st.toString();} id=Identifier ^(ARGLIST
+  (argType=type arg=Identifier
+  {
+  	// If argument is just an identifier, currently assumes it is var - pass by reference
+  	vs = (VariableSymbol) currentscope.resolve($arg.text);
+  	int varScope = vs.scopeNum;
+  	varNums.add($arg.text + "." + varScope);
+  	varTypes.add($argType.st.toString() + "*");
+  }
+  |
+  e=expr
+  {
+  	// Otherwise if the argument is an expression, assume it is const - pass by value
+  	varNums.add($e.resultVar);
+  	expressions.add($e.st.toString());
+  	varTypes.add($e.stype);
+  }
+  )*
+  ))
+    -> {symtab.resolveFunction($id.text) != null}? callFunc(funcName={$id}, retType={$retType.st}, exprs={expressions}, varNames={varNums}, paramScope={getCurrentScopeNum()}, varTypes={varTypes}, result={++counter})
+    -> callProc(procName={$id}, retType={$retType.st}, exprs={expressions}, varNames={varNums}, paramScope={getCurrentScopeNum()}, varTypes={varTypes}, result={++counter})
   | ^(As type a=expr {tmpNum1 = counter;}) {$stype = $type.st.toString();} -> cast(func={getCastFunc($a.stype, $stype, tmpNum1, ++counter)}, expr={$a.st})
   | type Identifier
   {
