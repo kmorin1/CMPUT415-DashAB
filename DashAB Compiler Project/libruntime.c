@@ -54,6 +54,18 @@ char print_i8(char x) {
     return 0;
 }
 
+uint32_t print_i32_vector(uint32_t * x, uint32_t size) {
+	uint32_t * num = x;
+	for (int i = 0; i < size; i++) {
+		printf("%d", *num);
+		num += 1;
+		if (i+1 < size) {
+			printf(" ");
+		}
+	}
+	return 0;
+}
+
 uint32_t input_i32(uint32_t * x) {
     int result = scanf("%d", x);
     set_fail(result);
