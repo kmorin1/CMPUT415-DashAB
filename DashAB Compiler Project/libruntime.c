@@ -66,6 +66,42 @@ uint32_t print_i32_vector(uint32_t * x, uint32_t size) {
 	return 0;
 }
 
+float print_float_vector(float * x, uint32_t size) {
+	float * num = x;
+	for (int i = 0; i < size; i++) {
+		printf("%g", *num);
+		num += 1;
+		if (i+1 < size) {
+			printf(" ");
+		}
+	}
+	return 0;
+}
+
+bool print_i1_vector(bool * x, uint32_t size) {
+	bool * val = x;
+	for (int i = 0; i < size; i++) {
+		printf("%s", *val ? "T": "F");
+		val += 1;
+		if (i+1 < size) {
+			printf(" ");
+		}
+	}
+	return 0;
+}
+
+char print_i8_vector(char * x, uint32_t size) {
+	char * string = x;
+	for (int i = 0; i < size; i++) {
+		printf("%c", *string);
+		string += 1;
+		if (i+1 < size) {
+			printf(" ");
+		}
+	}
+	return 0;
+}
+
 uint32_t input_i32(uint32_t * x) {
     int result = scanf("%d", x);
     set_fail(result);

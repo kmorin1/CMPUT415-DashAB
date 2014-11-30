@@ -38,6 +38,12 @@ declare i8 @print_i8(i8)
 
 declare i32 @print_i32_vector(i32*, i32)
 
+declare float @print_float_vector(float*, i32)
+
+declare i1 @print_i1_vector(i1*, i32)
+
+declare i8 @print_i8_vector(i8*, i32)
+
 declare i32 @input_i32(i32*)
 
 declare float @input_float(float*)
@@ -182,7 +188,7 @@ load_vector(tmpNum, exprs, varNames, varType, size, varIndices) ::= <<
 <exprs>
 %.constvector1.<tmpNum> = insertvalue {i32, <varType>*} undef, i32 <size>, 0
 
-%.vector<tmpNum> = alloca i32, i32 <size>, align 4
+%.vector<tmpNum> = alloca <varType>, i32 <size>, align 4
 <varNames, varIndices:
 { name, index |
 %.tmp.<name> = getelementptr inbounds <varType>* %.vector<tmpNum>, i32 <index>
@@ -211,7 +217,7 @@ print_vector(expr, size, scalarType, result) ::= <<
 %.size<result> = extractvalue {i32, <scalarType>*} %.<result>, 0
 %.vectortemp<result> = extractvalue {i32, <scalarType>*} %.<result>, 1
 
-call <scalarType> (<scalarType>*, <scalarType>)* @print_<scalarType>_vector(<scalarType>* %.vectortemp<result>, <scalarType> %.size<result>)
+call <scalarType> (<scalarType>*, i32)* @print_<scalarType>_vector(<scalarType>* %.vectortemp<result>, i32 %.size<result>)
 ;end print vector
 
 >>
