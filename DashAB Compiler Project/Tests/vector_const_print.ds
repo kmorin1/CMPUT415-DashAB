@@ -1,0 +1,16 @@
+procedure main() returns integer {
+	var out = std_output();
+	var y = 3;
+	var z = 4.4;
+	var a = true;
+	var b = '\'';
+	[1, 2, 3 * 5, y + y] -> out;
+	'\n' -> out;
+	[1.1, 2.2, 3.3 * 3, z * 2] -> out;
+	'\n' -> out;
+	[true, false, z > y, y == z, a] -> out;
+	'\n' -> out;
+	['a', 'b', 'c', b] -> out;
+	'\n' -> out;
+	return 0;
+}
