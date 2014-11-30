@@ -83,17 +83,37 @@ public class Test_llc {
                 			p = Runtime.getRuntime().exec("./a.out");
                 			
                 			BufferedWriter input = new BufferedWriter( new OutputStreamWriter(p.getOutputStream()) );
-                			
-                			// TODO: Need to write the test.in file if it exists
-                			try {
-                			    input.write(0);
-                			    input.flush();
-                			    input.close();
-                			}
-                			catch (Exception e) {
-                			    // Pipe might break if input is not needed?
-                			    //System.out.println("Exception: " + e.getMessage());
-                			}
+                                        
+                                        String inputFileName = test.replaceFirst(".ds", ".in");
+                                        File input_file = new File("Tests/" + inputFileName);
+                                        if (input_file.exists()) {
+                                            BufferedReader inputReader = null;
+                                            try {
+                                                    inputReader = new BufferedReader(new FileReader(input_file));
+                                                    String input_line = null;
+                                                    
+                                                    while ((input_line = inputReader.readLine()) != null) {
+                                                        input.write(input_line);
+                                                        input.flush();
+                                                    }
+                                                    input.close();
+                                            }
+                                            catch (Exception e) {
+                                                System.out.println("Exception while sending input: " + e.getMessage());
+                                            }
+                                            inputReader.close();
+                                        }
+                                        else {
+                                                try {
+                                                    input.write(0);
+                                                    input.flush();
+                                                    input.close();
+                                                }
+                                                catch (Exception e) {
+                                                    // Pipe might break if input is not needed?
+                                                    //System.out.println("Exception: " + e.getMessage());
+                                                }
+                                        }
                 			
                 			hadError |= ProcessHadError(p);
                 			if(Tester.debug == 1) {
@@ -140,7 +160,7 @@ public class Test_llc {
 			p = Runtime.getRuntime().exec("rm test.llvm");
 			p = Runtime.getRuntime().exec("rm test.llvm.o");
 			p = Runtime.getRuntime().exec("rm a.out");
-			//p = Runtime.getRuntime().exec("rm output.txt");
+			p = Runtime.getRuntime().exec("rm output.txt");
 
 		}catch (IOException e) {
 			System.out.println("Invalid LLVM code " + e);
@@ -155,6 +175,7 @@ public class Test_llc {
     	    BufferedReader stdErr = new BufferedReader(new InputStreamReader(p.getErrorStream()));
     	    String line = null;
                 // If there was std_err output, something probably went wrong
+    	
                 if ((line = stdErr.readLine()) != null) {
                         if(Tester.debug == 1) {
                             System.out.println("Error: " + line);
