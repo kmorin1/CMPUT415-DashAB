@@ -56,6 +56,10 @@ outputstream
 inputstream
   : ^(LArrow Identifier Identifier)
   ;
+  
+streamstate
+  : ^(Stream stream=Identifier)
+  ;
 
 declaration returns [CFTNode cftn]
 @after {
@@ -203,6 +207,9 @@ expr
   | Char
   | ^(TUPLEEX expr)
   | ^(Range expr expr)
+  | ^(NEG a=expr)
+  | ^(POS a=expr)
+  | streamstate
   | ^(Dot Identifier)
   | ^(VCONST expr+)
   | ^(Filter Identifier expr expr) 

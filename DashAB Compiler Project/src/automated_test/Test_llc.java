@@ -63,7 +63,12 @@ public class Test_llc {
         			    System.out.println("***Linking OK");
         			}
         			
-        			output.println("//pass");
+        			if (!hadError) {
+        			    output.println("//pass");
+        			}
+        			else {
+        			    output.println("//fail");
+        			}
         			output.flush();
         			
         			
@@ -73,14 +78,23 @@ public class Test_llc {
                                     System.out.println("***Had error creating executable");
                                 }
         			
+        			
         			if (!hadError) {
                 			p = Runtime.getRuntime().exec("./a.out");
+                			
                 			BufferedWriter input = new BufferedWriter( new OutputStreamWriter(p.getOutputStream()) );
                 			
                 			// TODO: Need to write the test.in file if it exists
-                			input.write(0);
-                			input.flush();
-                			input.close();
+                			try {
+                			    input.write(0);
+                			    input.flush();
+                			    input.close();
+                			}
+                			catch (Exception e) {
+                			    // Pipe might break if input is not needed?
+                			    //System.out.println("Exception: " + e.getMessage());
+                			}
+                			
                 			hadError |= ProcessHadError(p);
                 			if(Tester.debug == 1) {
                 			    if (hadError) {
