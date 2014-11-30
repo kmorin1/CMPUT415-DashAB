@@ -7,6 +7,7 @@ procedure main() returns integer {
 		x = x - 1;
 
 	x -> out;
+	'\n' -> out;
 
 
 	return 0;
