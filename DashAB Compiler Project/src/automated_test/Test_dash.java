@@ -14,7 +14,7 @@ public class Test_dash {
 			//Initialize writer
 			PrintWriter output = new PrintWriter("output.txt", "UTF-8");
 
-			//Write llvm-ir to file
+			//Compile the dash code
 			if(Tester.debug == 1)
 				System.out.println("***OUR COMPILER COMMAND EXECUTED >>> " + Tester.dash + " Tests/" + test);
 
@@ -33,10 +33,10 @@ public class Test_dash {
 			}
 			output.flush();
 
+			//Now run it
 			if (valid_test == 1) {
 				boolean hadError = ProcessHadError(p);
 				
-				//Now run it
 				p = Runtime.getRuntime().exec("./a.out");
 
 				BufferedWriter input = new BufferedWriter( new OutputStreamWriter(p.getOutputStream()) );
