@@ -515,7 +515,10 @@ type returns [Type tsym]
   | t=Real {$tsym = (Type) symtab.resolveType($t.text);}
   | t=Character {$tsym = (Type) symtab.resolveType($t.text);}
   | tuple {$tsym = $tuple.ts;}
-  | t=Identifier {$tsym = (Type) symtab.resolveType($t.text);}
+  | t=Identifier {$tsym = (Type) symtab.resolveType($t.text); 
+                  if ($tsym == null) 
+                    throw new RuntimeException(getErrorHeader() + "variable type " + $t.text + " is not defined");  
+                 }
   ;
   
 size
