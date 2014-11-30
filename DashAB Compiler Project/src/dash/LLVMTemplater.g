@@ -377,7 +377,7 @@ type
   | Matrix
   | Interval
   | String
-  | ^(Vector type size)
+  | ^(Vector type? size?)
   | Real -> return(a={FloatType})
   | Character -> return(a={CharType})
   | StdInput
