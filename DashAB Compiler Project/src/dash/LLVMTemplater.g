@@ -377,7 +377,7 @@ type
   | Matrix
   | Interval
   | String
-  | Vector
+  | ^(Vector type size)
   | Real -> return(a={FloatType})
   | Character -> return(a={CharType})
   | StdInput
@@ -386,6 +386,11 @@ type
   | Identity -> return(a={"Identity"})
   | VOID -> return(a={"void"})
   | tuple
+  ;
+  
+size
+  : '*'
+  | expr
   ;
   
 tuple
@@ -482,5 +487,10 @@ expr returns [String stype, String resultVar]
   | ^(NEG a=expr {tmpNum1 = counter;}) {$stype = $a.stype;} -> negative(tmpNum={tmpNum1}, expr={$a.st}, zero={getEmptyValue($a.stype)}, result={++counter}, type={$a.stype}, operator={getArithOp($a.stype, SubOp)})
   | ^(POS a=expr {tmpNum1 = counter;}) {$stype = $a.stype;} -> return(a={$a.st})
   | type streamstate {$stype = $type.st.toString();} -> return(a={$streamstate.st})
+  | ^(VCONST type expr+)
+  | ^(Range expr expr)
+  | ^(Filter Identifier expr expr) 
+  | ^(GENERATOR Identifier expr expr)
+  | ^(GENERATOR ^(ROW Identifer expr) ^(COLUMN Identifier expr) expr)  
   ;
   
