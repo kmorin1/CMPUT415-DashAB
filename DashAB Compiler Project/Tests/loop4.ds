@@ -12,7 +12,7 @@ procedure main() returns integer {
 		
 		x -> out;
 		'\n' -> out;
-	}	
+	}
 
 
 	return 0;

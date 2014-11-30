@@ -5,6 +5,7 @@ procedure main() returns integer {
 	'a' > 'b' -> out;
 	'a'>= 'a' -> out;
 	' ' == '\t' -> out;
+	'\n' -> out;
 
 	return 0;
 

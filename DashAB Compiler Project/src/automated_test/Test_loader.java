@@ -39,6 +39,10 @@ public class Test_loader {
 
 		//Do the tests one by one...
 		for(int i = 0; i < tests.size(); i++){
+		        // To only execute a test with a certain name:
+		        if (!tests.get(i).equals("loop4.ds")) {
+		            //continue;
+		        }
 			if(Tester.llc_test == 1)
 				llc_result.add(Test_llc.run(tests.get(i)));
 			if(Tester.dash_test == 1)
@@ -63,7 +67,6 @@ public class Test_loader {
 			for(int i = 0; i < tests.size(); i++){
 				if(llc_result.get(i) == 0 && Tester.llc_test == 1){
 					System.out.println(" - " + tests.get(i));
-					llc_err++;
 				}
 			}
 		}
@@ -87,8 +90,9 @@ public class Test_loader {
 		}
 		//Print Score
 		System.out.println("\n### Score ###");
+		int passed = tests.size() - llc_err;
 		if(Tester.llc_test == 1)
-			System.out.println(llc_err + " of " + tests.size() + " didn't work with llc");
+			System.out.println("LLC tests passed " + passed + " out of " + tests.size());
 		if(Tester.dash_test == 1)
 			System.out.println(dash_err + " of " + tests.size() + " didn't work with dash");
 	}

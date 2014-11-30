@@ -5,6 +5,7 @@ procedure main() returns integer {
 	out x = 10;
 
 	x -> output;
+	'\n' -> output;
 
 	return 0;
 }

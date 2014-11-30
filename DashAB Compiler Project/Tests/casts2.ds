@@ -15,7 +15,6 @@ procedure main() returns integer {
 	real k = as<real>(0.1);
 	real l = as<real>('a');
 	
-	character m = as<character>(false);
 	character n = as<character>(256 + 65);
 	character p = as<character>('e');
 
@@ -40,8 +39,6 @@ procedure main() returns integer {
 	k -> out;
 	'\n' -> out;
 	l -> out;
-	'\n' -> out;
-	m -> out;
 	'\n' -> out;
 	n -> out;
 	'\n' -> out;

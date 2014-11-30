@@ -7,11 +7,11 @@ procedure main() returns integer {
 	'1' -> out;
 	'!' -> out;
 	';' -> out;
-	'\n' -> out;
 	'Z' -> out;
 	'\'' -> out;
 	'\"' -> out;
 	'\\' -> out;
+	'\n' -> out;
 
 	return 0;
 
