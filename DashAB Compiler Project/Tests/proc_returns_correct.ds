@@ -1,0 +1,51 @@
+const output = std_output();
+
+procedure test() returns integer {
+	return 42;
+}
+
+procedure test2(integer x) returns integer {
+	return x;
+}
+
+procedure test3(const boolean x) returns boolean {
+	return x;
+}
+
+procedure test4(const character x) returns character {
+	return x;
+}
+
+procedure add(integer x, integer y) returns integer {
+	return x + y;
+}
+
+procedure increment(var integer x) {
+	x = x + 1;
+	return;
+}
+
+procedure main() returns integer {
+	var a = test();
+	var b = test2(35);
+	var c = test3(true);
+	var d = test4('a');
+	var e = add(3, 4);
+	var x = 10;
+	call increment(x);
+	
+	a -> output;
+	'\n' -> output;
+	b -> output;
+	'\n' -> output;
+	c -> output;
+	'\n' -> output;
+	d -> output;
+	'\n' -> output;
+	e -> output;
+	'\n' -> output;
+	x -> output;
+	'\n' -> output;
+
+	return 0;
+}
