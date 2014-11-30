@@ -203,7 +203,10 @@ statement
   ;
    
 outputstream
-  : ^(RArrow expr stream=Identifier) -> print(expr={$expr.st}, type={$expr.stype}, result={counter})
+  : ^(RArrow expr stream=Identifier)
+  -> {$expr.stype == "vector"}? print_vector(expr={$expr.st}, size={$expr.sizeName}, scalarType={$expr.scalarType}, result={counter})
+  -> print(expr={$expr.st}, type={$expr.stype}, result={counter})
+  
   ;
 
 inputstream
@@ -237,8 +240,12 @@ declaration
   
   currentscope.define(vs);
 }
-  : ^(DECL s=specifier? type* id=Identifier) -> outputEmptyDecl(sym={getLLVMvarSymbol(currentScopeNum)}, varName={$Identifier}, scopeNum={currentScopeNum}, varType={$type.st}, value={getEmptyValue($type.st.toString())})
-  | ^(DECL s=specifier? type* ^(Assign id=Identifier expr)) -> outputDecl(sym={getLLVMvarSymbol(currentScopeNum)}, varName={$Identifier}, scopeNum={currentScopeNum}, varType={$type.st}, expr={$expr.st}, tmpNum={counter})
+  : ^(DECL s=specifier? type id=Identifier)
+  -> {$type.vecType != null}? outputEmptyVecDecl(sym={getLLVMvarSymbol(currentScopeNum)}, varName={$Identifier}, scopeNum={currentScopeNum}, scalarType={$type.st}, value={getEmptyValue($type.st.toString())}, sizeName={$type.sizeName}, exprs={$type.sizeExpr})
+  -> outputEmptyDecl(sym={getLLVMvarSymbol(currentScopeNum)}, varName={$Identifier}, scopeNum={currentScopeNum}, varType={$type.st}, value={getEmptyValue($type.st.toString())})
+  | ^(DECL s=specifier? type ^(Assign id=Identifier expr))
+  -> {$type.vecType != null}? outputVecDecl(sym={getLLVMvarSymbol(currentScopeNum)}, varName={$Identifier}, scopeNum={currentScopeNum}, varType={$type.st}, expr={$expr.st}, tmpNum={counter})
+  -> outputDecl(sym={getLLVMvarSymbol(currentScopeNum)}, varName={$Identifier}, scopeNum={currentScopeNum}, varType={$type.st}, expr={$expr.st}, tmpNum={counter})
   | ^(DECL s=specifier StdInput ^(Assign id=Identifier StdInput))
   | ^(DECL s=specifier StdOutput ^(Assign id=Identifier StdOutput))
   ;
@@ -343,7 +350,9 @@ assignment
   {
   	vs = (VariableSymbol) currentscope.resolve($Identifier.text);
   }
-  expr) -> outputAssi(sym={getLLVMvarSymbol(vs.scopeNum)}, varName={$Identifier}, varType={$expr.stype}, scopeNum = {vs.scopeNum}, expr={$expr.st}, tmpNum={counter++})
+  expr)
+  -> {$expr.stype == "vector"}? outputVecAssi(sym={getLLVMvarSymbol(vs.scopeNum)}, varName={$Identifier}, scalarType={$expr.scalarType}, scopeNum = {vs.scopeNum}, expr={$expr.st}, tmpNum={counter++})
+  -> outputAssi(sym={getLLVMvarSymbol(vs.scopeNum)}, varName={$Identifier}, varType={$expr.stype}, scopeNum = {vs.scopeNum}, expr={$expr.st}, tmpNum={counter++})
   ;
   
 ifstatement
@@ -370,14 +379,14 @@ slist
   | declaration -> return(a={$declaration.st})
   ;
   
-type
+type returns [String vecType, String sizeName, StringTemplate sizeExpr]
   : Identifier -> return(a={"ID"})
   | Boolean -> return(a={BoolType})
   | Integer -> return(a={IntType})
   | Matrix
   | Interval
   | String
-  | ^(Vector type? size?)
+  | ^(Vector scalar=type expr?) {$vecType = $scalar.st.toString(); $sizeName = $expr.resultVar; $sizeExpr = $expr.st;} -> return(a={$scalar.st})
   | Real -> return(a={FloatType})
   | Character -> return(a={CharType})
   | StdInput
@@ -386,11 +395,6 @@ type
   | Identity -> return(a={"Identity"})
   | VOID -> return(a={"void"})
   | tuple
-  ;
-  
-size
-  : '*'
-  | expr
   ;
   
 tuple
@@ -402,14 +406,16 @@ specifier
   | Var -> return(a={"var"})
   ;
   
-expr returns [String stype, String resultVar]
+expr returns [String stype, String resultVar, String scalarType, String sizeName, String size]
 @init {
 	int tmpNum1 = 0;
 	int tmpNum2 = 0;
 	List<String> varNums = new ArrayList<String>();
 	List<String> expressions = new ArrayList<String>();
 	List<String> varTypes = new ArrayList<String>();
+	List<String> varIndices = new ArrayList<String>();
 	VariableSymbol vs = null;
+	int numElements = 0;
 }
 @after {
 	$resultVar = ""+counter;
@@ -470,7 +476,13 @@ expr returns [String stype, String resultVar]
   | ^(As type a=expr {tmpNum1 = counter;}) {$stype = $type.st.toString();} -> cast(func={getCastFunc($a.stype, $stype, tmpNum1, ++counter)}, expr={$a.st})
   | type Identifier
   {
-  	$stype = $type.st.toString();
+  	if ($type.vecType != null) {
+  		$stype = "vector";
+  		$scalarType = $type.vecType;
+  	}
+  	else {
+  		$stype = $type.st.toString();
+  	}
   	vs = (VariableSymbol) currentscope.resolve($Identifier.text);
   }
     -> {vs.isConst()}? load_const(tmpNum={++counter}, sym={getLLVMvarSymbol(vs.scopeNum)}, var={$Identifier}, scopeNum={vs.scopeNum}, varType={$type.st})
@@ -487,7 +499,18 @@ expr returns [String stype, String resultVar]
   | ^(NEG a=expr {tmpNum1 = counter;}) {$stype = $a.stype;} -> negative(tmpNum={tmpNum1}, expr={$a.st}, zero={getEmptyValue($a.stype)}, result={++counter}, type={$a.stype}, operator={getArithOp($a.stype, SubOp)})
   | ^(POS a=expr {tmpNum1 = counter;}) {$stype = $a.stype;} -> return(a={$a.st})
   | type streamstate {$stype = $type.st.toString();} -> return(a={$streamstate.st})
-  | ^(VCONST type expr+)
+  | ^(VCONST vec=type (e=expr
+  {
+  	$stype = "vector";
+  	$scalarType = $vec.vecType;
+  	$sizeName = $vec.sizeName;
+  	varIndices.add(""+numElements);
+  	numElements++;
+  	varNums.add($e.resultVar);
+  	expressions.add($e.st.toString());
+  	varTypes.add($e.stype);
+  }
+  )+) -> load_vector(tmpNum={++counter}, exprs={expressions}, varNames={varNums}, varType={$type.st}, size={numElements}, varIndices={varIndices})
   | ^(Range expr expr)
   | ^(Filter Identifier expr expr) 
   | ^(GENERATOR Identifier expr expr)

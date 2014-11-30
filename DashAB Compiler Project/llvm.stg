@@ -36,6 +36,8 @@ declare i1 @print_i1(i1)
 
 declare i8 @print_i8(i8)
 
+declare i32 @print_i32_vector(i32*, i32)
+
 declare i32 @input_i32(i32*)
 
 declare float @input_float(float*)
@@ -97,12 +99,38 @@ store <varType> <value>, <varType>* <sym>.<varName>.<scopeNum>
 
 >>
 
+outputEmptyVecDecl(sym, varName, scopeNum, scalarType, value, sizeName, exprs) ::= <<
+;start empty vec decl
+<exprs>
+
+<sym>.<varName>.<scopeNum> = alloca {i32, <scalarType>*}, align 4
+%.tempstruct<sizeName>.<varName>.<scopeNum> = insertvalue {i32, <scalarType>*} undef, i32 %.<sizeName>, 0
+; TODO: Need to initialize all vector elements to null
+store {i32, <scalarType>*} %.tempstruct<sizeName>.<varName>.<scopeNum>, {i32, <scalarType>*}* <sym>.<varName>.<scopeNum>
+;end empty vec decl
+
+>>
+
 outputAssi(sym, varName, varType, scopeNum, expr, tmpNum) ::= <<
 ;start outputAssi
 <expr>
 
 store <varType> %.<tmpNum>, <varType>* <sym>.<varName>.<scopeNum>
 ;end outputAssi
+
+>>
+
+outputVecAssi(sym, varName, scalarType, scopeNum, expr, tmpNum) ::= <<
+;start outputVecAssi
+<expr>
+
+%.assivector.<tmpNum> = extractvalue {i32, <scalarType>*} %.<tmpNum>, 1
+%.assistruct1.<tmpNum> = load {i32, <scalarType>*}* <sym>.<varName>.<scopeNum>
+%.assistruct2.<tmpNum> = insertvalue {i32, <scalarType>*} %.assistruct1.<tmpNum>, <scalarType>* %.assivector.<tmpNum>, 1
+store {i32, <scalarType>*} %.assistruct2.<tmpNum>, {i32, <scalarType>*}* <sym>.<varName>.<scopeNum>
+
+
+;end outputVecAssi
 
 >>
 
@@ -149,11 +177,42 @@ store <varType> <value>, <varType>* %.char<tmpNum>
 
 >>
 
+load_vector(tmpNum, exprs, varNames, varType, size, varIndices) ::= <<
+;load vector
+<exprs>
+%.constvector1.<tmpNum> = insertvalue {i32, <varType>*} undef, i32 <size>, 0
+
+%.vector<tmpNum> = alloca i32, i32 <size>, align 4
+<varNames, varIndices:
+{ name, index |
+%.tmp.<name> = getelementptr inbounds <varType>* %.vector<tmpNum>, i32 <index>
+store <varType> %.<name>, <varType>* %.tmp.<name>
+}>
+
+%.<tmpNum> = insertvalue {i32, <varType>*} %.constvector1.<tmpNum>, <varType>* %.vector<tmpNum>, 1
+;store {i32, <varType>*} %.constvector2, {i32, <varType>*}* %.<tmpNum>
+;end load vector
+
+>>
+
 print(expr, type, result) ::= <<
 ;start print
 <expr>
 call <type> (<type>)* @print_<type>(<type> %.<result>)
 ;end print
+
+>>
+
+print_vector(expr, size, scalarType, result) ::= <<
+;start print vector
+<expr>
+
+
+%.size<result> = extractvalue {i32, <scalarType>*} %.<result>, 0
+%.vectortemp<result> = extractvalue {i32, <scalarType>*} %.<result>, 1
+
+call <scalarType> (<scalarType>*, <scalarType>)* @print_<scalarType>_vector(<scalarType>* %.vectortemp<result>, <scalarType> %.size<result>)
+;end print vector
 
 >>
 
