@@ -101,13 +101,13 @@ declaration
   | specifier? type+ Identifier Assign expr SemiColon -> ^(DECL specifier? type+ ^(Assign Identifier expr))
   | specifier type* Identifier Assign expr SemiColon -> ^(DECL specifier type* ^(Assign Identifier expr))
   | (specifier | type | specifier type) Vector? Identifier LBracket size RBracket SemiColon 
-    -> ^(DECL specifier? ^(Vector type size) Identifier)
+    -> ^(DECL specifier? ^(Vector type? size) Identifier)
   | (specifier | type | specifier type) Vector? Identifier (LBracket size RBracket)? Assign a=expr SemiColon
-    -> ^(DECL specifier? ^(Vector type size?) ^(Assign Identifier $a))
+    -> ^(DECL specifier? ^(Vector type? size?) ^(Assign Identifier $a))
   | (specifier | type | specifier type) Matrix? Identifier LBracket rowsize=size Comma columnsize=size RBracket SemiColon
-    -> ^(DECL specifier? ^(Matrix type $rowsize $columnsize) Identifier)  
+    -> ^(DECL specifier? ^(Matrix type? $rowsize $columnsize) Identifier)  
   | (specifier | type | specifier type) Matrix? Identifier (LBracket rowsize=size Comma columnsize=size RBracket)?  Assign a=expr SemiColon
-    -> ^(DECL specifier? ^(Matrix type $rowsize? $columnsize?) ^(Assign Identifier $a))
+    -> ^(DECL specifier? ^(Matrix type? $rowsize? $columnsize?) ^(Assign Identifier $a))
   | streamDecl
   ;
   
@@ -169,15 +169,7 @@ slist
   | statement
   | declaration
   ;
-  /*
-type
-  : scalar Vector!
-  | scalar Matrix!
-  | Vector!
-  | Matrix!
-  | scalar
-  ; 
-  */
+
 type
   : Boolean
   | Integer
@@ -390,13 +382,11 @@ Number
   
 FPNumber
   : (Digit|'_')* 
-      ( //(Range)=>      {$type=Number;}
-      //| (Dot (Digit|'_'|Exp)+)=> Dot (Digit|'_')* Exp? 
-        Exp
+       (  Exp
        | {input.LA(1) == '.' && input.LA(2) != '.'}? => Dot (Digit|'_')* Exp?  
        | (Range)=>      {$type=Number;}  
        | 
-      )
+       )
   ;
 
 Char
