@@ -7,7 +7,7 @@ java -cp antlr-3.3-complete.jar:bin/ dash.DashAB_Test
 #3# LLC that we are using:
 llc-3.0
 
-#4# DEBUG MODE:
+#4# DEBUG MODE: 
 #5# DASH testing: 
 #6# Compare output for DASH: 
 #7# LLC testing: ON
