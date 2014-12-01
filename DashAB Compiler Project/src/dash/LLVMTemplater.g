@@ -438,7 +438,6 @@ expr returns [String stype, String resultVar, String scalarType, String sizeName
   { if ($type.vecType != null) {
   		$stype = "vector";
   		$scalarType = $type.vecType;
-  		variableType = "{i32, " + $stype + "*}";
   	}
   	else {
   	  $stype = $type.st.toString();
@@ -451,7 +450,6 @@ expr returns [String stype, String resultVar, String scalarType, String sizeName
   	{
   		$stype = "vector";
   		$scalarType = $type.vecType;
-  		variableType = "{i32, " + $stype + "*}";
   	}
   	else {
   	  $stype = $type.st.toString();
@@ -464,7 +462,6 @@ expr returns [String stype, String resultVar, String scalarType, String sizeName
   	{
   		$stype = "vector";
   		$scalarType = $type.vecType;
-  		variableType = "{i32, " + $stype + "*}";
   	}
   	else {
   	  $stype = $type.st.toString();
@@ -477,7 +474,6 @@ expr returns [String stype, String resultVar, String scalarType, String sizeName
   	{
   		$stype = "vector";
   		$scalarType = $type.vecType;
-  		variableType = "{i32, " + $stype + "*}";
   	}
   	else {
   	  $stype = $type.st.toString();
@@ -485,9 +481,29 @@ expr returns [String stype, String resultVar, String scalarType, String sizeName
   } 
     ->  {$type.vecType != null}? vec_arithmetic(expr1={$a.st}, expr2={$b.st}, operator={"div"}, scalarType={$type.st}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
     ->  arithmetic(expr1={$a.st}, expr2={$b.st}, operator={getArithOp($type.st.toString(), DivOp)}, type={$type.st}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
-  | ^(Mod type a=expr {tmpNum1 = counter;} b=expr {tmpNum2 = counter;}) {$stype = $type.st.toString();} 
+  | ^(Mod type a=expr {tmpNum1 = counter;} b=expr {tmpNum2 = counter;})
+  { if ($type.vecType != null)
+  	{
+  		$stype = "vector";
+  		$scalarType = $type.vecType;
+  	}
+  	else {
+  	  $stype = $type.st.toString();
+  	}
+  } 
+    ->  {$type.vecType != null}? vec_arithmetic(expr1={$a.st}, expr2={$b.st}, operator={"mod"}, scalarType={$type.st}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
     ->  arithmetic(expr1={$a.st}, expr2={$b.st}, operator={getArithOp($type.st.toString(), ModOp)}, type={$type.st}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
-  | ^(Exponent type a=expr {tmpNum1 = counter;} b=expr {tmpNum2 = counter;}) {$stype = $type.st.toString();}
+  | ^(Exponent type a=expr {tmpNum1 = counter;} b=expr {tmpNum2 = counter;})
+  { if ($type.vecType != null)
+  	{
+  		$stype = "vector";
+  		$scalarType = $type.vecType;
+  	}
+  	else {
+  	  $stype = $type.st.toString();
+  	}
+  } 
+    ->  {$type.vecType != null}? vec_arithmetic(expr1={$a.st}, expr2={$b.st}, operator={"pow"}, scalarType={$type.st}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
     ->  exponent(expr1={$a.st}, expr2={$b.st}, type={$type.st}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
   | ^(Equals type a=expr {tmpNum1 = counter;} b=expr {tmpNum2 = counter;}) {$stype = $type.st.toString();} 
     -> compare(expr1={$a.st}, expr2={$b.st}, comparison={getComp($a.stype)}, operator={getCompOp($a.stype, EqOp)}, type={$a.stype}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
@@ -556,7 +572,19 @@ expr returns [String stype, String resultVar, String scalarType, String sizeName
   | type Char {$stype = $type.st.toString();} -> load_char(tmpNum={++counter}, value={getIntFromChar($Char.text)}, varType={$type.st})
   | ^(TUPLEEX type expr+)
   | type ^(Dot Identifier Number) {$stype = $type.st.toString();}
-  | ^(NEG a=expr {tmpNum1 = counter;}) {$stype = $a.stype;} -> negative(tmpNum={tmpNum1}, expr={$a.st}, zero={getEmptyValue($a.stype)}, result={++counter}, type={$a.stype}, operator={getArithOp($a.stype, SubOp)})
+  | ^(NEG a=expr {tmpNum1 = counter;})
+  {
+  	if ($a.scalarType != null)
+  	{
+  		$stype = "vector";
+  		$scalarType = $a.scalarType;
+  	}
+  	else {
+  	  $stype = $a.stype;
+  	}
+  } 
+    ->  {$a.scalarType != null}? vec_unary(expr={$a.st}, operator={"neg"}, scalarType={$a.scalarType}, tmpNum={tmpNum1}, result={++counter})
+    -> negative(tmpNum={tmpNum1}, expr={$a.st}, zero={getEmptyValue($a.stype)}, result={++counter}, type={$a.stype}, operator={getArithOp($a.stype, SubOp)})
   | ^(POS a=expr {tmpNum1 = counter;}) {$stype = $a.stype;} -> return(a={$a.st})
   | type streamstate {$stype = $type.st.toString();} -> return(a={$streamstate.st})
   | type length {$stype = $type.st.toString();} -> return(a={$length.st})
