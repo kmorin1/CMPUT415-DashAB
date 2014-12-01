@@ -194,6 +194,7 @@ declaration
       
       VectorTypeSymbol extype = (VectorTypeSymbol) $e.stype;
       
+    }
     if (type == null && ($e.stype.getName() == "null" || $e.stype.getName() == "identity")) {
       throw new RuntimeException(errorhead + "cannot infer type for variable " + $id.text);
     }
