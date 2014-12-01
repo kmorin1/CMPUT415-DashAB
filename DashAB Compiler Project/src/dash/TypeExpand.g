@@ -551,6 +551,7 @@ specifier returns [Type tsym]
 expr returns [Type stype]
 @init {
   CommonTree typetree = null;
+  CommonTree exprtree = null;
   Integer index = -1; 
   TupleSymbol ts = null; 
   ArrayList<FieldPair> tuplepairs = new ArrayList<FieldPair>();
@@ -946,29 +947,53 @@ expr returns [Type stype]
   }
   | streamstate { $stype = new BuiltInTypeSymbol("integer");} -> Identifier[$stype.getName()] streamstate
   | length {$stype = new BuiltInTypeSymbol("integer");} -> Identifier[$stype.getName()] length
-  | ^(VCONST {vtypes.clear();} (e=expr {vtypes.add($e.stype);})+) {
+  | ^(VCONST {vtypes.clear(); exprtree = (CommonTree) adaptor.nil();}
+   (e=expr {vtypes.add($e.stype);})+) {
     if (vtypes.get(0).getName().equals("tuple") ||
         vtypes.get(0).getName().equals("vector") ||
         vtypes.get(0).getName().equals("matrix") ||
         vtypes.get(0).getName().equals("interval"))
           throw new RuntimeException(errorhead + "invalid vector type");
     BuiltInTypeSymbol comtype = new BuiltInTypeSymbol(vtypes.get(0).getName());
+    stream_expr.reset();
+    RewriteRuleSubtreeStream rewriteexpr = new RewriteRuleSubtreeStream(adaptor, "temp");
     for (int i=0; i<vtypes.size(); i++) {
+      exprtree = (CommonTree) stream_expr.nextTree();
+      
       Boolean lua = symtab.lookup(vtypes.get(i), comtype);
       Boolean lub = symtab.lookup(comtype, vtypes.get(i));
       if (lua == null && lub == null)
         throw new RuntimeException(errorhead = "cannot find common type in vector constructor");
       if (lub != null && lub) {
         comtype = (BuiltInTypeSymbol) vtypes.get(i);
-        i=0;
+        i=-1;
+        stream_expr.reset();
+        rewriteexpr = new RewriteRuleSubtreeStream(adaptor, "temp");
+        continue;
       } 
+      if (lua != null && lua) {
+        //CommonTree asroot = (CommonTree) adaptor.nil();
+         CommonTree as = (CommonTree) adaptor.create(As, "As");
+         as.addChild((CommonTree) adaptor.create(Identifier, comtype.getName()));
+         as.addChild(exprtree.getChild(0));
+         as.addChild(exprtree.getChild(1));
+         rewriteexpr.add(as);          
+      } else {
+        rewriteexpr.add(exprtree);
+      }
     }
+    stream_expr = rewriteexpr;
     VectorTypeSymbol vts = new VectorTypeSymbol("vector", comtype, null, adaptor.create(Number, new Integer(vtypes.size()).toString()));
     $stype = vts;
-    stream_VCONST.add((CommonTree) adaptor.create(Identifier, comtype.getName()));
-    stream_VCONST.add((CommonTree) adaptor.create(Identifier, comtype.getName()));
-    stream_VCONST.add((CommonTree) vts.getVectorSize());
-  } -> ^(VCONST ^(Vector VCONST*) expr+)
+    stream_expr.reset();
+    typetree = (CommonTree) adaptor.nil();
+    typetree.addChild((CommonTree) adaptor.create(Vector, "vector"));
+    CommonTree child = (CommonTree) typetree.getChild(0);
+    child.addChild((CommonTree) adaptor.create(Identifier, comtype.getName()));
+    child.addChild((CommonTree) adaptor.create(Identifier, comtype.getName()));
+    child.addChild((CommonTree) vts.getVectorSize());
+    
+  } -> ^(VCONST ^({typetree}) expr+)
   | ^(Range a=expr b=expr) {
     if (!$a.stype.getName().equals("integer") || !$b.stype.getName().equals("integer"))
       throw new RuntimeException(errorhead + "interval operands must be integer expressions");
