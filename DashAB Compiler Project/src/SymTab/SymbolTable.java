@@ -89,21 +89,21 @@ public class SymbolTable {
         defineRes("const");
     }
     Boolean[][] promotelookup = {
-			{false, null, null, null, null, null, null, null}, //boolean
-			{null, false, true, null, null, null, null, null}, //integer
-			{null, null, false, null, null, null, null, null}, //real
+			{false, null, null, null, null, null, true, null}, //boolean
+			{null, false, true, null, null, null, true, null}, //integer
+			{null, null, false, null, null, null, true, null}, //real
 			{null, null, null, false, null, null, true, null}, //interval
-			{null, null, null, null, false, null, null, null}, //character
+			{null, null, null, null, false, null, true, null}, //character
 			{null, null, null, null, null, false, null, null}, //tuple
 			{null, null, null, null, null, null, false, null}, //vector
 			{null, null, null, null, null, null, null, false}  //matrix
 	}; 
     Boolean[][] expromotelookup = {
-			{false, true, true, null, true, null, null, null},
-			{true, false, true, null, true, null, null, null},
-			{null, true, false, null, null, null, null, null},
-			{null, null, null, false, null, null, null, null},
-			{true, true, true, null, false, null, null, null},
+			{false, true, true, null, true, null, true, null},
+			{true, false, true, null, true, null, true, null},
+			{null, true, false, null, null, null, true, null},
+			{null, null, null, false, null, null, true, null},
+			{true, true, true, null, false, null, true, null},
 			{null, null, null, null, null, false, null, null},
 			{null, null, null, null, null, null, false, null},
 			{null, null, null, null, null, null, null, false}
@@ -118,6 +118,14 @@ public class SymbolTable {
         return (BuiltInTypeSymbol) resolveType(oldname);
       }
     public Boolean lookup(Type tst1, Type tst2) {
+    	if (!tst1.getName().equals("vector") && tst2.getName().equals("vector")) {
+    		VectorTypeSymbol vts1 = (VectorTypeSymbol) tst2;
+    		return lookup(tst1, vts1.getVectorType());
+    	} else if (tst1.getName().equals("vector") && tst2.getName().equals("vector")) {
+    		VectorTypeSymbol vts1 = (VectorTypeSymbol) tst1;
+    		VectorTypeSymbol vts2 = (VectorTypeSymbol) tst2;
+    		return lookup(vts1.getVectorType(), vts2.getVectorType());
+    	}
     	Integer i1 = null;
     	Integer i2 = null;
     	String st1 = "";

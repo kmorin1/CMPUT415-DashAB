@@ -193,11 +193,7 @@ declaration
       VectorTypeSymbol vtype = (VectorTypeSymbol) type;
       
       VectorTypeSymbol extype = (VectorTypeSymbol) $e.stype;
-      if (vtype.getVectorType() != null && symtab.lookup(extype.getVectorType(), vtype.getVectorType()) == null)
-        throw new RuntimeException(errorhead + "invalid vector types, expecting '" + 
-          vtype.getVectorType().getName() + "' but got '" + 
-          extype.getVectorType().getName() + "'");
-    }
+      
     if (type == null && ($e.stype.getName() == "null" || $e.stype.getName() == "identity")) {
       throw new RuntimeException(errorhead + "cannot infer type for variable " + $id.text);
     }
@@ -452,15 +448,6 @@ assignment
       
     if (symtab.lookup($e.stype, varVS.getType()) == null)
       throw new RuntimeException(errorhead + "assignment type error, expected " + varType + " but got " + $e.stype.getName());
-    
-    if (varVS.getType().getName().equals("vector")) {
-      VectorTypeSymbol vtype = (VectorTypeSymbol) varVS.getType();
-      VectorTypeSymbol extype = (VectorTypeSymbol) $e.stype;
-      if (symtab.lookup(extype.getVectorType(), vtype.getVectorType()) == null)
-        throw new RuntimeException(errorhead + "invalid vector types, expecting '" + 
-          vtype.getVectorType().getName() + "' but got '" + 
-          extype.getVectorType().getName() + "'");
-    }
   }
   ;
   
@@ -972,7 +959,6 @@ expr returns [Type stype]
         continue;
       } 
       if (lua != null && lua) {
-        //CommonTree asroot = (CommonTree) adaptor.nil();
          CommonTree as = (CommonTree) adaptor.create(As, "As");
          as.addChild((CommonTree) adaptor.create(Identifier, comtype.getName()));
          as.addChild(exprtree.getChild(0));
