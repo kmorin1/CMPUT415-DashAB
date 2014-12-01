@@ -1,0 +1,13 @@
+procedure main() returns integer {
+	integer vector a = [1, 2, 3];
+	integer vector c = [4, 5, 6];
+	integer vector b = [4, 5, 6, 7];
+	
+	integer vector d = a || b;
+	
+	d -> out;
+	"\n" -> out;
+	
+	a ** c -> out;
+	"\n" -> out;
+}

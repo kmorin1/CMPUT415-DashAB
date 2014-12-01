@@ -1,0 +1,10 @@
+procedure main() returns integer {
+	var out = std_output();
+	boolean vector a[1] = [true];
+	boolean vector b[1] = [false];
+
+	[true] + [false] -> out;
+	"\n" -> out;
+	
+	return 0;
+}

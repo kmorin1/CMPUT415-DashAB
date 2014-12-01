@@ -1,0 +1,30 @@
+procedure main() returns integer {
+	var out = std_output();
+	boolean vector a[2] = [true, false];
+	boolean vector b[2] = [false, true];
+	
+	boolean vector c[2];
+	
+	
+	c = not a;
+	c -> out;
+	"\n" -> out;
+	
+	c = not b;
+	c -> out;
+	"\n" -> out;
+	
+	a != b -> out;
+	"\n" -> out;
+	
+	b != b -> out; 
+	"\n" -> out;
+	 
+	a == b -> out;
+	"\n" -> out;
+	
+	b == b -> out;
+	"\n" -> out;
+	
+	return 0;
+}

@@ -1,0 +1,18 @@
+procedure main() returns integer {
+	var out = std_output();
+	boolean vector a[4] = [true, true, false, false];
+	boolean vector b[4] = [true, false, true, false];
+
+	boolean vector c[4];
+	c = a or b;
+	c -> out;
+	"\n" -> out;
+	c = a xor b;
+	c -> out;
+	"\n" -> out;
+	c = a and b;
+	c -> out;
+	"\n" -> out;
+	
+	return 0;
+}
