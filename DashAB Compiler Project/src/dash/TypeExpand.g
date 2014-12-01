@@ -183,6 +183,7 @@ declaration
       throw new RuntimeException(errorhead + "assignment type error, expected " + type.getName() + " but got " + $e.stype.getName());
     if (type != null && type.getName().equals("vector")) {
       VectorTypeSymbol vtype = (VectorTypeSymbol) type;
+      
       VectorTypeSymbol extype = (VectorTypeSymbol) $e.stype;
       if (vtype.getVectorType() != null && symtab.lookup(extype.getVectorType(), vtype.getVectorType()) == null)
         throw new RuntimeException(errorhead + "invalid vector types, expecting '" + 
@@ -510,6 +511,7 @@ type returns [Type tsym]
       bits = (BuiltInTypeSymbol) $vt.tsym;
     
     VectorTypeSymbol vts = new VectorTypeSymbol("vector", bits, vtype, size);
+    
     $tsym = vts;
   }
   | t=Real {$tsym = (Type) symtab.resolveType($t.text);}
@@ -540,6 +542,7 @@ specifier returns [Type tsym]
   
 expr returns [Type stype]
 @init {
+  CommonTree typetree = null;
   Integer index = -1; 
   TupleSymbol ts = null; 
   ArrayList<FieldPair> tuplepairs = new ArrayList<FieldPair>();
@@ -786,7 +789,22 @@ expr returns [Type stype]
     $stype = symtab.getBuiltInSymbol(vs.getType().getName());
     if ($stype.getName().equals("std_input") || $stype.getName().equals("std_output"))
       throw new RuntimeException(errorhead + "stream " + $id.text + " cannot occur in an expression");
-    stream_Identifier.reset();
+   typetree = (CommonTree) adaptor.nil();
+   if ($stype.getName().equals("vector")) {
+      //BuiltInTypeSymbol bits = (BuiltInTypeSymbol) $stype;
+        VectorTypeSymbol vts = (VectorTypeSymbol) vs.getType();
+        typetree.addChild((CommonTree) adaptor.create(Vector, "vector"));
+        CommonTree child = (CommonTree) typetree.getChild(0);
+        //System.out.println(vts.getType().getName());
+        if (vts.getVectorType() != null)
+          child.addChild((CommonTree) adaptor.create(Identifier, vts.getVectorType().getName()));
+        
+      } else {
+          
+          typetree.addChild((CommonTree) adaptor.create(Identifier, $stype.getName()));
+      }
+   
+   /* stream_Identifier.reset();
     //System.out.println($stype.getName());
     if (symtab.getBuiltInSymbol(vs.getType().getName()).equals("tuple")) {
       ts = (TupleSymbol) vs.getType();
@@ -795,9 +813,10 @@ expr returns [Type stype]
         stream_Identifier.add((CommonTree) adaptor.create(Identifier, ts.getFieldNames().get(i).type.getName()));
       }
     }
-    stream_Identifier.nextNode();
+    stream_Identifier.nextNode();*/
   } 
-    -> ^(Identifier[$stype.getName()] (Identifier)*) Identifier[$id.text] 
+    //-> ^(Identifier[$stype.getName()] (Identifier)*) Identifier[$id.text] 
+    -> ^({typetree}) Identifier
   | ^(As t=type e=expr) {
     Boolean exlu = symtab.exLookup($type.tsym, $e.stype);
     if (exlu == null)
