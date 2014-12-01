@@ -105,18 +105,18 @@ declaration
   | specifier? type+ Identifier Assign expr SemiColon -> ^(DECL specifier? type+ ^(Assign Identifier expr))
   | specifier type* Identifier Assign expr SemiColon -> ^(DECL specifier type* ^(Assign Identifier expr))
   | (specifier | type | specifier type) Vector? Identifier LBracket size RBracket SemiColon 
-    -> ^(DECL specifier? ^(Vector type? size) Identifier)
+    -> ^(DECL specifier? ^(Vector["vector"] type? size) Identifier)
   | (specifier | type | specifier type) Vector? Identifier (LBracket size RBracket)? Assign a=expr SemiColon
-    -> ^(DECL specifier? ^(Vector type? size?) ^(Assign Identifier $a))
+    -> ^(DECL specifier? ^(Vector["vector"] type? size?) ^(Assign Identifier $a))
   | (specifier | type | specifier type) Matrix? Identifier LBracket rowsize=size Comma columnsize=size RBracket SemiColon
-    -> ^(DECL specifier? ^(Matrix type? $rowsize $columnsize) Identifier)  
+    -> ^(DECL specifier? ^(Matrix["matrix"] type? $rowsize $columnsize) Identifier)  
   | (specifier | type | specifier type) Matrix? Identifier (LBracket rowsize=size Comma columnsize=size RBracket)?  Assign a=expr SemiColon
-    -> ^(DECL specifier? ^(Matrix type? $rowsize? $columnsize?) ^(Assign Identifier $a))
+    -> ^(DECL specifier? ^(Matrix["matrix"] type? $rowsize? $columnsize?) ^(Assign Identifier $a))
   | streamDecl
   ;
   
 size
-  : '*'
+  : '*' ->
   | expr
   ;
   
