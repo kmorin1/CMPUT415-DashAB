@@ -94,6 +94,10 @@ inputstream
 streamstate
   : Stream LParen Identifier RParen -> ^(Stream Identifier)
   ;
+  
+length
+	: Length LParen expr RParen -> ^(Length expr)
+	;
 
 declaration
   : specifier? type+ Identifier SemiColon -> ^(DECL specifier? type+ Identifier)
@@ -261,6 +265,7 @@ atom
   | Identifier Dot^ (Identifier|Number)
   | LParen (a=expr -> expr) (Comma b=expr -> ^(TUPLEEX $a $b))+ RParen
   | streamstate
+  | length
   | Identifier LParen expr? (Comma expr)* RParen -> ^(CALL Identifier ^(ARGLIST expr*))
   | Identifier
   | filter
@@ -268,7 +273,6 @@ atom
   | LParen expr RParen -> expr
   | As LThan type GThan LParen expr RParen -> ^(As type expr)
   | vectorconst -> ^(VCONST vectorconst)
-  | 'length' LParen Identifier RParen
   ;
   
 vectorconst

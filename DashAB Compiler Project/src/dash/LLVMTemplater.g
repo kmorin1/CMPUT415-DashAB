@@ -219,6 +219,10 @@ inputstream
 streamstate
 	: ^(Stream stream=Identifier) -> streamState(tmpNum={++counter})
 	;
+	
+length
+	: ^(Length expr) -> length(result={++counter}, scalarType={$expr.scalarType}, expr={$expr.st}, tmpNum={$expr.resultVar})
+	;
 
 declaration
 @init {
@@ -555,6 +559,7 @@ expr returns [String stype, String resultVar, String scalarType, String sizeName
   | ^(NEG a=expr {tmpNum1 = counter;}) {$stype = $a.stype;} -> negative(tmpNum={tmpNum1}, expr={$a.st}, zero={getEmptyValue($a.stype)}, result={++counter}, type={$a.stype}, operator={getArithOp($a.stype, SubOp)})
   | ^(POS a=expr {tmpNum1 = counter;}) {$stype = $a.stype;} -> return(a={$a.st})
   | type streamstate {$stype = $type.st.toString();} -> return(a={$streamstate.st})
+  | type length {$stype = $type.st.toString();} -> return(a={$length.st})
   | ^(VCONST vec=type (e=expr
   {
   	$stype = "vector";

@@ -141,6 +141,14 @@ streamstate
       throw new RuntimeException(getErrorHeader() + $stream.text + " is not an input stream");
   }
   ;
+  
+length
+	: ^(Length expr)
+	{
+    if (!$expr.stype.getName().equals("vector"))
+      throw new RuntimeException(getErrorHeader() + "Expression in length() must evaluate to a vector");
+  }
+	;
 
 declaration
 @init {
@@ -937,6 +945,7 @@ expr returns [Type stype]
       $stype = $e.stype;
   }
   | streamstate { $stype = new BuiltInTypeSymbol("integer");} -> Identifier[$stype.getName()] streamstate
+  | length {$stype = new BuiltInTypeSymbol("integer");} -> Identifier[$stype.getName()] length
   | ^(VCONST {vtypes.clear();} (e=expr {vtypes.add($e.stype);})+) {
     if (vtypes.get(0).getName().equals("tuple") ||
         vtypes.get(0).getName().equals("vector") ||

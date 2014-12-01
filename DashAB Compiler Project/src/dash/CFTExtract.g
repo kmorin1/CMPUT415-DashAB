@@ -60,6 +60,10 @@ inputstream
 streamstate
   : ^(Stream stream=Identifier)
   ;
+  
+length
+	: ^(Length expr)
+	;
 
 declaration returns [CFTNode cftn]
 @after {
@@ -210,6 +214,7 @@ expr
   | ^(NEG a=expr)
   | ^(POS a=expr)
   | streamstate
+  | length
   | ^(Dot Identifier)
   | ^(VCONST expr+)
   | ^(Filter Identifier expr expr) 

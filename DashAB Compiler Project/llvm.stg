@@ -277,6 +277,14 @@ cast(func, expr) ::= <<
 
 >>
 
+length(result, scalarType, expr, tmpNum) ::= <<
+;start length
+<expr>
+%.<result> = extractvalue {i32, <scalarType>*} %.<tmpNum>, 0
+;end length
+
+>>
+
 callFunc(funcName, retType, exprs, varNames, varTypes, result) ::= <<
 ;start function call
 <exprs>

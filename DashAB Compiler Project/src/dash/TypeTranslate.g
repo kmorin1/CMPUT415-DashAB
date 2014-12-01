@@ -72,6 +72,10 @@ inputstream
 streamstate
   : ^(Stream stream=Identifier)
   ;
+  
+length
+	: ^(Length expr)
+	;
  
 declaration
   : ^(DECL specifier? type? Identifier) -> ^(DECL specifier? type? Identifier)
@@ -274,7 +278,8 @@ expr returns [String stype, String scalarType]
   | type {$stype = $type.tsym;} ^(Dot Identifier Number)
   | ^(NEG a=expr) {$stype = $a.stype;}
   | ^(POS a=expr) {$stype = $a.stype;}
-  | type {$stype = $type.tsym;} streamstate 
+  | type {$stype = $type.tsym;} streamstate
+  | type {$stype = $type.tsym;} length
   | ^(VCONST type expr+) {$stype = "vector"; $scalarType = $type.scalarType;}
   | ^(Range expr expr)
   | ^(Filter Identifier expr expr) 
