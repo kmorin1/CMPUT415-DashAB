@@ -76,6 +76,12 @@ declare float @mul_float_vectors(float*, i32, float*, i32, float*)
 
 declare float @div_float_vectors(float*, i32, float*, i32, float*)
 
+declare float @mod_float_vectors(float*, i32, float*, i32, float*)
+
+declare float @pow_float_vectors(float*, i32, float*, i32, float*)
+
+declare float @neg_float_vectors(float*, i32, float*)
+
 declare i8 @add_i8_vectors(i8*, i32, i8*, i32, i8*)
 
 >>
