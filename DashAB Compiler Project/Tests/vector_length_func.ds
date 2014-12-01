@@ -1,0 +1,16 @@
+procedure main() returns integer {
+	var out = std_output();
+	integer vector x[3] = [1, 2, 3];
+	integer vector y = [1, 2, 3, 4, 5];
+	integer z[4] = [1, 2, 3, 4];
+	integer a[*] = [1, 2];
+	length(x) -> out;
+	'\n' -> out;
+	length(y) -> out;
+	'\n' -> out;
+	length(z) -> out;
+	'\n' -> out;
+	length(a) * length(a+a) + length(a) -> out;
+	'\n' -> out;
+	return 0;
+}
