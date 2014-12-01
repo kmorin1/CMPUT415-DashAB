@@ -986,8 +986,15 @@ expr returns [Type stype]
       throw new RuntimeException(errorhead + "interval operands must be integer expressions");
     $stype = new VectorTypeSymbol("interval", new BuiltInTypeSymbol("integer"), null, adaptor.create(Identifier, "*"));
   }
-  | ^(Filter Identifier expr expr) 
-  | ^(GENERATOR Identifier expr expr)
-  | ^(GENERATOR ^(ROW Identifier expr) ^(COLUMN Identifier expr) expr)    
+  | ^(Filter Identifier a=expr b=expr) 
+  | ^(GENERATOR Identifier a=expr b=expr) {
+    if ((symtab.lookup($a.stype, $b.stype) == null) && (symtab.lookup($b.stype, $a.stype) == null))
+      throw new RuntimeException(errorhead + "the domain and vector expressions must be the same type");
+    VectorTypeSymbol vts = new VectorTypeSymbol("vector", $a.stype, null, adaptor.create(Identifier, "*"));
+    $stype = vts;
+  }
+  | ^(GENERATOR ^(ROW Identifier a=expr) ^(COLUMN Identifier b=expr) c=expr)  {
+    
+  }  
   ;
   
