@@ -562,8 +562,17 @@ expr returns [Type stype]
       $stype = $a.stype;
     else 
       throw new RuntimeException(errorhead + " type promotion error");
-    
-  } -> ^(Plus Identifier[$stype.getName()] expr expr)
+    typetree = (CommonTree) adaptor.nil();
+   if ($stype.getName().equals("vector")) {
+        VectorTypeSymbol vts = (VectorTypeSymbol) $stype;
+        typetree.addChild((CommonTree) adaptor.create(Vector, "vector"));
+        CommonTree child = (CommonTree) typetree.getChild(0);
+        if (vts.getVectorType() != null)
+          child.addChild((CommonTree) adaptor.create(Identifier, vts.getVectorType().getName()));
+    } else {
+        typetree.addChild((CommonTree) adaptor.create(Identifier, $stype.getName()));
+    }
+  } -> ^(Plus ^({typetree}) expr expr)
   | ^(Minus a=expr b=expr) {
     if ($a.stype.getName().equals("tuple") || $b.stype.getName().equals("tuple"))
       throw new RuntimeException(errorhead + "can't perform this operation on a tuple");
@@ -576,8 +585,17 @@ expr returns [Type stype]
       $stype = $a.stype;
     else 
       throw new RuntimeException(errorhead + " type promotion error");
-    
-  } -> ^(Minus Identifier[$stype.getName()] expr expr)
+    typetree = (CommonTree) adaptor.nil();
+   if ($stype.getName().equals("vector")) {
+        VectorTypeSymbol vts = (VectorTypeSymbol) $stype;
+        typetree.addChild((CommonTree) adaptor.create(Vector, "vector"));
+        CommonTree child = (CommonTree) typetree.getChild(0);
+        if (vts.getVectorType() != null)
+          child.addChild((CommonTree) adaptor.create(Identifier, vts.getVectorType().getName()));
+    } else {
+        typetree.addChild((CommonTree) adaptor.create(Identifier, $stype.getName()));
+    }
+  } -> ^(Minus ^({typetree}) expr expr)
   | ^(Multiply a=expr b=expr) {
     if ($a.stype.getName().equals("tuple") || $b.stype.getName().equals("tuple"))
       throw new RuntimeException(errorhead + "can't perform this operation on a tuple");
@@ -590,8 +608,17 @@ expr returns [Type stype]
       $stype = $a.stype;
     else 
       throw new RuntimeException(errorhead + " type promotion error");
-    
-  } -> ^(Multiply Identifier[$stype.getName()] expr expr)
+    typetree = (CommonTree) adaptor.nil();
+   if ($stype.getName().equals("vector")) {
+        VectorTypeSymbol vts = (VectorTypeSymbol) $stype;
+        typetree.addChild((CommonTree) adaptor.create(Vector, "vector"));
+        CommonTree child = (CommonTree) typetree.getChild(0);
+        if (vts.getVectorType() != null)
+          child.addChild((CommonTree) adaptor.create(Identifier, vts.getVectorType().getName()));
+    } else {
+        typetree.addChild((CommonTree) adaptor.create(Identifier, $stype.getName()));
+    }
+  } -> ^(Multiply ^({typetree}) expr expr)
   | ^(Divide a=expr b=expr) {
     if ($a.stype.getName().equals("tuple") || $b.stype.getName().equals("tuple"))
       throw new RuntimeException(errorhead + "can't perform this operation on a tuple");
@@ -604,8 +631,17 @@ expr returns [Type stype]
       $stype = $a.stype;
     else 
       throw new RuntimeException(errorhead + " type promotion error");
-    
-  } -> ^(Divide Identifier[$stype.getName()] expr expr)
+    typetree = (CommonTree) adaptor.nil();
+   if ($stype.getName().equals("vector")) {
+        VectorTypeSymbol vts = (VectorTypeSymbol) $stype;
+        typetree.addChild((CommonTree) adaptor.create(Vector, "vector"));
+        CommonTree child = (CommonTree) typetree.getChild(0);
+        if (vts.getVectorType() != null)
+          child.addChild((CommonTree) adaptor.create(Identifier, vts.getVectorType().getName()));
+    } else {
+        typetree.addChild((CommonTree) adaptor.create(Identifier, $stype.getName()));
+    }
+  } -> ^(Divide ^({typetree}) expr expr)
   | ^(Mod a=expr b=expr) {
     if ($a.stype.getName().equals("tuple") || $b.stype.getName().equals("tuple"))
       throw new RuntimeException(errorhead + "can't perform this operation on a tuple");
@@ -618,8 +654,17 @@ expr returns [Type stype]
       $stype = $a.stype;
     else 
       throw new RuntimeException(errorhead + " type promotion error");
-    
-  } -> ^(Mod Identifier[$stype.getName()] expr expr)
+    typetree = (CommonTree) adaptor.nil();
+   if ($stype.getName().equals("vector")) {
+        VectorTypeSymbol vts = (VectorTypeSymbol) $stype;
+        typetree.addChild((CommonTree) adaptor.create(Vector, "vector"));
+        CommonTree child = (CommonTree) typetree.getChild(0);
+        if (vts.getVectorType() != null)
+          child.addChild((CommonTree) adaptor.create(Identifier, vts.getVectorType().getName()));
+    } else {
+        typetree.addChild((CommonTree) adaptor.create(Identifier, $stype.getName()));
+    }
+  } -> ^(Mod ^({typetree}) expr expr)
   | ^(Exponent a=expr b=expr) {
     if ($a.stype.getName().equals("tuple") || $b.stype.getName().equals("tuple"))
       throw new RuntimeException(errorhead + "can't perform this operation on a tuple");
@@ -632,8 +677,17 @@ expr returns [Type stype]
       $stype = $a.stype;
     else 
       throw new RuntimeException(errorhead + " type promotion error");
-    
-  } -> ^(Exponent Identifier[$stype.getName()] expr expr)
+    typetree = (CommonTree) adaptor.nil();
+   if ($stype.getName().equals("vector")) {
+        VectorTypeSymbol vts = (VectorTypeSymbol) $stype;
+        typetree.addChild((CommonTree) adaptor.create(Vector, "vector"));
+        CommonTree child = (CommonTree) typetree.getChild(0);
+        if (vts.getVectorType() != null)
+          child.addChild((CommonTree) adaptor.create(Identifier, vts.getVectorType().getName()));
+    } else {
+        typetree.addChild((CommonTree) adaptor.create(Identifier, $stype.getName()));
+    }
+  } -> ^(Exponent ^({typetree}) expr expr)
   | ^(Equals a=expr b=expr) {
     Boolean lua = symtab.lookup($a.stype, $b.stype);
     Boolean lub = symtab.lookup($b.stype, $a.stype);
@@ -780,7 +834,18 @@ expr returns [Type stype]
     } else 
       throw new RuntimeException(errorhead + "Multiple defined error");
     argtypes.clear();
-  } -> ^(CALL Identifier[$stype.getName()] Identifier[$id.text] ^(ARGLIST expr*))
+    typetree = (CommonTree) adaptor.nil();
+   if ($stype.getName().equals("vector")) {
+        VectorTypeSymbol vts = (VectorTypeSymbol) $stype;
+        typetree.addChild((CommonTree) adaptor.create(Vector, "vector"));
+        CommonTree child = (CommonTree) typetree.getChild(0);
+        if (vts.getVectorType() != null)
+          child.addChild((CommonTree) adaptor.create(Identifier, vts.getVectorType().getName()));
+    } else {
+        typetree.addChild((CommonTree) adaptor.create(Identifier, $stype.getName()));
+    }
+    
+  } -> ^(CALL ^({typetree}) Identifier[$id.text] ^(ARGLIST expr*))
   | id=Identifier {
     Symbol s = currentscope.resolve($id.text);
     if (s == null)
@@ -791,32 +856,16 @@ expr returns [Type stype]
       throw new RuntimeException(errorhead + "stream " + $id.text + " cannot occur in an expression");
    typetree = (CommonTree) adaptor.nil();
    if ($stype.getName().equals("vector")) {
-      //BuiltInTypeSymbol bits = (BuiltInTypeSymbol) $stype;
         VectorTypeSymbol vts = (VectorTypeSymbol) vs.getType();
+        $stype = vs.getType();
         typetree.addChild((CommonTree) adaptor.create(Vector, "vector"));
         CommonTree child = (CommonTree) typetree.getChild(0);
-        //System.out.println(vts.getType().getName());
         if (vts.getVectorType() != null)
           child.addChild((CommonTree) adaptor.create(Identifier, vts.getVectorType().getName()));
-        
-      } else {
-          
-          typetree.addChild((CommonTree) adaptor.create(Identifier, $stype.getName()));
-      }
-   
-   /* stream_Identifier.reset();
-    //System.out.println($stype.getName());
-    if (symtab.getBuiltInSymbol(vs.getType().getName()).equals("tuple")) {
-      ts = (TupleSymbol) vs.getType();
-      
-      for (int i=0; i<ts.getFieldNames().size(); i++) {
-        stream_Identifier.add((CommonTree) adaptor.create(Identifier, ts.getFieldNames().get(i).type.getName()));
-      }
+    } else {
+        typetree.addChild((CommonTree) adaptor.create(Identifier, $stype.getName()));
     }
-    stream_Identifier.nextNode();*/
-  } 
-    //-> ^(Identifier[$stype.getName()] (Identifier)*) Identifier[$id.text] 
-    -> ^({typetree}) Identifier
+  } -> ^({typetree}) Identifier
   | ^(As t=type e=expr) {
     Boolean exlu = symtab.exLookup($type.tsym, $e.stype);
     if (exlu == null)
