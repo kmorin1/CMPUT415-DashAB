@@ -95,9 +95,6 @@ char print_i8_vector(char * x, uint32_t size) {
 	for (int i = 0; i < size; i++) {
 		printf("%c", *string);
 		string += 1;
-		if (i+1 < size) {
-			printf(" ");
-		}
 	}
 	return 0;
 }
@@ -225,6 +222,20 @@ uint32_t neg_i32_vectors(uint32_t * x, uint32_t x_size, uint32_t * result) {
 		uint32_t x_val = *x_vector;
 		*result = -x_val;
 		x_vector += 1;
+		result += 1;		
+	}
+	return 0;
+}
+
+uint32_t less_i32_vectors(uint32_t * x, uint32_t x_size, uint32_t * y, uint32_t y_size, bool * result) {
+	uint32_t * x_vector = x;
+	uint32_t * y_vector = y;
+	for (int i = 0; i < x_size; i++) {
+		uint32_t x_val = *x_vector;
+		uint32_t y_val = *y_vector;
+		*result = x_val < y_val;
+		x_vector += 1;
+		y_vector += 1;
 		result += 1;		
 	}
 	return 0;

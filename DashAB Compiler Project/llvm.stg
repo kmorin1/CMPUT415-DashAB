@@ -68,6 +68,8 @@ declare i32 @pow_i32_vectors(i32*, i32, i32*, i32, i32*)
 
 declare i32 @neg_i32_vectors(i32*, i32, i32*)
 
+declare i32 @less_i32_vectors(i32*, i32, i32*, i32, i1*)
+
 declare float @add_float_vectors(float*, i32, float*, i32, float*)
 
 declare float @sub_float_vectors(float*, i32, float*, i32, float*)
@@ -360,7 +362,7 @@ arithmetic(expr1, expr2, operator, type, tmpNum1, tmpNum2, result, promote1, pro
 
 >>
 
-vec_arithmetic(expr1, expr2, operator, scalarType, tmpNum1, tmpNum2, result, promote1, promote2) ::= <<
+vec_arithmetic(expr1, expr2, operator, scalarType, resultType, tmpNum1, tmpNum2, result, promote1, promote2) ::= <<
 ;start vec arithmetic
 <expr1>
 <expr2>
@@ -371,9 +373,9 @@ vec_arithmetic(expr1, expr2, operator, scalarType, tmpNum1, tmpNum2, result, pro
 %.size.2.<result> = extractvalue {i32, <scalarType>*} %.<tmpNum2>, 0
 %.vectortemp.2.<result> = extractvalue {i32, <scalarType>*} %.<tmpNum2>, 1
 
-%.vector.<result> = alloca <scalarType>, i32 %.size.1.<result>, align 4
+%.vector.<result> = alloca <resultType>, i32 %.size.1.<result>, align 4
 
-call <scalarType> (<scalarType>*, i32, <scalarType>*, i32, <scalarType>*)* @<operator>_<scalarType>_vectors(<scalarType>* %.vectortemp.1.<result>, i32 %.size.1.<result>, <scalarType>* %.vectortemp.2.<result>, i32 %.size.2.<result>, <scalarType>* %.vector.<result>)
+call <scalarType> (<scalarType>*, i32, <scalarType>*, i32, <resultType>*)* @<operator>_<scalarType>_vectors(<scalarType>* %.vectortemp.1.<result>, i32 %.size.1.<result>, <scalarType>* %.vectortemp.2.<result>, i32 %.size.2.<result>, <resultType>* %.vector.<result>)
 
 %.temp.result.<result> = insertvalue {i32, <scalarType>*} undef, i32 %.size.1.<result>, 0
 %.<result> = insertvalue {i32, <scalarType>*} %.temp.result.<result>, <scalarType>* %.vector.<result>, 1
