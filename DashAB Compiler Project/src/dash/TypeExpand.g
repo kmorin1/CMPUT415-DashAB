@@ -193,10 +193,7 @@ declaration
       VectorTypeSymbol vtype = (VectorTypeSymbol) type;
       
       VectorTypeSymbol extype = (VectorTypeSymbol) $e.stype;
-      if (vtype.getVectorType() != null && symtab.lookup(extype.getVectorType(), vtype.getVectorType()) == null)
-        throw new RuntimeException(errorhead + "invalid vector types, expecting '" + 
-          vtype.getVectorType().getName() + "' but got '" + 
-          extype.getVectorType().getName() + "'");
+      
     }
     if (type == null && ($e.stype.getName() == "null" || $e.stype.getName() == "identity")) {
       throw new RuntimeException(errorhead + "cannot infer type for variable " + $id.text);
@@ -452,15 +449,6 @@ assignment
       
     if (symtab.lookup($e.stype, varVS.getType()) == null)
       throw new RuntimeException(errorhead + "assignment type error, expected " + varType + " but got " + $e.stype.getName());
-    
-    if (varVS.getType().getName().equals("vector")) {
-      VectorTypeSymbol vtype = (VectorTypeSymbol) varVS.getType();
-      VectorTypeSymbol extype = (VectorTypeSymbol) $e.stype;
-      if (symtab.lookup(extype.getVectorType(), vtype.getVectorType()) == null)
-        throw new RuntimeException(errorhead + "invalid vector types, expecting '" + 
-          vtype.getVectorType().getName() + "' but got '" + 
-          extype.getVectorType().getName() + "'");
-    }
   }
   ;
   
@@ -560,8 +548,8 @@ expr returns [Type stype]
   String errorhead = getErrorHeader();
 }
   : ^(Plus a=expr b=expr) {
-    if ($a.stype.getName().equals("tuple") || $b.stype.getName().equals("tuple"))
-      throw new RuntimeException(errorhead + "can't perform this operation on a tuple");
+    if (!symtab.arithmeticValidity($a.stype, $b.stype))
+      throw new RuntimeException(errorhead + "can't perform this operation on this type");
     Boolean lua = symtab.lookup($a.stype, $b.stype);
     Boolean lub = symtab.lookup($b.stype, $a.stype);
       
@@ -583,8 +571,8 @@ expr returns [Type stype]
     }
   } -> ^(Plus ^({typetree}) expr expr)
   | ^(Minus a=expr b=expr) {
-    if ($a.stype.getName().equals("tuple") || $b.stype.getName().equals("tuple"))
-      throw new RuntimeException(errorhead + "can't perform this operation on a tuple");
+    if (!symtab.arithmeticValidity($a.stype, $b.stype))
+      throw new RuntimeException(errorhead + "can't perform this operation on this type");
     Boolean lua = symtab.lookup($a.stype, $b.stype);
     Boolean lub = symtab.lookup($b.stype, $a.stype);
       
@@ -606,8 +594,8 @@ expr returns [Type stype]
     }
   } -> ^(Minus ^({typetree}) expr expr)
   | ^(Multiply a=expr b=expr) {
-    if ($a.stype.getName().equals("tuple") || $b.stype.getName().equals("tuple"))
-      throw new RuntimeException(errorhead + "can't perform this operation on a tuple");
+    if (!symtab.arithmeticValidity($a.stype, $b.stype))
+      throw new RuntimeException(errorhead + "can't perform this operation on this type");
     Boolean lua = symtab.lookup($a.stype, $b.stype);
     Boolean lub = symtab.lookup($b.stype, $a.stype);
       
@@ -629,8 +617,8 @@ expr returns [Type stype]
     }
   } -> ^(Multiply ^({typetree}) expr expr)
   | ^(Divide a=expr b=expr) {
-    if ($a.stype.getName().equals("tuple") || $b.stype.getName().equals("tuple"))
-      throw new RuntimeException(errorhead + "can't perform this operation on a tuple");
+    if (!symtab.arithmeticValidity($a.stype, $b.stype))
+      throw new RuntimeException(errorhead + "can't perform this operation on this type");
     Boolean lua = symtab.lookup($a.stype, $b.stype);
     Boolean lub = symtab.lookup($b.stype, $a.stype);
       
@@ -652,8 +640,8 @@ expr returns [Type stype]
     }
   } -> ^(Divide ^({typetree}) expr expr)
   | ^(Mod a=expr b=expr) {
-    if ($a.stype.getName().equals("tuple") || $b.stype.getName().equals("tuple"))
-      throw new RuntimeException(errorhead + "can't perform this operation on a tuple");
+    if (!symtab.arithmeticValidity($a.stype, $b.stype))
+      throw new RuntimeException(errorhead + "can't perform this operation on this type");
     Boolean lua = symtab.lookup($a.stype, $b.stype);
     Boolean lub = symtab.lookup($b.stype, $a.stype);
       
@@ -675,8 +663,8 @@ expr returns [Type stype]
     }
   } -> ^(Mod ^({typetree}) expr expr)
   | ^(Exponent a=expr b=expr) {
-    if ($a.stype.getName().equals("tuple") || $b.stype.getName().equals("tuple"))
-      throw new RuntimeException(errorhead + "can't perform this operation on a tuple");
+    if (!symtab.arithmeticValidity($a.stype, $b.stype))
+      throw new RuntimeException(errorhead + "can't perform this operation on this type");
     Boolean lua = symtab.lookup($a.stype, $b.stype);
     Boolean lub = symtab.lookup($b.stype, $a.stype);
       
@@ -718,96 +706,206 @@ expr returns [Type stype]
     
   } -> ^(NEquals Identifier[$stype.getName()] expr expr)
   | ^(GThan a=expr b=expr) {
-    if ($a.stype.getName().equals("tuple") || $b.stype.getName().equals("tuple"))
-      throw new RuntimeException(errorhead + "can't perform this operation on a tuple");
+    if (!symtab.compareValidity($a.stype, $b.stype))
+      throw new RuntimeException(errorhead + "can't perform this operation on this type");
     Boolean lua = symtab.lookup($a.stype, $b.stype);
     Boolean lub = symtab.lookup($b.stype, $a.stype);
       
-    if (lua != null || lub != null)
-      $stype = new BuiltInTypeSymbol("boolean");
-    else 
+    if (lua != null || lub != null) {
+      if ($a.stype.getName().equals("vector") || $b.stype.getName().equals("vector")) {
+       $stype = new VectorTypeSymbol("vector", new BuiltInTypeSymbol("boolean"), null, adaptor.create(Identifier, "*"));
+      } else {
+        $stype = new BuiltInTypeSymbol("boolean");
+      }
+    } else {
       throw new RuntimeException(errorhead + " type promotion error");
-    
-  } -> ^(GThan Identifier[$stype.getName()] expr expr)
+    }
+    typetree = (CommonTree) adaptor.nil();
+   if ($stype.getName().equals("vector")) {
+        VectorTypeSymbol vts = (VectorTypeSymbol) $stype;
+        typetree.addChild((CommonTree) adaptor.create(Vector, "vector"));
+        CommonTree child = (CommonTree) typetree.getChild(0);
+        if (vts.getVectorType() != null)
+          child.addChild((CommonTree) adaptor.create(Identifier, "boolean"));
+    } else {
+        typetree.addChild((CommonTree) adaptor.create(Identifier, $stype.getName()));
+    }
+  } -> ^(GThan ^({typetree}) expr expr)
   | ^(LThan a=expr b=expr) {
-    if ($a.stype.getName().equals("tuple") || $b.stype.getName().equals("tuple"))
-      throw new RuntimeException(errorhead + "can't perform this operation on a tuple");
+    if (!symtab.compareValidity($a.stype, $b.stype))
+      throw new RuntimeException(errorhead + "can't perform this operation on this type");
     Boolean lua = symtab.lookup($a.stype, $b.stype);
     Boolean lub = symtab.lookup($b.stype, $a.stype);
       
-    if (lua != null || lub != null)
-      $stype = new BuiltInTypeSymbol("boolean");
-    else 
+    if (lua != null || lub != null) {
+      if ($a.stype.getName().equals("vector") || $b.stype.getName().equals("vector")) {
+       $stype = new VectorTypeSymbol("vector", new BuiltInTypeSymbol("boolean"), null, adaptor.create(Identifier, "*"));
+      } else {
+        $stype = new BuiltInTypeSymbol("boolean");
+      }
+    } else {
       throw new RuntimeException(errorhead + " type promotion error");
-    
-  } -> ^(LThan Identifier[$stype.getName()] expr expr)
+    }
+    typetree = (CommonTree) adaptor.nil();
+   if ($stype.getName().equals("vector")) {
+        VectorTypeSymbol vts = (VectorTypeSymbol) $stype;
+        typetree.addChild((CommonTree) adaptor.create(Vector, "vector"));
+        CommonTree child = (CommonTree) typetree.getChild(0);
+        if (vts.getVectorType() != null)
+          child.addChild((CommonTree) adaptor.create(Identifier, "boolean"));
+    } else {
+        typetree.addChild((CommonTree) adaptor.create(Identifier, $stype.getName()));
+    }
+  } -> ^(LThan ^({typetree}) expr expr)
   | ^(GThanE a=expr b=expr) {
-    if ($a.stype.getName().equals("tuple") || $b.stype.getName().equals("tuple"))
-      throw new RuntimeException(errorhead + "can't perform this operation on a tuple");
+    if (!symtab.compareValidity($a.stype, $b.stype))
+      throw new RuntimeException(errorhead + "can't perform this operation on this type");
     Boolean lua = symtab.lookup($a.stype, $b.stype);
     Boolean lub = symtab.lookup($b.stype, $a.stype);
       
-    if (lua != null || lub != null)
-      $stype = new BuiltInTypeSymbol("boolean");
-    else 
+    if (lua != null || lub != null) {
+      if ($a.stype.getName().equals("vector") || $b.stype.getName().equals("vector")) {
+       $stype = new VectorTypeSymbol("vector", new BuiltInTypeSymbol("boolean"), null, adaptor.create(Identifier, "*"));
+      } else {
+        $stype = new BuiltInTypeSymbol("boolean");
+      }
+    } else {
       throw new RuntimeException(errorhead + " type promotion error");
-    
-  } -> ^(GThanE Identifier[$stype.getName()] expr expr)
+    }
+    typetree = (CommonTree) adaptor.nil();
+   if ($stype.getName().equals("vector")) {
+        VectorTypeSymbol vts = (VectorTypeSymbol) $stype;
+        typetree.addChild((CommonTree) adaptor.create(Vector, "vector"));
+        CommonTree child = (CommonTree) typetree.getChild(0);
+        if (vts.getVectorType() != null)
+          child.addChild((CommonTree) adaptor.create(Identifier, "boolean"));
+    } else {
+        typetree.addChild((CommonTree) adaptor.create(Identifier, $stype.getName()));
+    }
+  } -> ^(GThanE ^({typetree}) expr expr)
   | ^(LThanE a=expr b=expr) {
-    if ($a.stype.getName().equals("tuple") || $b.stype.getName().equals("tuple"))
-      throw new RuntimeException(errorhead + "can't perform this operation on a tuple");
+    if (!symtab.compareValidity($a.stype, $b.stype))
+      throw new RuntimeException(errorhead + "can't perform this operation on this type");
     Boolean lua = symtab.lookup($a.stype, $b.stype);
     Boolean lub = symtab.lookup($b.stype, $a.stype);
       
-    if (lua != null || lub != null)
-      $stype = new BuiltInTypeSymbol("boolean");
-    else 
+    if (lua != null || lub != null) {
+      if ($a.stype.getName().equals("vector") || $b.stype.getName().equals("vector")) {
+       $stype = new VectorTypeSymbol("vector", new BuiltInTypeSymbol("boolean"), null, adaptor.create(Identifier, "*"));
+      } else {
+        $stype = new BuiltInTypeSymbol("boolean");
+      }
+    } else {
       throw new RuntimeException(errorhead + " type promotion error");
-    
-  } -> ^(LThanE Identifier[$stype.getName()] expr expr)
+    }
+    typetree = (CommonTree) adaptor.nil();
+   if ($stype.getName().equals("vector")) {
+        VectorTypeSymbol vts = (VectorTypeSymbol) $stype;
+        typetree.addChild((CommonTree) adaptor.create(Vector, "vector"));
+        CommonTree child = (CommonTree) typetree.getChild(0);
+        if (vts.getVectorType() != null)
+          child.addChild((CommonTree) adaptor.create(Identifier, "boolean"));
+    } else {
+        typetree.addChild((CommonTree) adaptor.create(Identifier, $stype.getName()));
+    }
+  } -> ^(LThanE ^({typetree}) expr expr)
   | ^(Or a=expr b=expr) {
-    if ($a.stype.getName().equals("tuple") || $b.stype.getName().equals("tuple"))
-      throw new RuntimeException(errorhead + "can't perform this operation on a tuple");
+    if (!symtab.logicValidity($a.stype, $b.stype))
+      throw new RuntimeException(errorhead + "can't perform this operation on this type");
     Boolean lua = symtab.lookup($a.stype, $b.stype);
     Boolean lub = symtab.lookup($b.stype, $a.stype);
       
-    if (lua != null || lub != null)
-      $stype = new BuiltInTypeSymbol("boolean");
-    else 
+    if (lua != null || lub != null) {
+      if ($a.stype.getName().equals("vector") || $b.stype.getName().equals("vector")) {
+       $stype = new VectorTypeSymbol("vector", new BuiltInTypeSymbol("boolean"), null, adaptor.create(Identifier, "*"));
+      } else {
+        $stype = new BuiltInTypeSymbol("boolean");
+      }
+    } else {
       throw new RuntimeException(errorhead + " type promotion error");
-    
-  } -> ^(Or Identifier[$stype.getName()] expr expr)
+    }
+    typetree = (CommonTree) adaptor.nil();
+   if ($stype.getName().equals("vector")) {
+        VectorTypeSymbol vts = (VectorTypeSymbol) $stype;
+        typetree.addChild((CommonTree) adaptor.create(Vector, "vector"));
+        CommonTree child = (CommonTree) typetree.getChild(0);
+        if (vts.getVectorType() != null)
+          child.addChild((CommonTree) adaptor.create(Identifier, "boolean"));
+    } else {
+        typetree.addChild((CommonTree) adaptor.create(Identifier, $stype.getName()));
+    }
+  } -> ^(Or ^({typetree}) expr expr)
   | ^(Xor a=expr b=expr) {
-    if ($a.stype.getName().equals("tuple") || $b.stype.getName().equals("tuple"))
-      throw new RuntimeException(errorhead + "can't perform this operation on a tuple");
+    if (!symtab.logicValidity($a.stype, $b.stype))
+      throw new RuntimeException(errorhead + "can't perform this operation on this type");
     Boolean lua = symtab.lookup($a.stype, $b.stype);
     Boolean lub = symtab.lookup($b.stype, $a.stype);
       
-    if (lua != null || lub != null)
-      $stype = new BuiltInTypeSymbol("boolean");
-    else 
+    if (lua != null || lub != null) {
+      if ($a.stype.getName().equals("vector") || $b.stype.getName().equals("vector")) {
+       $stype = new VectorTypeSymbol("vector", new BuiltInTypeSymbol("boolean"), null, adaptor.create(Identifier, "*"));
+      } else {
+        $stype = new BuiltInTypeSymbol("boolean");
+      }
+    } else {
       throw new RuntimeException(errorhead + " type promotion error");
-    
-  } -> ^(Xor Identifier[$stype.getName()] expr expr)
+    }
+    typetree = (CommonTree) adaptor.nil();
+   if ($stype.getName().equals("vector")) {
+        VectorTypeSymbol vts = (VectorTypeSymbol) $stype;
+        typetree.addChild((CommonTree) adaptor.create(Vector, "vector"));
+        CommonTree child = (CommonTree) typetree.getChild(0);
+        if (vts.getVectorType() != null)
+          child.addChild((CommonTree) adaptor.create(Identifier, "boolean"));
+    } else {
+        typetree.addChild((CommonTree) adaptor.create(Identifier, $stype.getName()));
+    }
+  } -> ^(Xor ^({typetree}) expr expr)
   | ^(And a=expr b=expr) {
-    if ($a.stype.getName().equals("tuple") || $b.stype.getName().equals("tuple"))
-      throw new RuntimeException(errorhead + "can't perform this operation on a tuple");
+    if (!symtab.logicValidity($a.stype, $b.stype))
+      throw new RuntimeException(errorhead + "can't perform this operation on this type");
     Boolean lua = symtab.lookup($a.stype, $b.stype);
     Boolean lub = symtab.lookup($b.stype, $a.stype);
       
-    if (lua != null || lub != null)
-      $stype = new BuiltInTypeSymbol("boolean");
-    else 
+    if (lua != null || lub != null) {
+      if ($a.stype.getName().equals("vector") || $b.stype.getName().equals("vector")) {
+       $stype = new VectorTypeSymbol("vector", new BuiltInTypeSymbol("boolean"), null, adaptor.create(Identifier, "*"));
+      } else {
+        $stype = new BuiltInTypeSymbol("boolean");
+      }
+    } else {
       throw new RuntimeException(errorhead + " type promotion error");
-    
-  } -> ^(And Identifier[$stype.getName()] expr expr)
+    }
+    typetree = (CommonTree) adaptor.nil();
+   if ($stype.getName().equals("vector")) {
+        VectorTypeSymbol vts = (VectorTypeSymbol) $stype;
+        typetree.addChild((CommonTree) adaptor.create(Vector, "vector"));
+        CommonTree child = (CommonTree) typetree.getChild(0);
+        if (vts.getVectorType() != null)
+          child.addChild((CommonTree) adaptor.create(Identifier, "boolean"));
+    } else {
+        typetree.addChild((CommonTree) adaptor.create(Identifier, $stype.getName()));
+    }
+  } -> ^(And ^({typetree}) expr expr)
   | ^(Not e=expr) {
-    if ($e.stype.getName().equals("boolean"))
+    if ($e.stype.getName().equals("boolean")) {
       $stype = new BuiltInTypeSymbol("boolean");
-    else 
-      throw new RuntimeException(errorhead + " type promotion error");
-    
-  } -> ^(Not Identifier[$stype.getName()] expr)
+    } else if ($e.stype.getName().equals("vector")) {
+      $stype = new VectorTypeSymbol("vector", new BuiltInTypeSymbol("boolean"), null, adaptor.create(Identifier, "*"));
+    } else {
+      throw new RuntimeException(errorhead + " not must be used on boolean or boolean vector");
+    }
+    typetree = (CommonTree) adaptor.nil();
+   if ($stype.getName().equals("vector")) {
+        VectorTypeSymbol vts = (VectorTypeSymbol) $stype;
+        typetree.addChild((CommonTree) adaptor.create(Vector, "vector"));
+        CommonTree child = (CommonTree) typetree.getChild(0);
+        if (vts.getVectorType() != null)
+          child.addChild((CommonTree) adaptor.create(Identifier, "boolean"));
+    } else {
+        typetree.addChild((CommonTree) adaptor.create(Identifier, $stype.getName()));
+    }
+  } -> ^(Not ^({typetree}) expr)
   | ^(By a=expr b=expr) {$stype = $a.stype;} -> ^(By Identifier[$stype.getName()] expr expr)
   | ^(CALL id=Identifier ^(ARGLIST (e=expr {argtypes.add($e.stype);})*)) {
     proc_ret_flag = true;
@@ -972,7 +1070,6 @@ expr returns [Type stype]
         continue;
       } 
       if (lua != null && lua) {
-        //CommonTree asroot = (CommonTree) adaptor.nil();
          CommonTree as = (CommonTree) adaptor.create(As, "As");
          as.addChild((CommonTree) adaptor.create(Identifier, comtype.getName()));
          as.addChild(exprtree.getChild(0));
@@ -999,8 +1096,15 @@ expr returns [Type stype]
       throw new RuntimeException(errorhead + "interval operands must be integer expressions");
     $stype = new VectorTypeSymbol("interval", new BuiltInTypeSymbol("integer"), null, adaptor.create(Identifier, "*"));
   }
-  | ^(Filter Identifier expr expr) 
-  | ^(GENERATOR Identifier expr expr)
-  | ^(GENERATOR ^(ROW Identifier expr) ^(COLUMN Identifier expr) expr)    
+  | ^(Filter Identifier a=expr b=expr) 
+  | ^(GENERATOR Identifier a=expr b=expr) {
+    if ((symtab.lookup($a.stype, $b.stype) == null) && (symtab.lookup($b.stype, $a.stype) == null))
+      throw new RuntimeException(errorhead + "the domain and vector expressions must be the same type");
+    VectorTypeSymbol vts = new VectorTypeSymbol("vector", $a.stype, null, adaptor.create(Identifier, "*"));
+    $stype = vts;
+  }
+  | ^(GENERATOR ^(ROW Identifier a=expr) ^(COLUMN Identifier b=expr) c=expr)  {
+    
+  }  
   ;
   
