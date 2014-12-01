@@ -244,7 +244,7 @@ declaration
   -> {$type.vecType != null}? outputEmptyVecDecl(sym={getLLVMvarSymbol(currentScopeNum)}, varName={$Identifier}, scopeNum={currentScopeNum}, scalarType={$type.st}, value={getEmptyValue($type.st.toString())}, sizeName={$type.sizeName}, exprs={$type.sizeExpr})
   -> outputEmptyDecl(sym={getLLVMvarSymbol(currentScopeNum)}, varName={$Identifier}, scopeNum={currentScopeNum}, varType={$type.st}, value={getEmptyValue($type.st.toString())})
   | ^(DECL s=specifier? type ^(Assign id=Identifier expr))
-  -> {$type.vecType != null}? outputVecDecl(sym={getLLVMvarSymbol(currentScopeNum)}, varName={$Identifier}, scopeNum={currentScopeNum}, varType={$type.st}, expr={$expr.st}, tmpNum={counter})
+  -> {$type.vecType != null}? outputVecDecl(sym={getLLVMvarSymbol(currentScopeNum)}, varName={$Identifier}, scopeNum={currentScopeNum}, scalarType={$type.st}, expr={$expr.st}, tmpNum={counter})
   -> outputDecl(sym={getLLVMvarSymbol(currentScopeNum)}, varName={$Identifier}, scopeNum={currentScopeNum}, varType={$type.st}, expr={$expr.st}, tmpNum={counter})
   | ^(DECL s=specifier StdInput ^(Assign id=Identifier StdInput))
   | ^(DECL s=specifier StdOutput ^(Assign id=Identifier StdOutput))
@@ -345,14 +345,22 @@ returnStatement
 assignment
 @init {
 	VariableSymbol vs = null;
+	String variableType = null;
 }
-  : ^(Assign Identifier
+  : ^(Assign Identifier expr
   {
   	vs = (VariableSymbol) currentscope.resolve($Identifier.text);
+  	Type vsType = vs.getType();
+  	if ($expr.stype == "vector") {
+  		VectorTypeSymbol vts = (VectorTypeSymbol)vsType;
+  		variableType = "{i32, " + $expr.scalarType + "*}";
+  	}
+  	else {
+  		variableType = $expr.stype;
+  	}
   }
-  expr)
-  -> {$expr.stype == "vector"}? outputVecAssi(sym={getLLVMvarSymbol(vs.scopeNum)}, varName={$Identifier}, scalarType={$expr.scalarType}, scopeNum = {vs.scopeNum}, expr={$expr.st}, tmpNum={counter++})
-  -> outputAssi(sym={getLLVMvarSymbol(vs.scopeNum)}, varName={$Identifier}, varType={$expr.stype}, scopeNum = {vs.scopeNum}, expr={$expr.st}, tmpNum={counter++})
+  )
+  -> outputAssi(sym={getLLVMvarSymbol(vs.scopeNum)}, varName={$Identifier}, varType={variableType}, scopeNum = {vs.scopeNum}, expr={$expr.st}, tmpNum={counter++})
   ;
   
 ifstatement
@@ -387,6 +395,7 @@ type returns [String vecType, String sizeName, StringTemplate sizeExpr]
   | Interval
   | String
   | ^(Vector scalar=type expr?) {$vecType = $scalar.st.toString(); $sizeName = $expr.resultVar; $sizeExpr = $expr.st;} -> return(a={$scalar.st})
+  | Vector {$vecType = "???"; $sizeName = "??"; $sizeExpr = new StringTemplate("?");} -> return(a={$vecType})
   | Real -> return(a={FloatType})
   | Character -> return(a={CharType})
   | StdInput
@@ -416,17 +425,61 @@ expr returns [String stype, String resultVar, String scalarType, String sizeName
 	List<String> varIndices = new ArrayList<String>();
 	VariableSymbol vs = null;
 	int numElements = 0;
+	String variableType = null;
 }
 @after {
 	$resultVar = ""+counter;
 }
-  : ^(Plus type a=expr {tmpNum1 = counter;} b=expr {tmpNum2 = counter;}) {$stype = $type.st.toString();} 
+  : ^(Plus type a=expr {tmpNum1 = counter;} b=expr {tmpNum2 = counter;})
+  { if ($type.vecType != null) {
+  		$stype = "vector";
+  		$scalarType = $type.vecType;
+  		variableType = "{i32, " + $stype + "*}";
+  	}
+  	else {
+  	  $stype = $type.st.toString();
+  	}
+  } 
+    ->  {$type.vecType != null}? vec_arithmetic(expr1={$a.st}, expr2={$b.st}, operator={"add"}, scalarType={$type.st}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
     ->  arithmetic(expr1={$a.st}, expr2={$b.st}, operator={getArithOp($type.st.toString(), AddOp)}, type={$type.st}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
-  | ^(Minus type a=expr {tmpNum1 = counter;} b=expr {tmpNum2 = counter;}) {$stype = $type.st.toString(); } 
+  | ^(Minus type a=expr {tmpNum1 = counter;} b=expr {tmpNum2 = counter;})
+  { if ($type.vecType != null)
+  	{
+  		$stype = "vector";
+  		$scalarType = $type.vecType;
+  		variableType = "{i32, " + $stype + "*}";
+  	}
+  	else {
+  	  $stype = $type.st.toString();
+  	}
+  } 
+    ->  {$type.vecType != null}? vec_arithmetic(expr1={$a.st}, expr2={$b.st}, operator={"sub"}, scalarType={$type.st}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
     ->  arithmetic(expr1={$a.st}, expr2={$b.st}, operator={getArithOp($type.st.toString(), SubOp)}, type={$type.st}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
-  | ^(Multiply type a=expr {tmpNum1 = counter;} b=expr {tmpNum2 = counter;}) {$stype = $type.st.toString();} 
+  | ^(Multiply type a=expr {tmpNum1 = counter;} b=expr {tmpNum2 = counter;})
+  { if ($type.vecType != null)
+  	{
+  		$stype = "vector";
+  		$scalarType = $type.vecType;
+  		variableType = "{i32, " + $stype + "*}";
+  	}
+  	else {
+  	  $stype = $type.st.toString();
+  	}
+  } 
+    ->  {$type.vecType != null}? vec_arithmetic(expr1={$a.st}, expr2={$b.st}, operator={"mul"}, scalarType={$type.st}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
     ->  arithmetic(expr1={$a.st}, expr2={$b.st}, operator={getArithOp($type.st.toString(), MulOp)}, type={$type.st}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
-  | ^(Divide type a=expr {tmpNum1 = counter;} b=expr {tmpNum2 = counter;}) {$stype = $type.st.toString();} 
+  | ^(Divide type a=expr {tmpNum1 = counter;} b=expr {tmpNum2 = counter;})
+  { if ($type.vecType != null)
+  	{
+  		$stype = "vector";
+  		$scalarType = $type.vecType;
+  		variableType = "{i32, " + $stype + "*}";
+  	}
+  	else {
+  	  $stype = $type.st.toString();
+  	}
+  } 
+    ->  {$type.vecType != null}? vec_arithmetic(expr1={$a.st}, expr2={$b.st}, operator={"div"}, scalarType={$type.st}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
     ->  arithmetic(expr1={$a.st}, expr2={$b.st}, operator={getArithOp($type.st.toString(), DivOp)}, type={$type.st}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
   | ^(Mod type a=expr {tmpNum1 = counter;} b=expr {tmpNum2 = counter;}) {$stype = $type.st.toString();} 
     ->  arithmetic(expr1={$a.st}, expr2={$b.st}, operator={getArithOp($type.st.toString(), ModOp)}, type={$type.st}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
@@ -476,17 +529,20 @@ expr returns [String stype, String resultVar, String scalarType, String sizeName
   | ^(As type a=expr {tmpNum1 = counter;}) {$stype = $type.st.toString();} -> cast(func={getCastFunc($a.stype, $stype, tmpNum1, ++counter)}, expr={$a.st})
   | type Identifier
   {
+  	vs = (VariableSymbol) currentscope.resolve($Identifier.text);
   	if ($type.vecType != null) {
   		$stype = "vector";
   		$scalarType = $type.vecType;
+  		variableType = "{i32, " + $scalarType + "*}";
   	}
   	else {
   		$stype = $type.st.toString();
+  		variableType = $stype;
   	}
-  	vs = (VariableSymbol) currentscope.resolve($Identifier.text);
+  	
   }
-    -> {vs.isConst()}? load_const(tmpNum={++counter}, sym={getLLVMvarSymbol(vs.scopeNum)}, var={$Identifier}, scopeNum={vs.scopeNum}, varType={$type.st})
-    -> load_var(tmpNum={++counter}, sym={getLLVMvarSymbol(vs.scopeNum)}, var={$Identifier}, scopeNum={vs.scopeNum}, varType={$type.st})
+    -> {vs.isConst()}? load_const(tmpNum={++counter}, sym={getLLVMvarSymbol(vs.scopeNum)}, var={$Identifier}, scopeNum={vs.scopeNum}, varType={variableType})
+    -> load_var(tmpNum={++counter}, sym={getLLVMvarSymbol(vs.scopeNum)}, var={$Identifier}, scopeNum={vs.scopeNum}, varType={variableType})
   | type Number {$stype = $type.st.toString();} -> load_num(tmpNum={++counter}, value={$Number}, varType={$type.st})
   | type FPNumber {$stype = $type.st.toString();} -> load_num(tmpNum={++counter}, value={"0x"+Long.toHexString((Double.doubleToLongBits(Float.parseFloat($FPNumber.toString()))))}, varType={$type.st})
   | type True {$stype = $type.st.toString();} -> load_bool(tmpNum={++counter}, value={"true"}, varType={$type.st})

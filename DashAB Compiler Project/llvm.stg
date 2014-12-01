@@ -54,7 +54,23 @@ declare i8 @input_i8(i8*)
 
 declare i32 @stream_state()
 
-declare float @implicit_promotion(i32)
+declare i32 @add_i32_vectors(i32*, i32, i32*, i32, i32*)
+
+declare i32 @sub_i32_vectors(i32*, i32, i32*, i32, i32*)
+
+declare i32 @mul_i32_vectors(i32*, i32, i32*, i32, i32*)
+
+declare i32 @div_i32_vectors(i32*, i32, i32*, i32, i32*)
+
+declare float @add_float_vectors(float*, i32, float*, i32, float*)
+
+declare float @sub_float_vectors(float*, i32, float*, i32, float*)
+
+declare float @mul_float_vectors(float*, i32, float*, i32, float*)
+
+declare float @div_float_vectors(float*, i32, float*, i32, float*)
+
+declare i8 @add_i8_vectors(i8*, i32, i8*, i32, i8*)
 
 >>
 
@@ -97,6 +113,16 @@ store <varType> %.<tmpNum>, <varType>* <sym>.<varName>.<scopeNum>
 
 >>
 
+outputVecDecl(sym, varName, scopeNum, scalarType, expr, tmpNum) ::= <<
+;start outputDecl
+<expr>
+
+<sym>.<varName>.<scopeNum> = alloca {i32, <scalarType>*}, align 4
+store {i32, <scalarType>*} %.<tmpNum>, {i32, <scalarType>*}* <sym>.<varName>.<scopeNum>
+;end empty vec decl
+
+>>
+
 outputEmptyDecl(sym, varName, scopeNum, varType, value) ::= <<
 ;start outputEmptyDecl
 <sym>.<varName>.<scopeNum> = alloca <varType>, align 4
@@ -123,20 +149,6 @@ outputAssi(sym, varName, varType, scopeNum, expr, tmpNum) ::= <<
 
 store <varType> %.<tmpNum>, <varType>* <sym>.<varName>.<scopeNum>
 ;end outputAssi
-
->>
-
-outputVecAssi(sym, varName, scalarType, scopeNum, expr, tmpNum) ::= <<
-;start outputVecAssi
-<expr>
-
-%.assivector.<tmpNum> = extractvalue {i32, <scalarType>*} %.<tmpNum>, 1
-%.assistruct1.<tmpNum> = load {i32, <scalarType>*}* <sym>.<varName>.<scopeNum>
-%.assistruct2.<tmpNum> = insertvalue {i32, <scalarType>*} %.assistruct1.<tmpNum>, <scalarType>* %.assivector.<tmpNum>, 1
-store {i32, <scalarType>*} %.assistruct2.<tmpNum>, {i32, <scalarType>*}* <sym>.<varName>.<scopeNum>
-
-
-;end outputVecAssi
 
 >>
 
@@ -324,6 +336,28 @@ arithmetic(expr1, expr2, operator, type, tmpNum1, tmpNum2, result, promote1, pro
 <promote1>
 <promote2>
 %.<result> = <operator> <type> %.<tmpNum1>, %.<tmpNum2>
+;end arithmetic
+
+>>
+
+vec_arithmetic(expr1, expr2, operator, scalarType, tmpNum1, tmpNum2, result, promote1, promote2) ::= <<
+;start arithmetic
+<expr1>
+<expr2>
+
+%.size.1.<result> = extractvalue {i32, <scalarType>*} %.<tmpNum1>, 0
+%.vectortemp.1.<result> = extractvalue {i32, <scalarType>*} %.<tmpNum1>, 1
+
+%.size.2.<result> = extractvalue {i32, <scalarType>*} %.<tmpNum2>, 0
+%.vectortemp.2.<result> = extractvalue {i32, <scalarType>*} %.<tmpNum2>, 1
+
+%.vector.<result> = alloca <scalarType>, i32 %.size.1.<result>, align 4
+
+call <scalarType> (<scalarType>*, i32, <scalarType>*, i32, <scalarType>*)* @<operator>_<scalarType>_vectors(<scalarType>* %.vectortemp.1.<result>, i32 %.size.1.<result>, <scalarType>* %.vectortemp.2.<result>, i32 %.size.2.<result>, <scalarType>* %.vector.<result>)
+
+%.temp.result.<result> = insertvalue {i32, <scalarType>*} undef, i32 %.size.1.<result>, 0
+%.<result> = insertvalue {i32, <scalarType>*} %.temp.result.<result>, <scalarType>* %.vector.<result>, 1
+
 ;end arithmetic
 
 >>

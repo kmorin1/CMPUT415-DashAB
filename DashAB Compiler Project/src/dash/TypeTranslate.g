@@ -135,7 +135,7 @@ slist
   | declaration
   ;
   
-type returns [String tsym]
+type returns [String tsym, String scalarType]
   : id=Identifier 
   {
     $id.text.equals("boolean") ||
@@ -188,7 +188,7 @@ type returns [String tsym]
   | Matrix {$tsym = "matrix";}
   | Interval {$tsym = "interval";}
   | String {$tsym = "string";}
-  | ^(Vector type? size?) {$tsym = "vector";}
+  | ^(Vector scalar=type? size?) {$tsym = "vector"; $scalarType = $scalar.tsym;}
   | Real {$tsym = "real";}
   | Character {$tsym = "character";}
   | StdInput
@@ -212,7 +212,7 @@ specifier
   | Var
   ;
   
-expr returns [String stype]
+expr returns [String stype, String scalarType]
   : ^(Plus type {$stype = $type.tsym;} a=expr b=expr)     -> {$a.stype.equals("integer") && $b.stype.equals("real")}? ^(Plus type ^(As Real $a) $b)
                                    -> {$a.stype.equals("real") && $b.stype.equals("integer")}? ^(Plus type $a ^(As Real $b))
                                    -> ^(Plus type $a $b)
@@ -275,7 +275,7 @@ expr returns [String stype]
   | ^(NEG a=expr) {$stype = $a.stype;}
   | ^(POS a=expr) {$stype = $a.stype;}
   | type {$stype = $type.tsym;} streamstate 
-  | ^(VCONST type expr+)
+  | ^(VCONST type expr+) {$stype = "vector"; $scalarType = $type.scalarType;}
   | ^(Range expr expr)
   | ^(Filter Identifier expr expr) 
   | ^(GENERATOR Identifier expr expr)

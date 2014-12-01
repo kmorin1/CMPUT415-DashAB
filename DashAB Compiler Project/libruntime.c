@@ -134,3 +134,119 @@ char input_i8(char * x) {
     set_fail(result);
     return 0;
 }
+
+uint32_t add_i32_vectors(uint32_t * x, uint32_t x_size, uint32_t * y, uint32_t y_size, uint32_t * result) {
+	uint32_t * x_vector = x;
+	uint32_t * y_vector = y;
+	for (int i = 0; i < x_size; i++) {
+		uint32_t x_val = *x_vector;
+		uint32_t y_val = *y_vector;
+		*result = x_val + y_val;
+		x_vector += 1;
+		y_vector += 1;
+		result += 1;		
+	}
+	return 0;
+}
+
+uint32_t sub_i32_vectors(uint32_t * x, uint32_t x_size, uint32_t * y, uint32_t y_size, uint32_t * result) {
+	uint32_t * x_vector = x;
+	uint32_t * y_vector = y;
+	for (int i = 0; i < x_size; i++) {
+		uint32_t x_val = *x_vector;
+		uint32_t y_val = *y_vector;
+		*result = x_val - y_val;
+		x_vector += 1;
+		y_vector += 1;
+		result += 1;		
+	}
+	return 0;
+}
+
+uint32_t mul_i32_vectors(uint32_t * x, uint32_t x_size, uint32_t * y, uint32_t y_size, uint32_t * result) {
+	uint32_t * x_vector = x;
+	uint32_t * y_vector = y;
+	for (int i = 0; i < x_size; i++) {
+		uint32_t x_val = *x_vector;
+		uint32_t y_val = *y_vector;
+		*result = x_val * y_val;
+		x_vector += 1;
+		y_vector += 1;
+		result += 1;		
+	}
+	return 0;
+}
+
+uint32_t div_i32_vectors(uint32_t * x, uint32_t x_size, uint32_t * y, uint32_t y_size, uint32_t * result) {
+	uint32_t * x_vector = x;
+	uint32_t * y_vector = y;
+	for (int i = 0; i < x_size; i++) {
+		uint32_t x_val = *x_vector;
+		uint32_t y_val = *y_vector;
+		*result = x_val / y_val;
+		x_vector += 1;
+		y_vector += 1;
+		result += 1;		
+	}
+	return 0;
+}
+
+
+
+
+float add_float_vectors(float * x, uint32_t x_size, float * y, uint32_t y_size, float * result) {
+	float * x_vector = x;
+	float * y_vector = y;
+	for (int i = 0; i < x_size; i++) {
+		float x_val = *x_vector;
+		float y_val = *y_vector;
+		*result = x_val + y_val;
+		x_vector += 1;
+		y_vector += 1;
+		result += 1;		
+	}
+	return 0;
+}
+
+float sub_float_vectors(float * x, uint32_t x_size, float * y, uint32_t y_size, float * result) {
+	float * x_vector = x;
+	float * y_vector = y;
+	for (int i = 0; i < x_size; i++) {
+		float x_val = *x_vector;
+		float y_val = *y_vector;
+		*result = x_val - y_val;
+		x_vector += 1;
+		y_vector += 1;
+		result += 1;		
+	}
+	return 0;
+}
+
+float mul_float_vectors(float * x, uint32_t x_size, float * y, uint32_t y_size, float * result) {
+	float * x_vector = x;
+	float * y_vector = y;
+	for (int i = 0; i < x_size; i++) {
+		float x_val = *x_vector;
+		float y_val = *y_vector;
+		*result = x_val * y_val;
+		x_vector += 1;
+		y_vector += 1;
+		result += 1;		
+	}
+	return 0;
+}
+
+float div_float_vectors(float * x, uint32_t x_size, float * y, uint32_t y_size, float * result) {
+	float * x_vector = x;
+	float * y_vector = y;
+	for (int i = 0; i < x_size; i++) {
+		float x_val = *x_vector;
+		float y_val = *y_vector;
+		*result = x_val / y_val;
+		x_vector += 1;
+		y_vector += 1;
+		result += 1;		
+	}
+	return 0;
+}
+

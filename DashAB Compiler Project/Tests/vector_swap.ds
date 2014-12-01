@@ -1,0 +1,18 @@
+procedure main() returns integer {
+	var out = std_output();
+	integer vector a = [1, 2, 3];
+	integer vector b = [4, 5, 6];
+	integer vector c[3];
+	a -> out;
+	'\n' -> out;
+	b -> out;
+	'\n' -> out;
+	c = b;
+	b = a;
+	a = c;
+	a -> out;
+	'\n' -> out;
+	b -> out;
+	'\n' -> out;
+	return 0;
+}
