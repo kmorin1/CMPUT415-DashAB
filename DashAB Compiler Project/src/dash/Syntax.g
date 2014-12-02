@@ -178,7 +178,7 @@ type
   : Boolean
   | Integer
   | Interval
-  | String
+  | String -> ^(Vector["vector"] Character["char"])
   | Real
   | Character
   | tuple
@@ -255,6 +255,10 @@ index
   ;   
   
 atom
+@init
+{
+  CommonTree toVConst = null;
+}
   : Number
   | FPNumber
   | True
@@ -262,6 +266,24 @@ atom
   | Null
   | Identity
   | Char
+  | s=StringLiteral 
+  {
+    toVConst = (CommonTree) adaptor.nil();
+    String temp = $s.text.substring(1, $s.text.length()-1);
+    String[] tokens = temp.split("(?!^)");
+ 
+    for (int i = 0; i < tokens.length; i++) {
+      System.out.println(tokens[i]);
+      if (tokens[i].equals("\\") && ((i + 1) < tokens.length)) 
+      {
+        toVConst.addChild((CommonTree) adaptor.create(Char, tokens[i] + tokens[i+1]));
+        i++;
+      } 
+      else 
+        toVConst.addChild((CommonTree) adaptor.create(Char, tokens[i]));
+    }
+  }
+  -> ^(VCONST {toVConst})
   | Identifier Dot^ (Identifier|Number)
   | LParen (a=expr -> expr) (Comma b=expr -> ^(TUPLEEX $a $b))+ RParen
   | streamstate
@@ -394,13 +416,21 @@ FPNumber
        )
   ;
 
-Char
-  : '\'' ('A'..'Z'|'a'..'z'|'0'..'9'|' '|'!'|'#'|'$'|'%'|'&'|'('|')'|
+fragment SingleChar
+  :  ('A'..'Z'|'a'..'z'|'0'..'9'|' '|'!'|'#'|'$'|'%'|'&'|'('|')'|
           '*'|'+'|','|'-'|'.'|'/'|':'|';'|'<'|'='|'>'|'?'|'@'|'['|']'|
-          '^'|'_'|'`'|'{'|'|'|'}'|'~') '\''
-  | '\'\\' ('a'|'b'|'n'|'r'|'t'|'\\'|'\''|'\"'|'0') '\''
+          '^'|'_'|'`'|'{'|'|'|'}'|'~'|
+          '\\' ('a'|'b'|'n'|'r'|'t'|'\\'|'\''|'\"'|'0'))
+  ;
+
+Char
+  : '\'' SingleChar '\''
   ;
   
+StringLiteral
+  : '"' SingleChar+ '"'
+  ;
+ 
 MULTILINE_COMMENT : '/*' .* '*/' {$channel = HIDDEN;} ;
 COMMENT : '//' .* ('\n'|'\r') {$channel = HIDDEN;};
 
