@@ -188,6 +188,7 @@ expr
   | ^(Divide expr expr)
   | ^(Mod expr expr)
   | ^(Exponent expr expr)
+  | ^(Product expr expr)
   | ^(Equals expr expr)
   | ^(NEquals expr expr)
   | ^(GThan expr expr)
@@ -209,7 +210,7 @@ expr
   | Null
   | Identity
   | Char
-  | ^(TUPLEEX expr)
+  | ^(TUPLEEX expr+)
   | ^(Range expr expr)
   | ^(NEG a=expr)
   | ^(POS a=expr)
