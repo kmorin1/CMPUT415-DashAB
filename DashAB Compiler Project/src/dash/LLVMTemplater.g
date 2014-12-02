@@ -505,6 +505,10 @@ expr returns [String stype, String resultVar, String scalarType, String sizeName
   } 
     ->  {$type.vecType != null}? vec_arithmetic(expr1={$a.st}, expr2={$b.st}, operator={"pow"}, scalarType={$a.scalarType}, resultType={$type.st}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
     ->  exponent(expr1={$a.st}, expr2={$b.st}, type={$type.st}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
+  | ^(Product type a=expr {tmpNum1 = counter;} b=expr {tmpNum2 = counter;})
+  {
+  	$stype = $type.st.toString();
+  } -> vec_dot(expr1={$a.st}, expr2={$b.st}, operator={"dot"}, scalarType={$a.scalarType}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
   | ^(Equals type a=expr {tmpNum1 = counter;} b=expr {tmpNum2 = counter;})
   { if ($type.vecType != null)
   	{
