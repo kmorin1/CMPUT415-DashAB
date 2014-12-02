@@ -2,6 +2,7 @@
 package automated_test;
 
 import java.io.*;
+import java.util.*;
 
 public class Tester {
 
@@ -15,9 +16,12 @@ public class Tester {
 	public static int dash_compare_test;
 	public static int llc_compare_test;
 	public static int specific_test;
+	public static int windows = 0;
 
 	public static void main(String[] args) {
 
+		long exec_time = System.currentTimeMillis();
+		
 		String line = null;
 
 		//Read configuration file
@@ -113,6 +117,8 @@ public class Tester {
 		} catch (Exception e) {
 			System.out.println(e +" command invalid");
 		}
+		exec_time = System.currentTimeMillis() - exec_time;
+		System.out.println("Execution time: " + exec_time + "ms");
 
 	}
 
