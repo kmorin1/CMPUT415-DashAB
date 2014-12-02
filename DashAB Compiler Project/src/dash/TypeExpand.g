@@ -626,6 +626,9 @@ expr returns [Type stype]
   : ^(Plus a=expr b=expr) {
     if (!symtab.arithmeticValidity($a.stype, $b.stype))
       throw new RuntimeException(errorhead + "can't perform this operation on this type");
+    if (procedurecall > 0) 
+      throw new RuntimeException(errorhead + "cannot use procedures in binary operations");
+    
     Boolean lua = symtab.lookup($a.stype, $b.stype);
     Boolean lub = symtab.lookup($b.stype, $a.stype);
       
@@ -658,6 +661,9 @@ expr returns [Type stype]
   | ^(Minus a=expr b=expr) {
     if (!symtab.arithmeticValidity($a.stype, $b.stype))
       throw new RuntimeException(errorhead + "can't perform this operation on this type");
+    if (procedurecall > 0) 
+      throw new RuntimeException(errorhead + "cannot use procedures in binary operations");
+    
     Boolean lua = symtab.lookup($a.stype, $b.stype);
     Boolean lub = symtab.lookup($b.stype, $a.stype);
       
@@ -689,6 +695,9 @@ expr returns [Type stype]
   | ^(Multiply a=expr b=expr) {
     if (!symtab.arithmeticValidity($a.stype, $b.stype))
       throw new RuntimeException(errorhead + "can't perform this operation on this type");
+    if (procedurecall > 0) 
+      throw new RuntimeException(errorhead + "cannot use procedures in binary operations");
+    
     Boolean lua = symtab.lookup($a.stype, $b.stype);
     Boolean lub = symtab.lookup($b.stype, $a.stype);
       
@@ -720,6 +729,9 @@ expr returns [Type stype]
   | ^(Divide a=expr b=expr) {
     if (!symtab.arithmeticValidity($a.stype, $b.stype))
       throw new RuntimeException(errorhead + "can't perform this operation on this type");
+    if (procedurecall > 0) 
+      throw new RuntimeException(errorhead + "cannot use procedures in binary operations");
+    
     Boolean lua = symtab.lookup($a.stype, $b.stype);
     Boolean lub = symtab.lookup($b.stype, $a.stype);
       
@@ -751,6 +763,9 @@ expr returns [Type stype]
   | ^(Mod a=expr b=expr) {
     if (!symtab.arithmeticValidity($a.stype, $b.stype))
       throw new RuntimeException(errorhead + "can't perform this operation on this type");
+    if (procedurecall > 0) 
+      throw new RuntimeException(errorhead + "cannot use procedures in binary operations");
+    
     Boolean lua = symtab.lookup($a.stype, $b.stype);
     Boolean lub = symtab.lookup($b.stype, $a.stype);
       
@@ -774,6 +789,9 @@ expr returns [Type stype]
   | ^(Exponent a=expr b=expr) {
     if (!symtab.arithmeticValidity($a.stype, $b.stype))
       throw new RuntimeException(errorhead + "can't perform this operation on this type");
+    if (procedurecall > 0) 
+      throw new RuntimeException(errorhead + "cannot use procedures in binary operations");
+    
     Boolean lua = symtab.lookup($a.stype, $b.stype);
     Boolean lub = symtab.lookup($b.stype, $a.stype);
       
@@ -799,6 +817,9 @@ expr returns [Type stype]
     		   ($a.stype.getName().equals("matrix") && $b.stype.getName().equals("matrix")))
     	 )
         throw new RuntimeException(errorhead + "Product requires vector type expressions");
+    if (procedurecall > 0) 
+      throw new RuntimeException(errorhead + "cannot use procedures in binary operations");
+    
     VectorTypeSymbol vts1 = (VectorTypeSymbol) $a.stype;
     VectorTypeSymbol vts2 = (VectorTypeSymbol) $b.stype;
     Boolean lua = symtab.lookup(vts1.getVectorType(), vts2.getVectorType());
@@ -821,6 +842,9 @@ expr returns [Type stype]
   	//TODO: allow concatenation between a vector and scalar somehow
     if (!$a.stype.getName().equals("vector") || !$b.stype.getName().equals("vector"))
         throw new RuntimeException(errorhead + "Concatenation requires vector type expressions");
+    if (procedurecall > 0) 
+      throw new RuntimeException(errorhead + "cannot use procedures in binary operations");
+    
     VectorTypeSymbol vts1 = (VectorTypeSymbol) $a.stype;
     VectorTypeSymbol vts2 = (VectorTypeSymbol) $b.stype;
     Boolean lua = symtab.lookup(vts1.getVectorType(), vts2.getVectorType());
@@ -846,6 +870,9 @@ expr returns [Type stype]
     }
   } -> ^(Concat ^({typetree}) expr expr)
   | ^(Equals a=expr b=expr) {
+    if (procedurecall > 0) 
+      throw new RuntimeException(errorhead + "cannot use procedures in binary operations");
+    
     Boolean lua = symtab.lookup($a.stype, $b.stype);
     Boolean lub = symtab.lookup($b.stype, $a.stype);
       
@@ -856,6 +883,9 @@ expr returns [Type stype]
     
   } -> ^(Equals Identifier[$stype.getName()] expr expr)
   | ^(NEquals a=expr b=expr) {
+    if (procedurecall > 0) 
+      throw new RuntimeException(errorhead + "cannot use procedures in binary operations");
+    
     Boolean lua = symtab.lookup($a.stype, $b.stype);
     Boolean lub = symtab.lookup($b.stype, $a.stype);
       
@@ -868,6 +898,9 @@ expr returns [Type stype]
   | ^(GThan a=expr b=expr) {
     if (!symtab.compareValidity($a.stype, $b.stype))
       throw new RuntimeException(errorhead + "can't perform this operation on this type");
+    if (procedurecall > 0) 
+      throw new RuntimeException(errorhead + "cannot use procedures in binary operations");
+    
     Boolean lua = symtab.lookup($a.stype, $b.stype);
     Boolean lub = symtab.lookup($b.stype, $a.stype);
       
@@ -894,6 +927,9 @@ expr returns [Type stype]
   | ^(LThan a=expr b=expr) {
     if (!symtab.compareValidity($a.stype, $b.stype))
       throw new RuntimeException(errorhead + "can't perform this operation on this type");
+    if (procedurecall > 0) 
+      throw new RuntimeException(errorhead + "cannot use procedures in binary operations");
+    
     Boolean lua = symtab.lookup($a.stype, $b.stype);
     Boolean lub = symtab.lookup($b.stype, $a.stype);
       
@@ -920,6 +956,9 @@ expr returns [Type stype]
   | ^(GThanE a=expr b=expr) {
     if (!symtab.compareValidity($a.stype, $b.stype))
       throw new RuntimeException(errorhead + "can't perform this operation on this type");
+    if (procedurecall > 0) 
+      throw new RuntimeException(errorhead + "cannot use procedures in binary operations");
+    
     Boolean lua = symtab.lookup($a.stype, $b.stype);
     Boolean lub = symtab.lookup($b.stype, $a.stype);
       
@@ -946,6 +985,9 @@ expr returns [Type stype]
   | ^(LThanE a=expr b=expr) {
     if (!symtab.compareValidity($a.stype, $b.stype))
       throw new RuntimeException(errorhead + "can't perform this operation on this type");
+    if (procedurecall > 0) 
+      throw new RuntimeException(errorhead + "cannot use procedures in binary operations");
+    
     Boolean lua = symtab.lookup($a.stype, $b.stype);
     Boolean lub = symtab.lookup($b.stype, $a.stype);
       
@@ -972,6 +1014,9 @@ expr returns [Type stype]
   | ^(Or a=expr b=expr) {
     if (!symtab.logicValidity($a.stype, $b.stype))
       throw new RuntimeException(errorhead + "can't perform this operation on this type");
+    if (procedurecall > 0) 
+      throw new RuntimeException(errorhead + "cannot use procedures in binary operations");
+    
     Boolean lua = symtab.lookup($a.stype, $b.stype);
     Boolean lub = symtab.lookup($b.stype, $a.stype);
       
@@ -998,6 +1043,9 @@ expr returns [Type stype]
   | ^(Xor a=expr b=expr) {
     if (!symtab.logicValidity($a.stype, $b.stype))
       throw new RuntimeException(errorhead + "can't perform this operation on this type");
+    if (procedurecall > 0) 
+      throw new RuntimeException(errorhead + "cannot use procedures in binary operations");
+    
     Boolean lua = symtab.lookup($a.stype, $b.stype);
     Boolean lub = symtab.lookup($b.stype, $a.stype);
       
@@ -1024,6 +1072,9 @@ expr returns [Type stype]
   | ^(And a=expr b=expr) {
     if (!symtab.logicValidity($a.stype, $b.stype))
       throw new RuntimeException(errorhead + "can't perform this operation on this type");
+    if (procedurecall > 0) 
+      throw new RuntimeException(errorhead + "cannot use procedures in binary operations");
+    
     Boolean lua = symtab.lookup($a.stype, $b.stype);
     Boolean lub = symtab.lookup($b.stype, $a.stype);
       
