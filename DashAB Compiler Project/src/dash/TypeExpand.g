@@ -1089,7 +1089,7 @@ expr returns [Type stype]
       if (lub != null && lub) {
         comtype = (BuiltInTypeSymbol) vtypes.get(i);
         
-        i=-1;
+        i = -1;
         stream_expr.reset();
         rewriteexpr = new RewriteRuleSubtreeStream(adaptor, "temp");
         continue;
