@@ -702,15 +702,12 @@ expr returns [Type stype]
       $stype = $a.stype;
     else 
       throw new RuntimeException(errorhead + "type promotion error in product");
-    
-    typetree = (CommonTree) adaptor.nil();
-    VectorTypeSymbol vts = (VectorTypeSymbol) $stype;
-    typetree.addChild((CommonTree) adaptor.create(Vector, "vector"));
-    CommonTree child = (CommonTree) typetree.getChild(0);
-    if (vts.getVectorType() != null)
-      child.addChild((CommonTree) adaptor.create(Identifier, vts.getVectorType().getName()));
-    
-  } -> ^(Product ^({typetree}) expr expr)
+      
+    if ($stype instanceof VectorTypeSymbol) {
+    	VectorTypeSymbol vts= (VectorTypeSymbol)$stype;
+    	$stype = vts.getVectorType();
+    }
+  } -> ^(Product Identifier[$stype.getName()] expr expr)
   | ^(Equals a=expr b=expr) {
     Boolean lua = symtab.lookup($a.stype, $b.stype);
     Boolean lub = symtab.lookup($b.stype, $a.stype);
