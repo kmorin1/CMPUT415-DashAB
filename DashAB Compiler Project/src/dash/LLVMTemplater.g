@@ -544,11 +544,16 @@ expr returns [String stype, String resultVar, String scalarType, String sizeName
   		$stype = "vector";
   		$scalarType = $type.vecType;
   	}
+  	else if ($type.intervalType != null) {
+  		$stype = "interval";
+  		$scalarType = $type.intervalType;
+  	}
   	else {
   	  $stype = $type.st.toString();
   	}
   } 
-    -> {$a.scalarType != null}? vec_equality(expr1={$a.st}, expr2={$b.st}, operator={"equal"}, scalarType={$a.scalarType}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
+    -> {$a.stype.equals("vector")}? vec_equality(expr1={$a.st}, expr2={$b.st}, operator={"equal"}, scalarType={$a.scalarType}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
+    -> {$a.stype.equals("interval")}? interval_equality(expr1={$a.st}, expr2={$b.st}, operator={"equal"}, scalarType={$a.scalarType}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
     -> compare(expr1={$a.st}, expr2={$b.st}, comparison={getComp($a.stype)}, operator={getCompOp($a.stype, EqOp)}, type={$a.stype}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
   | ^(NEquals type a=expr {tmpNum1 = counter;} b=expr {tmpNum2 = counter;})
   { if ($type.vecType != null)
@@ -556,11 +561,16 @@ expr returns [String stype, String resultVar, String scalarType, String sizeName
   		$stype = "vector";
   		$scalarType = $type.vecType;
   	}
+  	else if ($type.intervalType != null) {
+  		$stype = "interval";
+  		$scalarType = $type.intervalType;
+  	}
   	else {
   	  $stype = $type.st.toString();
   	}
   } 
-    -> {$a.scalarType != null}? vec_equality(expr1={$a.st}, expr2={$b.st}, operator={"nequal"}, scalarType={$a.scalarType}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
+    -> {$a.stype.equals("vector")}? vec_equality(expr1={$a.st}, expr2={$b.st}, operator={"nequal"}, scalarType={$a.scalarType}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
+    -> {$a.stype.equals("interval")}? interval_equality(expr1={$a.st}, expr2={$b.st}, operator={"nequal"}, scalarType={$a.scalarType}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
     -> compare(expr1={$a.st}, expr2={$b.st}, comparison={getComp($a.stype)}, operator={getCompOp($a.stype, NeOp)}, type={$a.stype}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
   | ^(GThan type a=expr {tmpNum1 = counter;} b=expr {tmpNum2 = counter;})
   { if ($type.vecType != null)
@@ -713,16 +723,20 @@ expr returns [String stype, String resultVar, String scalarType, String sizeName
   | type ^(Dot Identifier Number) {$stype = $type.st.toString();}
   | ^(NEG a=expr {tmpNum1 = counter;})
   {
-  	if ($a.scalarType != null)
-  	{
+  	if ($a.stype.equals("vector")) {
   		$stype = "vector";
+  		$scalarType = $a.scalarType;
+  	}
+  	else if ($a.stype.equals("interval")) {
+  		$stype = "interval";
   		$scalarType = $a.scalarType;
   	}
   	else {
   	  $stype = $a.stype;
   	}
   } 
-    ->  {$a.scalarType != null}? vec_unary(expr={$a.st}, operator={"neg"}, scalarType={$a.scalarType}, resultType={$a.scalarType}, tmpNum={tmpNum1}, result={++counter})
+    ->  {$stype.equals("vector")}? vec_unary(expr={$a.st}, operator={"neg"}, scalarType={$a.scalarType}, resultType={$a.scalarType}, tmpNum={tmpNum1}, result={++counter})
+    ->  {$stype.equals("interval")}? interval_unary(expr={$a.st}, operator={"neg"}, scalarType={$a.scalarType}, resultType={$a.scalarType}, tmpNum={tmpNum1}, result={++counter})
     -> negative(tmpNum={tmpNum1}, expr={$a.st}, zero={getEmptyValue($a.stype)}, result={++counter}, type={$a.stype}, operator={getArithOp($a.stype, SubOp)})
   | ^(POS a=expr {tmpNum1 = counter;}) {$stype = $a.stype;} -> return(a={$a.st})
   | type streamstate {$stype = $type.st.toString();} -> return(a={$streamstate.st})

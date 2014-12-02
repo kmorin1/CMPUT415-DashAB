@@ -943,3 +943,18 @@ int32_t div_i32_intervals(int32_t lower1, int32_t upper1, int32_t lower2, int32_
 	return 0;
 }
 
+int32_t neg_i32_intervals(int32_t lower, int32_t upper, int32_t * lower_result, int32_t * upper_result) {
+	*lower_result = -upper;
+	*upper_result = -lower;
+	check_interval(*lower_result, *upper_result);
+	return 0;
+}
+
+bool equal_i32_intervals(int32_t lower1, int32_t upper1, int32_t lower2, int32_t upper2) {
+	return lower1 == lower2 && upper1 == upper2;
+}
+
+bool nequal_i32_intervals(int32_t lower1, int32_t upper1, int32_t lower2, int32_t upper2) {
+	return !equal_i32_intervals(lower1, upper1, lower2, upper2);
+}
+

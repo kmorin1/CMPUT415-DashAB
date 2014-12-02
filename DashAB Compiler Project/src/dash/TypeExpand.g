@@ -1090,7 +1090,7 @@ expr returns [Type stype]
     $stype = ts.getFieldNames().get(index-1).type;
   } -> Identifier[$stype.getName()] ^(Dot $id $n))) 
   | ^(NEG e=expr) {
-    if (!$e.stype.getName().equals("integer") && !$e.stype.getName().equals("real") && !$e.stype.getName().equals("vector")) 
+    if (!$e.stype.getName().equals("integer") && !$e.stype.getName().equals("real") && !$e.stype.getName().equals("vector") && !$e.stype.getName().equals("interval")) 
       throw new RuntimeException(errorhead + " type error");
     else
       $stype = $e.stype;
