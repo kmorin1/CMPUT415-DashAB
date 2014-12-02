@@ -227,7 +227,7 @@ addExpr
   ;
   
 mulExpr
-  : powExpr ((Multiply | Divide | Mod)^ powExpr)*
+  : powExpr ((Product | Multiply | Divide | Mod)^ powExpr)*
   ;
 
 powExpr
@@ -342,6 +342,7 @@ LArrow    : '<-';
 RArrow    : '->';
 Plus      : '+';
 Minus     : '-';
+Product   : '**';
 Multiply  : '*';
 Divide    : '/';
 Mod       : '%';
