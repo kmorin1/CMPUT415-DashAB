@@ -1,0 +1,20 @@
+procedure main() returns integer {
+	var out = std_output();
+	integer vector a[4] = [1,2,3,4];
+	integer vector b[4] = [1,2,3,4];
+	integer vector c[4] = [4,3,2,1];
+
+	a == b -> out;
+	"\n" -> out;
+	
+	a != b -> out;
+	"\n" -> out;
+	
+	a == c -> out;
+	"\n" -> out;
+	
+	a != c -> out;
+	"\n" -> out;
+	
+	return 0;
+}
