@@ -1077,18 +1077,18 @@ expr returns [Type stype]
     RewriteRuleSubtreeStream rewriteexpr = new RewriteRuleSubtreeStream(adaptor, "temp");
     for (int i=0; i<vtypes.size(); i++) {
       exprtree = (CommonTree) stream_expr.nextTree();
-      
+      if (vtypes.get(i).getName().equals("vector") ||
+          vtypes.get(i).getName().equals("interval") ||
+          vtypes.get(i).getName().equals("matrix") ||
+          vtypes.get(i).getName().equals("tuple"))
+            throw new RuntimeException(errorhead + "cannot nest this type in constructors");
       Boolean lua = symtab.lookup(vtypes.get(i), comtype);
       Boolean lub = symtab.lookup(comtype, vtypes.get(i));
       if (lua == null && lub == null)
         throw new RuntimeException(errorhead = "cannot find common type in vector constructor");
       if (lub != null && lub) {
         comtype = (BuiltInTypeSymbol) vtypes.get(i);
-        if (comtype.getName().equals("vector") ||
-          comtype.getName().equals("interval") ||
-          comtype.getName().equals("matrix") ||
-          comtype.getName().equals("tuple"))
-            throw new RuntimeException(errorhead + "cannot nest this type in constructors");
+        
         i=-1;
         stream_expr.reset();
         rewriteexpr = new RewriteRuleSubtreeStream(adaptor, "temp");
