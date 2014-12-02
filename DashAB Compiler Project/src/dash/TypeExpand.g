@@ -46,6 +46,8 @@ options {
     }
     Boolean proc_ret_flag = false;
     LinkedList<Type> ret_type_stack;
+    int functioncall = 0;
+    int procedurecall = 0;
 }
 
 program
@@ -170,15 +172,21 @@ declaration
   }
   
   if (sym != null) {
-    throw new RuntimeException(getErrorHeader() + "variable " + $id.text + " defined more than once in same scope");
+    throw new RuntimeException(errorhead + "variable " + $id.text + " defined more than once in same scope");
   }  
 
   vs = new VariableSymbol($id.text, type, spec);
   
-  if (!vs.isConst() && currentscope.getScopeName() == "global") {
-    throw new RuntimeException(getErrorHeader() + "global variable " + vs.getName() + " must be const");
+  if (!vs.isConst() && currentscope.getScopeName().equals("global")) {
+    throw new RuntimeException(errorhead + "global variable " + vs.getName() + " must be const");
   }
-  
+  if (currentscope.getScopeName().equals("global")) {
+    if (functioncall > 0 || procedurecall > 0)
+      throw new RuntimeException(errorhead + "global variables cannot be initialized with function or procedure calls");
+  }
+  if (procedurecall > 1)
+    throw new RuntimeException(errorhead + "2 procedures cannot be used in a binary expression");
+  functioncall = 0; procedurecall = 0;
   currentscope.define(vs);
 }
 
@@ -462,11 +470,19 @@ returnStatement
     if (symtab.lookup($e.stype, ret_type_stack.peek()) == null)
       throw new RuntimeException(getErrorHeader() + "type mismatch on return statement");
     hasexpr = true;
+    if (procedurecall > 1)
+      throw new RuntimeException(getErrorHeader() + "2 procedures cannot be used in binary expression");
+    functioncall = 0; procedurecall = 0;
   })?)
   ;
   
 assignment
 @init {String errorhead = getErrorHeader();}
+@after {
+  if (procedurecall > 1)
+      throw new RuntimeException(getErrorHeader() + "2 procedures cannot be used in binary expression");
+  functioncall = 0; procedurecall = 0;
+}
   : ^(Assign var=Identifier e=expr)
   {
     Symbol varSymbol = currentscope.resolve($var.text);
@@ -489,11 +505,19 @@ assignment
   ;
   
 ifstatement
-  : ^(If e=expr slist ^(Else slist)) {
+  : ^(If e=expr {
+    if (procedurecall > 0)
+      throw new RuntimeException(getErrorHeader() + "procedures cannot be used in control flow expressions");  functioncall = 0; procedurecall = 0;
+    functioncall = 0; procedurecall = 0;
+    } slist ^(Else slist)) {
     if (!$e.stype.getName().equals("boolean"))
       throw new RuntimeException(getErrorHeader() + "conditional statement requires boolean, but got " + $e.stype.getName());
   }
-  | ^(If e=expr slist) {
+  | ^(If e=expr {
+    if (procedurecall > 0)
+      throw new RuntimeException(getErrorHeader() + "procedures cannot be used in control flow expressions");  functioncall = 0; procedurecall = 0;
+    functioncall = 0; procedurecall = 0;
+  } slist) {
     if (!$e.stype.getName().equals("boolean"))
       throw new RuntimeException(getErrorHeader() + "conditional statement requires boolean, but got " + $e.stype.getName());
   }
@@ -503,11 +527,18 @@ loopstatement
 @after {
   nestedLoop--;
 }
-  : ^(Loop {nestedLoop++;} ^(While e=expr) slist) {
+  : ^(Loop {nestedLoop++;} ^(While e=expr {
+    if (procedurecall > 0)
+      throw new RuntimeException(getErrorHeader() + "procedures cannot be used in control flow expressions");
+    functioncall = 0; procedurecall = 0;
+  }) slist) {
     if (!$e.stype.getName().equals("boolean"))
       throw new RuntimeException(getErrorHeader() + "conditional statement requires boolean, but got " + $e.stype.getName());
   }
-  | ^(Loop {nestedLoop++;} slist ^(While e=expr)) {
+  | ^(Loop {nestedLoop++;} slist ^(While e=expr {
+  if (procedurecall > 0)
+    throw new RuntimeException(getErrorHeader() + "procedures cannot be used in control flow expressions");  functioncall = 0; procedurecall = 0;
+  })) {
     if (!$e.stype.getName().equals("boolean"))
       throw new RuntimeException(getErrorHeader() + "conditional statement requires boolean, but got " + $e.stype.getName());
   }
@@ -562,7 +593,11 @@ type returns [Type tsym]
   
 size
   : '*'
-  | expr
+  | expr {
+  if (procedurecall > 1)
+      throw new RuntimeException(getErrorHeader() + "2 procedures cannot be used in binary expression");
+  functioncall = 0; procedurecall = 0;
+  }
   ;
   
 tuple returns [TupleSymbol ts]
@@ -1042,7 +1077,7 @@ expr returns [Type stype]
       if (inFunction) {
         throw new RuntimeException(errorhead + ps.getName() + ": calling a procedure inside a function");
       }
-        
+      procedurecall++;
       $stype = ps.getType();
       ArrayList<Symbol> argsyms = ps.getParamList();
       if (argsyms.size() != argtypes.size())
@@ -1054,6 +1089,7 @@ expr returns [Type stype]
           throw new RuntimeException(errorhead + "type mismatch, expected " +  vs.getType().getName() + " but got " + argtypes.get(i).getName());
       }
     } else if (fs != null && ps == null) {
+      functioncall++;
       $stype = fs.getType();
       ArrayList<Symbol> argsyms = fs.getParamList();
       if (argsyms.size() != argtypes.size())
