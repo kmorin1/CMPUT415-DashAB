@@ -5,16 +5,16 @@ procedure main() returns integer {
 	integer vector c[4] = [4,3,2,1];
 
 	a == b -> out;
-	"\n" -> out;
+	'\n' -> out;
 	
 	a != b -> out;
-	"\n" -> out;
+	'\n' -> out;
 	
 	a == c -> out;
-	"\n" -> out;
+	'\n' -> out;
 	
 	a != c -> out;
-	"\n" -> out;
+	'\n' -> out;
 	
 	return 0;
 }

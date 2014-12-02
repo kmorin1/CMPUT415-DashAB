@@ -4,7 +4,7 @@ procedure main() returns integer {
 	boolean vector b[1] = [false];
 
 	[true] + [false] -> out;
-	"\n" -> out;
+	'\n' -> out;
 	
 	return 0;
 }
