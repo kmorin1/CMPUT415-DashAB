@@ -1,0 +1,5 @@
+procedure main() returns integer {
+	real a = 2.3;
+	integer interval i = 1..a;
+	return 0;
+}
