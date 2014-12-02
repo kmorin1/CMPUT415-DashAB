@@ -686,10 +686,9 @@ expr returns [Type stype]
     }
   } -> ^(Exponent ^({typetree}) expr expr)
   | ^(Product a=expr b=expr) {
-    if ((!$a.stype.getName().equals("vector") ||
-      !$a.stype.getName().equals("matrix")) &&
-      (!$b.stype.getName().equals("vector") ||
-      !$b.stype.getName().equals("matrix")))
+    if ( !(($a.stype.getName().equals("vector") && $b.stype.getName().equals("vector")) ||
+    		   ($a.stype.getName().equals("matrix") && $b.stype.getName().equals("matrix")))
+    	 )
         throw new RuntimeException(errorhead + "Product requires vector type expressions");
     VectorTypeSymbol vts1 = (VectorTypeSymbol) $a.stype;
     VectorTypeSymbol vts2 = (VectorTypeSymbol) $b.stype;
