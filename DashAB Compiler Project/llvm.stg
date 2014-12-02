@@ -70,6 +70,20 @@ declare i32 @neg_i32_vectors(i32*, i32, i32*)
 
 declare i32 @less_i32_vectors(i32*, i32, i32*, i32, i1*)
 
+declare i32 @greater_i32_vectors(i32*, i32, i32*, i32, i1*)
+
+declare i32 @lessequal_i32_vectors(i32*, i32, i32*, i32, i1*)
+
+declare i32 @greaterequal_i32_vectors(i32*, i32, i32*, i32, i1*)
+
+declare i1 @equal_i32_vectors(i32*, i32, i32*, i32)
+
+declare i1 @nequal_i32_vectors(i32*, i32, i32*, i32)
+
+declare i32 @dot_i32_vectors(i32*, i32, i32*, i32)
+
+declare i32 @cat_i32_vectors(i32*, i32, i32*, i32, i32*)
+
 declare float @add_float_vectors(float*, i32, float*, i32, float*)
 
 declare float @sub_float_vectors(float*, i32, float*, i32, float*)
@@ -84,7 +98,49 @@ declare float @pow_float_vectors(float*, i32, float*, i32, float*)
 
 declare float @neg_float_vectors(float*, i32, float*)
 
-declare i8 @add_i8_vectors(i8*, i32, i8*, i32, i8*)
+declare float @less_float_vectors(float*, i32, float*, i32, i1*)
+
+declare float @greater_float_vectors(float*, i32, float*, i32, i1*)
+
+declare float @lessequal_float_vectors(float*, i32, float*, i32, i1*)
+
+declare float @greaterequal_float_vectors(float*, i32, float*, i32, i1*)
+
+declare i1 @equal_float_vectors(float*, i32, float*, i32)
+
+declare i1 @nequal_float_vectors(float*, i32, float*, i32)
+
+declare float @dot_float_vectors(float*, i32, float*, i32)
+
+declare float @cat_float_vectors(float*, i32, float*, i32, float*)
+
+declare i8 @less_i8_vectors(i8*, i32, i8*, i32, i1*)
+
+declare i8 @greater_i8_vectors(i8*, i32, i8*, i32, i1*)
+
+declare i8 @lessequal_i8_vectors(i8*, i32, i8*, i32, i1*)
+
+declare i8 @greaterequal_i8_vectors(i8*, i32, i8*, i32, i1*)
+
+declare i1 @equal_i8_vectors(i8*, i32, i8*, i32)
+
+declare i1 @nequal_i8_vectors(i8*, i32, i8*, i32)
+
+declare i8 @cat_i8_vectors(i8*, i32, i8*, i32, i8*)
+
+declare i1 @not_i1_vectors(i1*, i32, i1*)
+
+declare i1 @or_i1_vectors(i1*, i32, i1*, i32, i1*)
+
+declare i1 @xor_i1_vectors(i1*, i32, i1*, i32, i1*)
+
+declare i1 @and_i1_vectors(i1*, i32, i1*, i32, i1*)
+
+declare i1 @equal_i1_vectors(i1*, i32, i1*, i32)
+
+declare i1 @nequal_i1_vectors(i1*, i32, i1*, i32)
+
+declare i1 @cat_i1_vectors(i1*, i32, i1*, i32, i1*)
 
 >>
 
@@ -362,7 +418,7 @@ arithmetic(expr1, expr2, operator, type, tmpNum1, tmpNum2, result, promote1, pro
 
 >>
 
-vec_arithmetic(expr1, expr2, operator, scalarType, resultType, tmpNum1, tmpNum2, result, promote1, promote2) ::= <<
+vec_arithmetic(expr1, expr2, operator, scalarType, resultType, tmpNum1, tmpNum2, result) ::= <<
 ;start vec arithmetic
 <expr1>
 <expr2>
@@ -377,10 +433,27 @@ vec_arithmetic(expr1, expr2, operator, scalarType, resultType, tmpNum1, tmpNum2,
 
 call <scalarType> (<scalarType>*, i32, <scalarType>*, i32, <resultType>*)* @<operator>_<scalarType>_vectors(<scalarType>* %.vectortemp.1.<result>, i32 %.size.1.<result>, <scalarType>* %.vectortemp.2.<result>, i32 %.size.2.<result>, <resultType>* %.vector.<result>)
 
-%.temp.result.<result> = insertvalue {i32, <scalarType>*} undef, i32 %.size.1.<result>, 0
-%.<result> = insertvalue {i32, <scalarType>*} %.temp.result.<result>, <scalarType>* %.vector.<result>, 1
-
+%.temp.result.<result> = insertvalue {i32, <resultType>*} undef, i32 %.size.1.<result>, 0
+%.<result> = insertvalue {i32, <resultType>*} %.temp.result.<result>, <resultType>* %.vector.<result>, 1
 ;end vec arithmetic
+
+>>
+
+
+vec_equality(expr1, expr2, operator, scalarType, tmpNum1, tmpNum2, result) ::= <<
+;start vec equality
+<expr1>
+<expr2>
+
+%.size.1.<result> = extractvalue {i32, <scalarType>*} %.<tmpNum1>, 0
+%.vectortemp.1.<result> = extractvalue {i32, <scalarType>*} %.<tmpNum1>, 1
+
+%.size.2.<result> = extractvalue {i32, <scalarType>*} %.<tmpNum2>, 0
+%.vectortemp.2.<result> = extractvalue {i32, <scalarType>*} %.<tmpNum2>, 1
+
+%.<result> = call i1 (<scalarType>*, i32, <scalarType>*, i32)* @<operator>_<scalarType>_vectors(<scalarType>* %.vectortemp.1.<result>, i32 %.size.1.<result>, <scalarType>* %.vectortemp.2.<result>, i32 %.size.2.<result>)
+;end vec equality
+
 
 >>
 
@@ -396,8 +469,46 @@ call <scalarType> (<scalarType>*, i32, <scalarType>*)* @<operator>_<scalarType>_
 
 %.temp.result.<result> = insertvalue {i32, <scalarType>*} undef, i32 %.size.<result>, 0
 %.<result> = insertvalue {i32, <scalarType>*} %.temp.result.<result>, <scalarType>* %.vector.<result>, 1
-
 ;end vec unary
+
+>>
+
+vec_dot(expr1, expr2, operator, scalarType, tmpNum1, tmpNum2, result) ::= <<
+;start vec dot
+<expr1>
+<expr2>
+
+%.size.1.<result> = extractvalue {i32, <scalarType>*} %.<tmpNum1>, 0
+%.vectortemp.1.<result> = extractvalue {i32, <scalarType>*} %.<tmpNum1>, 1
+
+%.size.2.<result> = extractvalue {i32, <scalarType>*} %.<tmpNum2>, 0
+%.vectortemp.2.<result> = extractvalue {i32, <scalarType>*} %.<tmpNum2>, 1
+
+%.<result> = call <scalarType> (<scalarType>*, i32, <scalarType>*, i32)* @<operator>_<scalarType>_vectors(<scalarType>* %.vectortemp.1.<result>, i32 %.size.1.<result>, <scalarType>* %.vectortemp.2.<result>, i32 %.size.2.<result>)
+;end vec dot
+
+>>
+
+vec_cat(expr1, expr2, operator, scalarType, tmpNum1, tmpNum2, result) ::= <<
+;start vec cat
+<expr1>
+<expr2>
+
+%.size.1.<result> = extractvalue {i32, <scalarType>*} %.<tmpNum1>, 0
+%.vectortemp.1.<result> = extractvalue {i32, <scalarType>*} %.<tmpNum1>, 1
+
+%.size.2.<result> = extractvalue {i32, <scalarType>*} %.<tmpNum2>, 0
+%.vectortemp.2.<result> = extractvalue {i32, <scalarType>*} %.<tmpNum2>, 1
+
+%.catsize.<result> = add i32 %.size.1.<result>, %.size.2.<result>
+
+%.vector.<result> = alloca <scalarType>, i32 %.catsize.<result>, align 4
+
+call <scalarType> (<scalarType>*, i32, <scalarType>*, i32, <scalarType>*)* @<operator>_<scalarType>_vectors(<scalarType>* %.vectortemp.1.<result>, i32 %.size.1.<result>, <scalarType>* %.vectortemp.2.<result>, i32 %.size.2.<result>, <scalarType>* %.vector.<result>)
+
+%.temp.result.<result> = insertvalue {i32, <scalarType>*} undef, i32 %.catsize.<result>, 0
+%.<result> = insertvalue {i32, <scalarType>*} %.temp.result.<result>, <scalarType>* %.vector.<result>, 1
+;end vec cat
 
 >>
 

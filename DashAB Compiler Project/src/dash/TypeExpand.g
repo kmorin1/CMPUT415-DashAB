@@ -686,10 +686,9 @@ expr returns [Type stype]
     }
   } -> ^(Exponent ^({typetree}) expr expr)
   | ^(Product a=expr b=expr) {
-    if ((!$a.stype.getName().equals("vector") ||
-      !$a.stype.getName().equals("matrix")) &&
-      (!$b.stype.getName().equals("vector") ||
-      !$b.stype.getName().equals("matrix")))
+    if ( !(($a.stype.getName().equals("vector") && $b.stype.getName().equals("vector")) ||
+    		   ($a.stype.getName().equals("matrix") && $b.stype.getName().equals("matrix")))
+    	 )
         throw new RuntimeException(errorhead + "Product requires vector type expressions");
     VectorTypeSymbol vts1 = (VectorTypeSymbol) $a.stype;
     VectorTypeSymbol vts2 = (VectorTypeSymbol) $b.stype;
@@ -703,8 +702,40 @@ expr returns [Type stype]
       $stype = $a.stype;
     else 
       throw new RuntimeException(errorhead + "type promotion error in product");
-    
+      
+    if ($stype instanceof VectorTypeSymbol) {
+    	VectorTypeSymbol vts= (VectorTypeSymbol)$stype;
+    	$stype = vts.getVectorType();
+    }
   } -> ^(Product Identifier[$stype.getName()] expr expr)
+  | ^(Concat a=expr b=expr) {
+  	//TODO: allow concatenation between a vector and scalar somehow
+    if (!$a.stype.getName().equals("vector") || !$b.stype.getName().equals("vector"))
+        throw new RuntimeException(errorhead + "Concatenation requires vector type expressions");
+    VectorTypeSymbol vts1 = (VectorTypeSymbol) $a.stype;
+    VectorTypeSymbol vts2 = (VectorTypeSymbol) $b.stype;
+    Boolean lua = symtab.lookup(vts1.getVectorType(), vts2.getVectorType());
+    Boolean lub = symtab.lookup(vts2.getVectorType(), vts1.getVectorType());
+    if (lua == null && lub == null)
+      throw new RuntimeException(errorhead + "invalid vector type");
+    if (lua != null)
+      $stype = $b.stype;
+    else if (lub != null)
+      $stype = $a.stype;
+    else 
+      throw new RuntimeException(errorhead + "type promotion error in product");
+      
+    typetree = (CommonTree) adaptor.nil();
+    if ($stype.getName().equals("vector")) {
+        VectorTypeSymbol vts = (VectorTypeSymbol) $stype;
+        typetree.addChild((CommonTree) adaptor.create(Vector, "vector"));
+        CommonTree child = (CommonTree) typetree.getChild(0);
+        if (vts.getVectorType() != null)
+          child.addChild((CommonTree) adaptor.create(Identifier, vts.getVectorType().getName()));
+    } else {
+        typetree.addChild((CommonTree) adaptor.create(Identifier, $stype.getName()));
+    }
+  } -> ^(Concat ^({typetree}) expr expr)
   | ^(Equals a=expr b=expr) {
     Boolean lua = symtab.lookup($a.stype, $b.stype);
     Boolean lub = symtab.lookup($b.stype, $a.stype);

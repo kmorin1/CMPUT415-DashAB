@@ -189,6 +189,7 @@ expr
   | ^(Mod expr expr)
   | ^(Exponent expr expr)
   | ^(Product expr expr)
+  | ^(Concat expr expr)
   | ^(Equals expr expr)
   | ^(NEquals expr expr)
   | ^(GThan expr expr)
