@@ -1,0 +1,10 @@
+procedure foo() returns boolean {
+	return true;
+}
+
+const boolean b = foo();
+
+procedure main() returns integer {
+	
+	return 0;
+}

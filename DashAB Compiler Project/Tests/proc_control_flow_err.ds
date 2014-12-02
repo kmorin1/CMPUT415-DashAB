@@ -1,0 +1,11 @@
+procedure foo() returns boolean {
+	return true;
+}
+
+procedure main() returns integer {
+	if (foo()) {
+		return 0;
+	}
+	
+	return 0;
+}

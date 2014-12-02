@@ -1,0 +1,9 @@
+procedure foo() returns integer {
+	return 0;
+}
+
+procedure main() returns integer {
+	integer i = 0;
+	i = foo() + foo();
+	return 0;
+}
