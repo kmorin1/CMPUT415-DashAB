@@ -30,7 +30,7 @@ public class TestFolderizer {
 				BufferedWriter writer = new BufferedWriter(fwriter);
 				String line;
 				while ((line = reader.readLine()) != null)
-					writer.write(line + "\r\n");
+					writer.write(line + "\n");
 				writer.close();
 				reader.close();
 				//tests[i].delete();
