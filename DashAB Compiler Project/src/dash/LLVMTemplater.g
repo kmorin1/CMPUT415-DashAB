@@ -352,15 +352,36 @@ callStatement
 	List<String> expressions = new ArrayList<String>();
 	List<String> varTypes = new ArrayList<String>();
 	VariableSymbol vs = null;
+	String returnType = null;
 }
-  : ^(CALL procRet=type id=Identifier ^(ARGLIST 
+  : ^(CALL retType=type
+  {
+  	if ($retType.vecType != null) {
+  		returnType = "{ i32, " + $retType.st.toString() + "*}";
+  	}
+  	else if ($retType.intervalType != null) {
+  		returnType = "{" + $retType.st.toString() + ", " + $retType.st.toString() + "}";
+  	}
+  	else {
+  		returnType = $retType.st.toString();
+  	}
+  }
+  id=Identifier ^(ARGLIST 
   (argType=type arg=Identifier
   {
   	// If argument is just an identifier, currently assumes it is var - pass by reference
   	vs = (VariableSymbol) currentscope.resolve($arg.text);
   	int varScope = vs.scopeNum;
   	varNums.add($arg.text + "." + varScope);
-  	varTypes.add($argType.st.toString() + "*");
+  	if ($argType.vecType != null) {
+  		varTypes.add("{ i32, " + $argType.st.toString() + "*}*");
+  	}
+  	else if ($argType.intervalType != null) {
+  		varTypes.add("{" + $argType.st.toString() + ", " + $argType.st.toString() + "}*");
+  	}
+  	else {
+  		varTypes.add($argType.st.toString() + "*");
+  	}
   }
   |
   e=expr
@@ -368,12 +389,20 @@ callStatement
   	// Otherwise if the argument is an expression, assume it is const - pass by value
   	varNums.add($e.resultVar);
   	expressions.add($e.st.toString());
-  	varTypes.add($e.stype);
+  	if ($e.stype.equals("vector")) {
+  		varTypes.add("{ i32, " + $e.scalarType + "*}");
+  	}
+  	else if ($e.stype.equals("interval")) {
+  		varTypes.add("{" + $e.scalarType + ", " + $e.scalarType + "}");
+  	}
+  	else {
+  		varTypes.add($e.stype);
+  	}
   }
   )*
   ))
-  -> {$procRet.st.toString().equals("void")}? callVoidProc(procName={$id}, exprs={expressions}, varNames={varNums}, paramScope={getCurrentScopeNum()}, varTypes={varTypes}, result={++counter})
-  -> callProc(procName={$id}, retType={$procRet.st}, exprs={expressions}, varNames={varNums}, paramScope={getCurrentScopeNum()}, varTypes={varTypes}, result={++counter})
+  -> {$retType.st.toString().equals("void")}? callVoidProc(procName={$id}, exprs={expressions}, varNames={varNums}, paramScope={getCurrentScopeNum()}, varTypes={varTypes}, result={++counter})
+  -> callProc(procName={$id}, retType={returnType}, exprs={expressions}, varNames={varNums}, paramScope={getCurrentScopeNum()}, varTypes={varTypes}, result={++counter})
   ;
   
 returnStatement
@@ -407,6 +436,10 @@ assignment
   	if ($expr.stype == "vector") {
   		VectorTypeSymbol vts = (VectorTypeSymbol)vsType;
   		variableType = "{i32, " + $expr.scalarType + "*}";
+  	}
+  	else if ($expr.stype == "interval") {
+  		VectorTypeSymbol vts = (VectorTypeSymbol)vsType;
+  		variableType = "{" + $expr.scalarType + ", " + $expr.scalarType + "}";
   	}
   	else {
   		variableType = $expr.stype;
