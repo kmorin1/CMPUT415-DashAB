@@ -8,11 +8,13 @@ public class Tester {
 	public static String dash;
 	public static String our;
 	public static String llc;
+	public static String specific;
 	public static int debug;
 	public static int dash_test;
 	public static int llc_test;
 	public static int dash_compare_test;
 	public static int llc_compare_test;
+	public static int specific_test;
 
 	public static void main(String[] args) {
 
@@ -54,6 +56,13 @@ public class Tester {
 					llc_compare_test = 1;
 					System.out.print("[Expected output for LLC testing] ");
 				}
+				if(line.indexOf("#9# Specific Test: ON") != -1){
+					specific_test = 1;
+					System.out.println("[WARNING RUNNING ONE TEST ONLY]");
+				}
+				if(line.indexOf("#10# Specific Test name:") != -1){
+					specific = reader.readLine();
+				}
 			}
 		} catch (FileNotFoundException e) {
 			System.out.println("No config.txt found");
@@ -65,29 +74,34 @@ public class Tester {
 		System.out.println("\nWe are now going to start testing with the following compilers:\n");
 
 		try{
-			Process p = Runtime.getRuntime().exec(dash + " --version");
-			BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
-			System.out.println("### DASH VERSION ###");
-			while ((line = stdInput.readLine()) != null) {
-				System.out.println(line);
+			if(Tester.dash_test == 1){
+				Process p = Runtime.getRuntime().exec(dash + " --version");
+				BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
+				System.out.println("### DASH VERSION ###");
+				while ((line = stdInput.readLine()) != null) {
+					System.out.println(line);
+				}
+
+				BufferedReader stdError = new BufferedReader(new InputStreamReader(p.getErrorStream()));
+				while ((line = stdError.readLine()) != null) {
+					throw new Exception("DASH");
+				}
+
 			}
 
-			BufferedReader stdError = new BufferedReader(new InputStreamReader(p.getErrorStream()));
-			while ((line = stdError.readLine()) != null) {
-				throw new Exception("DASH");
-			}
+			if(Tester.llc_test == 1){
+				Process p = Runtime.getRuntime().exec(our);
+				BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
+				System.out.println("### OUR COMPILER ###");
+				while ((line = stdInput.readLine()) != null) {
+					System.out.println(line);
+				}
 
 
-			p = Runtime.getRuntime().exec(our);
-			stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
-			System.out.println("### OUR COMPILER ###");
-			while ((line = stdInput.readLine()) != null) {
-				System.out.println(line);
-			}
-
-			stdError = new BufferedReader(new InputStreamReader(p.getErrorStream()));
-			while ((line = stdError.readLine()) != null) {
-				//throw new Exception("Our compiler");
+				BufferedReader stdError = new BufferedReader(new InputStreamReader(p.getErrorStream()));
+				while ((line = stdError.readLine()) != null) {
+					//throw new Exception("Our compiler");
+				}
 			}
 
 			//Start loading all the test files

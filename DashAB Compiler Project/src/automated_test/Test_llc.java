@@ -141,7 +141,6 @@ public class Test_llc {
 				while ((line = reader.readLine()) != null) {
 					System.out.println(line);
 				}
-
 				System.out.println("***About to diff");
 			}
 

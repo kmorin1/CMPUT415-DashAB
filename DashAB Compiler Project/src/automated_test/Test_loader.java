@@ -26,11 +26,15 @@ public class Test_loader {
 
 		//Get list of tests
 		try{
-			Process p = Runtime.getRuntime().exec("ls Tests");
-			BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
-			while ((line = stdInput.readLine()) != null) {
-				if(line.indexOf(".ds") != -1)
-					tests.add(line);
+			if(Tester.specific_test == 1){
+				tests.add(Tester.specific);
+			}else{
+				Process p = Runtime.getRuntime().exec("ls Tests");
+				BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
+				while ((line = stdInput.readLine()) != null) {
+					if(line.indexOf(".ds") != -1)
+						tests.add(line);
+				}
 			}
 			System.out.println("Done, " + tests.size() + " tests loaded\n");
 		}catch (IOException e) {
@@ -39,10 +43,10 @@ public class Test_loader {
 
 		//Do the tests one by one...
 		for(int i = 0; i < tests.size(); i++){
-		        // To only execute a test with a certain name:
-		        if (!tests.get(i).equals("loop4.ds")) {
-		            //continue;
-		        }
+			// To only execute a test with a certain name:
+			if (!tests.get(i).equals("loop4.ds")) {
+				//continue;
+			}
 			if(Tester.llc_test == 1)
 				llc_result.add(Test_llc.run(tests.get(i)));
 			if(Tester.dash_test == 1)
