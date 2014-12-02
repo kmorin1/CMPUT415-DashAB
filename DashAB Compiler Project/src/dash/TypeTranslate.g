@@ -235,6 +235,7 @@ expr returns [String stype, String scalarType]
   | ^(Exponent type {$stype = $type.tsym;} a=expr b=expr) -> {$a.stype.equals("integer") && $b.stype.equals("real")}? ^(Exponent type ^(As Real $a) $b)
                                    -> {$a.stype.equals("real") && $b.stype.equals("integer")}? ^(Exponent type $a ^(As Real $b))
                                    -> ^(Exponent type $a $b)
+  | ^(Product type expr expr)
   | ^(Equals type {$stype = $type.tsym;} a=expr b=expr)   -> {$a.stype.equals("integer") && $b.stype.equals("real")}? ^(Equals type ^(As Real $a) $b)
                                    -> {$a.stype.equals("real") && $b.stype.equals("integer")}? ^(Equals type $a ^(As Real $b))
                                    -> ^(Equals type $a $b)
