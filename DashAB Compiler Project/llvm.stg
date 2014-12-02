@@ -195,6 +195,16 @@ store {i32, <scalarType>*} %.<tmpNum>, {i32, <scalarType>*}* <sym>.<varName>.<sc
 
 >>
 
+outputIntervalDecl(sym, varName, scopeNum, scalarType, expr, tmpNum) ::= <<
+;start outputDecl
+<expr>
+
+<sym>.<varName>.<scopeNum> = alloca {<scalarType>, <scalarType>}, align 4
+store {<scalarType>, <scalarType>} %.<tmpNum>, {<scalarType>, <scalarType>}* <sym>.<varName>.<scopeNum>
+;end empty vec decl
+
+>>
+
 outputEmptyDecl(sym, varName, scopeNum, varType, value) ::= <<
 ;start outputEmptyDecl
 <sym>.<varName>.<scopeNum> = alloca <varType>, align 4
@@ -211,6 +221,19 @@ outputEmptyVecDecl(sym, varName, scopeNum, scalarType, value, sizeName, exprs) :
 %.tempstruct<sizeName>.<varName>.<scopeNum> = insertvalue {i32, <scalarType>*} undef, i32 %.<sizeName>, 0
 ; TODO: Need to initialize all vector elements to null
 store {i32, <scalarType>*} %.tempstruct<sizeName>.<varName>.<scopeNum>, {i32, <scalarType>*}* <sym>.<varName>.<scopeNum>
+;end empty vec decl
+
+>>
+
+outputEmptyIntervalDecl(sym, varName, scopeNum, scalarType, value, sizeName, exprs) ::= <<
+;start empty vec decl
+<exprs>
+
+<sym>.<varName>.<scopeNum> = alloca {<scalarType>, <scalarType>}, align 4
+%.tempinterval.<sizeName>.<varName>.<scopeNum> = insertvalue {<scalarType>, <scalarType>} undef, <scalarType> 0, 0
+%.tempinterval2.<sizeName>.<varName>.<scopeNum> = insertvalue {<scalarType>, <scalarType>} %.tempinterval.<sizeName>.<varName>.<scopeNum>, <scalarType> 0, 1
+
+store {<scalarType>, <scalarType>} %.tempinterval2.<sizeName>.<varName>.<scopeNum>, {<scalarType>, <scalarType>}* <sym>.<varName>.<scopeNum>
 ;end empty vec decl
 
 >>

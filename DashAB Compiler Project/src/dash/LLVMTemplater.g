@@ -247,9 +247,11 @@ declaration
 }
   : ^(DECL s=specifier? type id=Identifier)
   -> {$type.vecType != null}? outputEmptyVecDecl(sym={getLLVMvarSymbol(currentScopeNum)}, varName={$Identifier}, scopeNum={currentScopeNum}, scalarType={$type.st}, value={getEmptyValue($type.st.toString())}, sizeName={$type.sizeName}, exprs={$type.sizeExpr})
+  -> {$type.intervalType != null}? outputEmptyIntervalDecl(sym={getLLVMvarSymbol(currentScopeNum)}, varName={$Identifier}, scopeNum={currentScopeNum}, scalarType={$type.st}, value={getEmptyValue($type.st.toString())}, sizeName={$type.sizeName}, exprs={$type.sizeExpr})
   -> outputEmptyDecl(sym={getLLVMvarSymbol(currentScopeNum)}, varName={$Identifier}, scopeNum={currentScopeNum}, varType={$type.st}, value={getEmptyValue($type.st.toString())})
   | ^(DECL s=specifier? type ^(Assign id=Identifier expr))
   -> {$type.vecType != null}? outputVecDecl(sym={getLLVMvarSymbol(currentScopeNum)}, varName={$Identifier}, scopeNum={currentScopeNum}, scalarType={$type.st}, expr={$expr.st}, tmpNum={counter})
+  -> {$type.intervalType != null}? outputIntervalDecl(sym={getLLVMvarSymbol(currentScopeNum)}, varName={$Identifier}, scopeNum={currentScopeNum}, scalarType={$type.st}, expr={$expr.st}, tmpNum={counter})
   -> outputDecl(sym={getLLVMvarSymbol(currentScopeNum)}, varName={$Identifier}, scopeNum={currentScopeNum}, varType={$type.st}, expr={$expr.st}, tmpNum={counter})
   | ^(DECL s=specifier StdInput ^(Assign id=Identifier StdInput))
   | ^(DECL s=specifier StdOutput ^(Assign id=Identifier StdOutput))
@@ -398,6 +400,7 @@ type returns [String vecType, String sizeName, StringTemplate sizeExpr, String i
   | Integer -> return(a={IntType})
   | Matrix
   | ^(Interval scalar=type) {$intervalType = $scalar.st.toString();} -> return(a={$scalar.st})
+  | Interval {$intervalType = IntType;} -> return(a={$intervalType})
   | String
   | ^(Vector scalar=type expr?) {$vecType = $scalar.st.toString(); $sizeName = $expr.resultVar; $sizeExpr = $expr.st;} -> return(a={$scalar.st})
   | Vector {$vecType = "???"; $sizeName = "??"; $sizeExpr = new StringTemplate("?");} -> return(a={$vecType})
@@ -665,6 +668,11 @@ expr returns [String stype, String resultVar, String scalarType, String sizeName
   		$stype = "vector";
   		$scalarType = $type.vecType;
   		variableType = "{i32, " + $scalarType + "*}";
+  	}
+  	else if ($type.intervalType != null) {
+  		$stype = "interval";
+  		$scalarType = $type.intervalType;
+  		variableType = "{" + $scalarType + ", " + $scalarType + "}";
   	}
   	else {
   		$stype = $type.st.toString();

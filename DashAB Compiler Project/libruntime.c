@@ -101,6 +101,11 @@ char print_i8_vector(char * x, uint32_t size) {
 }
 
 int32_t print_i32_interval(int32_t lower, int32_t upper) {
+	if (lower > upper) {
+		printf("Error: interval must be non-decreasing.\n");
+		exit(-1);
+	}	
+
 	for (int32_t i = lower; i <= upper; i++) {
 		printf("%d", i);
 		if (i+1 <= upper) {
