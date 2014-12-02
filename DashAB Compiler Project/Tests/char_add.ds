@@ -1,0 +1,6 @@
+procedure main() returns integer {
+	character c = 'f';
+	character d = 'e';
+	integer i = c + d;
+	return 0;
+}
