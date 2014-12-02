@@ -178,7 +178,7 @@ type
   : Boolean
   | Integer
   | Interval
-  | String -> ^(Vector["vector"] Character["char"])
+  | String -> ^(Vector["vector"] Character["character"])
   | Real
   | Character
   | tuple
