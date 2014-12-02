@@ -135,11 +135,19 @@ block
 procedure
   : Procedure Identifier LParen paramlist RParen (Returns type)? (SemiColon | block)
   -> ^(Procedure Identifier paramlist ^(Returns type)? block?)
+  | Procedure Identifier LParen paramlist RParen (Returns type Vector (LBracket size RBracket)?) (SemiColon | block)
+  -> ^(Procedure Identifier paramlist ^(Returns ^(Vector type)) block?)
+  | Procedure Identifier LParen paramlist RParen (Returns type Interval) (SemiColon | block)
+  -> ^(Procedure Identifier paramlist ^(Returns ^(Interval type)) block?)
   ;
   
 function
   : Function Identifier LParen paramlist RParen Returns type ((Assign expr)? SemiColon | block)
   -> ^(Function Identifier paramlist ^(Returns type) ^(Assign expr)? block?)
+  | Function Identifier LParen paramlist RParen Returns type Vector (LBracket size RBracket)? ((Assign expr)? SemiColon | block)
+  -> ^(Function Identifier paramlist ^(Returns ^(Vector type)) ^(Assign expr)? block?)
+  | Function Identifier LParen paramlist RParen Returns type Interval ((Assign expr)? SemiColon | block)
+  -> ^(Function Identifier paramlist ^(Returns ^(Interval type)) ^(Assign expr)? block?)
   ;
   
 paramlist
@@ -148,6 +156,8 @@ paramlist
   
 parameter
   : specifier? type Identifier^
+  | specifier? type Vector Identifier -> ^(Identifier specifier? ^(Vector type))
+  | specifier? type Interval Identifier -> ^(Identifier specifier? ^(Interval type))
   ;
   
 callStatement

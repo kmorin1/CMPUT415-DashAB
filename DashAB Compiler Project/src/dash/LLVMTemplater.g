@@ -266,11 +266,30 @@ block
   ;
   
 procedure
+@init {
+	String returnType = null;
+}
 @after {
+	// Procedure Symbol won't have type information with it
+	ProcedureSymbol ps = new ProcedureSymbol($id.text, null);
+	symtab.defineProcedure(ps);
 	currentscope = currentscope.getEnclosingScope();
 }
-  : ^(Procedure Identifier paramlist ^(Returns type) block) -> declareProcOrFunc(procName={$Identifier}, procVars={$paramlist.st}, procBody={$block.st}, retType={$type.st}, retNum={counter++})
-  | ^(Procedure Identifier paramlist block) -> declareVoidProc(procName={$Identifier}, procVars={$paramlist.st}, procBody={$block.st})
+  : ^(Procedure id=Identifier paramlist ^(Returns type))
+  | ^(Procedure id=Identifier paramlist)
+  | ^(Procedure id=Identifier paramlist ^(Returns type) 
+  {
+  	if ($type.vecType != null) {
+  		returnType = "{i32, " + $type.vecType + "*}";
+  	}
+  	else if ($type.intervalType != null) {
+  		returnType = "{" + $type.intervalType + ", " + $type.intervalType + "}";
+  	}
+  	else {
+  		returnType = $type.st.toString();
+  	}
+  }block) -> declareProcOrFunc(procName={$Identifier}, procVars={$paramlist.st}, procBody={$block.st}, retType={returnType}, retNum={counter++})
+  | ^(Procedure id=Identifier paramlist block) -> declareVoidProc(procName={$Identifier}, procVars={$paramlist.st}, procBody={$block.st})
   ;
   
 function
@@ -280,7 +299,8 @@ function
 	symtab.defineFunction(fs);
 	currentscope = currentscope.getEnclosingScope();
 }
-  : ^(Function id=Identifier paramlist ^(Returns type) block) -> declareProcOrFunc(procName={$Identifier}, procVars={$paramlist.st}, procBody={$block.st}, retType={$type.st}, retNum={counter++})
+  : ^(Function id=Identifier paramlist ^(Returns type))
+  | ^(Function id=Identifier paramlist ^(Returns type) block) -> declareProcOrFunc(procName={$Identifier}, procVars={$paramlist.st}, procBody={$block.st}, retType={$type.st}, retNum={counter++})
   | ^(Function id=Identifier paramlist ^(Returns type) ^(Assign expr)) -> declareProcOrFunc(procName={$Identifier}, procVars={$paramlist.st}, procBody={$expr.st}, retType={$type.st}, retNum={counter++})
   ;
   
@@ -295,6 +315,7 @@ parameter
 @init {
 	VariableSymbol vs = null;
 	int currentScopeNum = getCurrentScopeNum();
+	String paramType = null;
 }
 @after {
 	Type spec;
@@ -311,7 +332,18 @@ parameter
   
   currentscope.define(vs);
 }
-  : ^(id=Identifier s=specifier? type) -> param(name={$Identifier}, type={getParamType($type.st.toString(), $s.st)}, scopeNum={currentScopeNum})
+  : ^(id=Identifier s=specifier? type
+  {
+  	if ($type.vecType != null) {
+  		paramType = "{i32, " + $type.vecType + "*}";
+  	}
+  	else if ($type.intervalType != null) {
+  		paramType = "{" + $type.intervalType + ", " + $type.intervalType + "}";
+  	}
+  	else {
+  		paramType = $type.st.toString();
+  	}
+  }) -> param(name={$Identifier}, type={getParamType(paramType, $s.st)}, scopeNum={currentScopeNum})
   ;
   
 callStatement
@@ -345,7 +377,21 @@ callStatement
   ;
   
 returnStatement
-  : ^(Return expr) -> returnStat(expr={$expr.st}, tmpNum={counter}, type={$expr.stype})
+@init {
+	String returnType = null;
+}
+  : ^(Return retType=expr
+  {
+  	if ($retType.stype.equals("vector")) {
+  		returnType = "{i32, " + $retType.scalarType + "*}";
+  	}
+  	else if ($retType.stype.equals("interval")) {
+  		returnType = "{" + $retType.scalarType + ", " + $retType.scalarType + "}";
+  	}
+  	else {
+  		returnType = $expr.stype;
+  	}
+  }) -> returnStat(expr={$expr.st}, tmpNum={counter}, type={returnType})
   | Return -> returnVoid()
   ;
   
@@ -395,12 +441,15 @@ slist
   ;
   
 type returns [String vecType, String sizeName, StringTemplate sizeExpr, String intervalType]
+@init {
+	$vecType = null;
+}
   : Identifier -> return(a={"ID"})
   | Boolean -> return(a={BoolType})
   | Integer -> return(a={IntType})
   | Matrix
   | ^(Interval scalar=type) {$intervalType = $scalar.st.toString();} -> return(a={$scalar.st})
-  | Interval {$intervalType = IntType;} -> return(a={$intervalType})
+  | Interval {$intervalType = "????";} -> return(a={$intervalType})
   | String
   | ^(Vector scalar=type expr?) {$vecType = $scalar.st.toString(); $sizeName = $expr.resultVar; $sizeExpr = $expr.st;} -> return(a={$scalar.st})
   | Vector {$vecType = "???"; $sizeName = "??"; $sizeExpr = new StringTemplate("?");} -> return(a={$vecType})
@@ -434,6 +483,7 @@ expr returns [String stype, String resultVar, String scalarType, String sizeName
 	VariableSymbol vs = null;
 	int numElements = 0;
 	String variableType = null;
+	String returnType = null;
 }
 @after {
 	$resultVar = ""+counter;
@@ -669,14 +719,34 @@ expr returns [String stype, String resultVar, String scalarType, String sizeName
     -> {$type.vecType != null}? vec_unary(expr={$a.st}, operator={"not"}, scalarType={$a.scalarType}, resultType={$a.scalarType}, tmpNum={tmpNum1}, result={++counter})
     -> not(expr={$a.st}, type={$type.st}, tmpNum={tmpNum1}, result={++counter})
   | ^(By type a=expr {tmpNum1 = counter;} b=expr {tmpNum2 = counter;}) {$stype = $type.st.toString();}
-  | ^(CALL retType=type {$stype=$retType.st.toString();} id=Identifier ^(ARGLIST
+  | ^(CALL retType=type 
+  {
+  	if ($retType.vecType != null) {
+  		returnType = "{ i32, " + $retType.st.toString() + "*}";
+  	}
+  	else if ($retType.intervalType != null) {
+  		returnType = "{" + $retType.st.toString() + ", " + $retType.st.toString() + "}";
+  	}
+  	else {
+  		returnType = $retType.st.toString();
+  	}
+  }
+  id=Identifier ^(ARGLIST
   (argType=type arg=Identifier
   {
   	// If argument is just an identifier, currently assumes it is var - pass by reference
   	vs = (VariableSymbol) currentscope.resolve($arg.text);
   	int varScope = vs.scopeNum;
   	varNums.add($arg.text + "." + varScope);
-  	varTypes.add($argType.st.toString() + "*");
+  	if ($argType.vecType != null) {
+  		varTypes.add("{ i32, " + $argType.st.toString() + "*}*");
+  	}
+  	else if ($argType.intervalType != null) {
+  		varTypes.add("{" + $argType.st.toString() + ", " + $argType.st.toString() + "}*");
+  	}
+  	else {
+  		varTypes.add($argType.st.toString() + "*");
+  	}
   }
   |
   e=expr
@@ -684,12 +754,20 @@ expr returns [String stype, String resultVar, String scalarType, String sizeName
   	// Otherwise if the argument is an expression, assume it is const - pass by value
   	varNums.add($e.resultVar);
   	expressions.add($e.st.toString());
-  	varTypes.add($e.stype);
+  	if ($e.stype.equals("vector")) {
+  		varTypes.add("{ i32, " + $e.scalarType + "*}");
+  	}
+  	else if ($e.stype.equals("interval")) {
+  		varTypes.add("{" + $e.scalarType + ", " + $e.scalarType + "}");
+  	}
+  	else {
+  		varTypes.add($e.stype);
+  	}
   }
   )*
   ))
-    -> {symtab.resolveFunction($id.text) != null}? callFunc(funcName={$id}, retType={$retType.st}, exprs={expressions}, varNames={varNums}, paramScope={getCurrentScopeNum()}, varTypes={varTypes}, result={++counter})
-    -> callProc(procName={$id}, retType={$retType.st}, exprs={expressions}, varNames={varNums}, paramScope={getCurrentScopeNum()}, varTypes={varTypes}, result={++counter})
+    -> {symtab.resolveFunction($id.text) != null}? callFunc(funcName={$id}, retType={returnType}, exprs={expressions}, varNames={varNums}, paramScope={getCurrentScopeNum()}, varTypes={varTypes}, result={++counter})
+    -> callProc(procName={$id}, retType={returnType}, exprs={expressions}, varNames={varNums}, paramScope={getCurrentScopeNum()}, varTypes={varTypes}, result={++counter})
   | ^(As type a=expr {tmpNum1 = counter;}) {$stype = $type.st.toString();} -> cast(func={getCastFunc($a.stype, $stype, tmpNum1, ++counter)}, expr={$a.st})
   | type Identifier
   {

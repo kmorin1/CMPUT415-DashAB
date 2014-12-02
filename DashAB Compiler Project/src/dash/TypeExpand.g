@@ -189,7 +189,7 @@ declaration
     
     if (type != null && symtab.lookup($e.stype, type) == null)
       throw new RuntimeException(errorhead + "assignment type error, expected " + type.getName() + " but got " + $e.stype.getName());
-    if (type != null && type.getName().equals("vector")) {
+    if (type != null && (type.getName().equals("vector") || type.getName().equals("interval"))) {
       VectorTypeSymbol vtype = (VectorTypeSymbol) type;
       
       VectorTypeSymbol extype = (VectorTypeSymbol) $e.stype;
@@ -199,8 +199,7 @@ declaration
       throw new RuntimeException(errorhead + "cannot infer type for variable " + $id.text);
     }
     VariableSymbol temp = new VariableSymbol($id.text, type, spec);
-   
-    if ((type == null || type.getName().equals("vector")) && (temp.isVar() || temp.isConst())) {
+    if ((type == null || type.getName().equals("vector") || type.getName().equals("interval")) && (temp.isVar() || temp.isConst())) {
       if (stream_type.hasNext()) {
         CommonTree tre = (CommonTree) stream_type.nextTree();
                               
@@ -221,7 +220,7 @@ declaration
       } else {
         stream_type.add((CommonTree) adaptor.create(Identifier, $e.stype.getName()));
       }
-      if ($e.stype.getName().equals("vector")) {
+      if ($e.stype.getName().equals("vector") || $e.stype.getName().equals("interval")) {
         //TO-DO: add type inference completion for vectors
         type = (VectorTypeSymbol) $e.stype;
       } else {
@@ -265,9 +264,8 @@ typedef
   }
 
 block
-@init {currentscope = new NestedScope("blockscope", currentscope); }
 @after {currentscope = currentscope.getEnclosingScope();}
-  : ^(BLOCK declaration* statement*)
+  : ^(BLOCK {currentscope = new NestedScope("blockscope", currentscope); } declaration* statement*)
   ;
   
 procedure
@@ -299,7 +297,14 @@ procedure
   ret_type_stack.pop();
 }
   : ^(Procedure id=Identifier pl=paramlist ^(Returns type 
-    {ret_type_stack.push($type.tsym);}) (block {def = true;})?) {type = (BuiltInTypeSymbol) $type.tsym;}
+    {ret_type_stack.push($type.tsym);}) (block {def = true;})?)
+    {
+    	if ($type.tsym.getName().equals("vector") || $type.tsym.getName().equals("interval")) {
+        type = (VectorTypeSymbol) $type.tsym;
+      } else {
+        type = (BuiltInTypeSymbol) $type.tsym;
+      }
+    }
   | ^(Procedure id=Identifier pl=paramlist {type = new BuiltInTypeSymbol("void"); ret_type_stack.push(new BuiltInTypeSymbol("void"));} 
     (block {def = true;})?)
   ;
@@ -341,28 +346,46 @@ function
   ret_type_stack.pop();
 }
   : ^(Function id=Identifier pl=paramlist ^(Returns type {ret_type_stack.push($type.tsym);}) {inFunction = true;} (
-    block {def = true;})? {inFunction = false;}) {type = (BuiltInTypeSymbol) $type.tsym;}
+    block {def = true;})? {inFunction = false;})
+    {
+    	if ($type.tsym.getName().equals("vector") || $type.tsym.getName().equals("interval")) {
+        type = (VectorTypeSymbol) $type.tsym;
+      } else {
+        type = (BuiltInTypeSymbol) $type.tsym;
+      }
+    }
   | ^(Function id=Identifier pl=paramlist ^(Returns type {ret_type_stack.push(new BuiltInTypeSymbol("N/A"));})
    {inFunction = true; def = true;} ^(Assign expr {
     if (symtab.lookup($expr.stype, $type.tsym) == null)
       throw new RuntimeException(getErrorHeader() + "type mismatch on function return");
   }
-  ) {inFunction = false;}) {type = (BuiltInTypeSymbol) $type.tsym;}
+  ) {inFunction = false;})
+  {
+    	if ($type.tsym.getName().equals("vector") || $type.tsym.getName().equals("interval")) {
+        type = (VectorTypeSymbol) $type.tsym;
+      } else {
+        type = (BuiltInTypeSymbol) $type.tsym;
+      }
+    }
   ;
   
 paramlist returns [ArrayList<Symbol> params]
 @init {
   ArrayList<Symbol> paramlst = new ArrayList<Symbol>();
-  currentscope = new NestedScope("paramscope", currentscope);
 }
 @after {$params = paramlst;}
-  : ^(PARAMLIST (p=parameter {paramlst.add($p.varsym);})*)
+  : ^(PARAMLIST {currentscope = new NestedScope("paramscope", currentscope);} (p=parameter {paramlst.add($p.varsym);})*)
   ;
   
 parameter returns [VariableSymbol varsym]
 @init {BuiltInTypeSymbol type = null;}
 @after {
-  type = (BuiltInTypeSymbol) $t.tsym;
+	if ($t.tsym.getName().equals("vector") || $t.tsym.getName().equals("interval")) {
+		type = (VectorTypeSymbol) $t.tsym;
+	}
+	else {
+		type = (BuiltInTypeSymbol) $t.tsym;
+	}
   Type spec;
   if ($s.text == null) {
   	spec = new BuiltInTypeSymbol("const");
@@ -382,6 +405,7 @@ callStatement
 @init {
   ArrayList<Type> argtypes = new ArrayList<Type>();
   Type retType = null;
+  CommonTree typetree = null;
 }
   : ^(CALL id=Identifier ^(ARGLIST (e=expr {argtypes.add($e.stype);})*)) {
     ProcedureSymbol ps = symtab.resolveProcedure($id.text);
@@ -407,8 +431,20 @@ callStatement
         if (!vs.getType().getName().equals(argtypes.get(i).getName()))
           throw new RuntimeException(getErrorHeader() + "type mismatch, expected " +  vs.getType().getName() + " but got " + argtypes.get(i).getName());
       }
+      
+      typetree = (CommonTree) adaptor.nil();
+      if (retType.getName().equals("vector") || retType.getName().equals("interval")) {
+        VectorTypeSymbol vts = (VectorTypeSymbol) retType;
+        typetree.addChild((CommonTree) adaptor.create(Vector, retType.getName()));
+        CommonTree child = (CommonTree) typetree.getChild(0);
+        if (vts.getVectorType() != null)
+          child.addChild((CommonTree) adaptor.create(Identifier, vts.getVectorType().getName()));
+          }
+        else {
+        	typetree.addChild((CommonTree) adaptor.create(Identifier, retType.getName()));
+      }
     }
-  } -> ^(CALL Identifier[retType.getName()] Identifier[$id.text] ^(ARGLIST expr*))
+  } -> ^(CALL ^({typetree}) Identifier[$id.text] ^(ARGLIST expr*))
   ;
   
 returnStatement
@@ -495,10 +531,8 @@ type returns [Type tsym]
   | t=Integer {$tsym = (Type) symtab.resolveType($t.text);}
   | t=Matrix {$tsym = (Type) symtab.resolveType($t.text);}
   | ^(Interval Integer) {
-    if (size == null)
-      size = adaptor.create(Identifier, "*");
     
-    VectorTypeSymbol vts = new VectorTypeSymbol("interval", bits, vtype, size);
+    VectorTypeSymbol vts = new VectorTypeSymbol("interval", new BuiltInTypeSymbol("integer"), null);
     
     $tsym = vts;
   }
@@ -569,11 +603,20 @@ expr returns [Type stype]
     typetree = (CommonTree) adaptor.nil();
    if ($stype.getName().equals("vector")) {
         VectorTypeSymbol vts = (VectorTypeSymbol) $stype;
-        typetree.addChild((CommonTree) adaptor.create(Vector, "vector"));
+        typetree.addChild((CommonTree) adaptor.create(Vector, $stype.getName()));
         CommonTree child = (CommonTree) typetree.getChild(0);
         if (vts.getVectorType() != null)
           child.addChild((CommonTree) adaptor.create(Identifier, vts.getVectorType().getName()));
-    } else {
+    }
+    else if ($stype.getName().equals("interval")) {
+    		
+    		VectorTypeSymbol vts = (VectorTypeSymbol) $stype;
+        typetree.addChild((CommonTree) adaptor.create(Interval, $stype.getName()));
+        CommonTree child = (CommonTree) typetree.getChild(0);
+        if (vts.getVectorType() != null)
+          child.addChild((CommonTree) adaptor.create(Identifier, vts.getVectorType().getName()));
+    }
+    else {
         typetree.addChild((CommonTree) adaptor.create(Identifier, $stype.getName()));
     }
   } -> ^(Plus ^({typetree}) expr expr)
@@ -592,11 +635,19 @@ expr returns [Type stype]
     typetree = (CommonTree) adaptor.nil();
    if ($stype.getName().equals("vector")) {
         VectorTypeSymbol vts = (VectorTypeSymbol) $stype;
-        typetree.addChild((CommonTree) adaptor.create(Vector, "vector"));
+        typetree.addChild((CommonTree) adaptor.create(Vector, $stype.getName()));
         CommonTree child = (CommonTree) typetree.getChild(0);
         if (vts.getVectorType() != null)
           child.addChild((CommonTree) adaptor.create(Identifier, vts.getVectorType().getName()));
-    } else {
+    }
+    else if ($stype.getName().equals("interval")) {
+    		VectorTypeSymbol vts = (VectorTypeSymbol) $stype;
+        typetree.addChild((CommonTree) adaptor.create(Interval, $stype.getName()));
+        CommonTree child = (CommonTree) typetree.getChild(0);
+        if (vts.getVectorType() != null)
+          child.addChild((CommonTree) adaptor.create(Identifier, vts.getVectorType().getName()));
+    }
+    else {
         typetree.addChild((CommonTree) adaptor.create(Identifier, $stype.getName()));
     }
   } -> ^(Minus ^({typetree}) expr expr)
@@ -615,11 +666,19 @@ expr returns [Type stype]
     typetree = (CommonTree) adaptor.nil();
    if ($stype.getName().equals("vector")) {
         VectorTypeSymbol vts = (VectorTypeSymbol) $stype;
-        typetree.addChild((CommonTree) adaptor.create(Vector, "vector"));
+        typetree.addChild((CommonTree) adaptor.create(Vector, $stype.getName()));
         CommonTree child = (CommonTree) typetree.getChild(0);
         if (vts.getVectorType() != null)
           child.addChild((CommonTree) adaptor.create(Identifier, vts.getVectorType().getName()));
-    } else {
+    }
+    else if ($stype.getName().equals("interval")) {
+    		VectorTypeSymbol vts = (VectorTypeSymbol) $stype;
+        typetree.addChild((CommonTree) adaptor.create(Interval, $stype.getName()));
+        CommonTree child = (CommonTree) typetree.getChild(0);
+        if (vts.getVectorType() != null)
+          child.addChild((CommonTree) adaptor.create(Identifier, vts.getVectorType().getName()));
+    }
+    else {
         typetree.addChild((CommonTree) adaptor.create(Identifier, $stype.getName()));
     }
   } -> ^(Multiply ^({typetree}) expr expr)
@@ -638,11 +697,19 @@ expr returns [Type stype]
     typetree = (CommonTree) adaptor.nil();
    if ($stype.getName().equals("vector")) {
         VectorTypeSymbol vts = (VectorTypeSymbol) $stype;
-        typetree.addChild((CommonTree) adaptor.create(Vector, "vector"));
+        typetree.addChild((CommonTree) adaptor.create(Vector, $stype.getName()));
         CommonTree child = (CommonTree) typetree.getChild(0);
         if (vts.getVectorType() != null)
           child.addChild((CommonTree) adaptor.create(Identifier, vts.getVectorType().getName()));
-    } else {
+    }
+    else if ($stype.getName().equals("interval")) {
+    		VectorTypeSymbol vts = (VectorTypeSymbol) $stype;
+        typetree.addChild((CommonTree) adaptor.create(Interval, $stype.getName()));
+        CommonTree child = (CommonTree) typetree.getChild(0);
+        if (vts.getVectorType() != null)
+          child.addChild((CommonTree) adaptor.create(Identifier, vts.getVectorType().getName()));
+    }
+    else {
         typetree.addChild((CommonTree) adaptor.create(Identifier, $stype.getName()));
     }
   } -> ^(Divide ^({typetree}) expr expr)
@@ -1002,11 +1069,19 @@ expr returns [Type stype]
     typetree = (CommonTree) adaptor.nil();
    if ($stype.getName().equals("vector")) {
         VectorTypeSymbol vts = (VectorTypeSymbol) $stype;
-        typetree.addChild((CommonTree) adaptor.create(Vector, "vector"));
+        typetree.addChild((CommonTree) adaptor.create(Vector, $stype.getName()));
         CommonTree child = (CommonTree) typetree.getChild(0);
         if (vts.getVectorType() != null)
           child.addChild((CommonTree) adaptor.create(Identifier, vts.getVectorType().getName()));
-    } else {
+    }
+    else if ($stype.getName().equals("interval")) {
+    		VectorTypeSymbol vts = (VectorTypeSymbol) $stype;
+        typetree.addChild((CommonTree) adaptor.create(Interval, $stype.getName()));
+        CommonTree child = (CommonTree) typetree.getChild(0);
+        if (vts.getVectorType() != null)
+          child.addChild((CommonTree) adaptor.create(Identifier, vts.getVectorType().getName()));
+    }
+    else {
         typetree.addChild((CommonTree) adaptor.create(Identifier, $stype.getName()));
     }
     
@@ -1020,14 +1095,23 @@ expr returns [Type stype]
     if ($stype.getName().equals("std_input") || $stype.getName().equals("std_output"))
       throw new RuntimeException(errorhead + "stream " + $id.text + " cannot occur in an expression");
    typetree = (CommonTree) adaptor.nil();
+   $stype = vs.getType();
    if ($stype.getName().equals("vector")) {
         VectorTypeSymbol vts = (VectorTypeSymbol) vs.getType();
         $stype = vs.getType();
-        typetree.addChild((CommonTree) adaptor.create(Vector, "vector"));
+        typetree.addChild((CommonTree) adaptor.create(Vector, $stype.getName()));
         CommonTree child = (CommonTree) typetree.getChild(0);
         if (vts.getVectorType() != null)
           child.addChild((CommonTree) adaptor.create(Identifier, vts.getVectorType().getName()));
-    } else {
+    }
+    else if ($stype.getName().equals("interval")) {
+    		VectorTypeSymbol vts = (VectorTypeSymbol) $stype;
+        typetree.addChild((CommonTree) adaptor.create(Interval, $stype.getName()));
+        CommonTree child = (CommonTree) typetree.getChild(0);
+        if (vts.getVectorType() != null)
+          child.addChild((CommonTree) adaptor.create(Identifier, vts.getVectorType().getName()));
+    }
+    else {
         typetree.addChild((CommonTree) adaptor.create(Identifier, $stype.getName()));
     }
   } -> ^({typetree}) Identifier
@@ -1084,7 +1168,8 @@ expr returns [Type stype]
     }
     if (index.equals(-1))
       throw new RuntimeException(errorhead+ $eid.text + " is undefined");
-  } -> Identifier[$stype.getName()] ^(Dot $id Number[index.toString()]) | n=Number {
+  } -> Identifier[$stype.getName()] ^(Dot $id Number[index.toString()])
+  | n=Number {
     String num = $n.text;
     index = index.parseInt(num);
     $stype = ts.getFieldNames().get(index-1).type;
