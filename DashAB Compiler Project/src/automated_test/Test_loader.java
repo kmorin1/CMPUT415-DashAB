@@ -47,6 +47,12 @@ public class Test_loader {
 				llc_result.add(Test_llc.run(tests.get(i)));
 			if(Tester.dash_test == 1)
 				dash_result.add(Test_dash.run(tests.get(i)));
+			try {
+				Thread.sleep(100); //Artificial lag
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 
 
