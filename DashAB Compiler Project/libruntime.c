@@ -838,3 +838,9 @@ bool index_i1_vectors(bool * x, uint32_t x_size, uint32_t index_1) {
 	return val;	
 }
 
+int32_t add_i32_intervals(int32_t lower1, int32_t upper1, int32_t lower2, int32_t upper2, int32_t * lower_result, int32_t * upper_result) {
+	*lower_result = lower1 + lower2;
+	*upper_result = upper1 + upper2;
+	return 0;
+}
+
