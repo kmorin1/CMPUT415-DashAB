@@ -708,7 +708,6 @@ float dot_float_vectors(float * x, uint32_t x_size, float * y, uint32_t y_size) 
 }
 
 uint32_t cat_i32_vectors(uint32_t * x, uint32_t x_size, uint32_t * y, uint32_t y_size, uint32_t * result) {
-	check_sizes(x_size, y_size);
 	uint32_t * x_vector = x;
 	uint32_t * y_vector = y;
 	for (int i = 0; i < x_size; i++) {
@@ -719,7 +718,7 @@ uint32_t cat_i32_vectors(uint32_t * x, uint32_t x_size, uint32_t * y, uint32_t y
 	}
 
 	for (int i = 0; i < y_size; i++) {
-		uint32_t y_val = *x_vector;
+		uint32_t y_val = *y_vector;
 		*result = y_val;
 		y_vector += 1;
 		result += 1;
@@ -728,7 +727,6 @@ uint32_t cat_i32_vectors(uint32_t * x, uint32_t x_size, uint32_t * y, uint32_t y
 }
 
 float cat_float_vectors(float * x, uint32_t x_size, float * y, uint32_t y_size, float * result) {
-	check_sizes(x_size, y_size);
 	float * x_vector = x;
 	float * y_vector = y;
 	for (int i = 0; i < x_size; i++) {
@@ -739,7 +737,7 @@ float cat_float_vectors(float * x, uint32_t x_size, float * y, uint32_t y_size, 
 	}
 
 	for (int i = 0; i < y_size; i++) {
-		float y_val = *x_vector;
+		float y_val = *y_vector;
 		*result = y_val;
 		y_vector += 1;
 		result += 1;
@@ -748,7 +746,6 @@ float cat_float_vectors(float * x, uint32_t x_size, float * y, uint32_t y_size, 
 }
 
 char cat_i8_vectors(char * x, uint32_t x_size, char * y, uint32_t y_size, char * result) {
-	check_sizes(x_size, y_size);
 	char * x_vector = x;
 	char * y_vector = y;
 	for (int i = 0; i < x_size; i++) {
@@ -759,7 +756,7 @@ char cat_i8_vectors(char * x, uint32_t x_size, char * y, uint32_t y_size, char *
 	}
 
 	for (int i = 0; i < y_size; i++) {
-		char y_val = *x_vector;
+		char y_val = *y_vector;
 		*result = y_val;
 		y_vector += 1;
 		result += 1;
@@ -768,7 +765,6 @@ char cat_i8_vectors(char * x, uint32_t x_size, char * y, uint32_t y_size, char *
 }
 
 bool cat_i1_vectors(bool * x, uint32_t x_size, bool * y, uint32_t y_size, bool * result) {
-	check_sizes(x_size, y_size);
 	bool * x_vector = x;
 	bool * y_vector = y;
 	for (int i = 0; i < x_size; i++) {
@@ -779,7 +775,7 @@ bool cat_i1_vectors(bool * x, uint32_t x_size, bool * y, uint32_t y_size, bool *
 	}
 
 	for (int i = 0; i < y_size; i++) {
-		bool y_val = *x_vector;
+		bool y_val = *y_vector;
 		*result = y_val;
 		y_vector += 1;
 		result += 1;
