@@ -13,6 +13,6 @@ llc-3.0
 #7# LLC testing: ON
 #8# Compare output for LLC: ON
 
-#9# Specific Test: 
+#9# Specific Test: ON
 #10# Specific Test name:
 loop3.ds

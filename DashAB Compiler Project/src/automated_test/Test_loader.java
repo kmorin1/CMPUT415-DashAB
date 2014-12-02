@@ -43,10 +43,6 @@ public class Test_loader {
 
 		//Do the tests one by one...
 		for(int i = 0; i < tests.size(); i++){
-			// To only execute a test with a certain name:
-			if (!tests.get(i).equals("loop4.ds")) {
-				//continue;
-			}
 			if(Tester.llc_test == 1)
 				llc_result.add(Test_llc.run(tests.get(i)));
 			if(Tester.dash_test == 1)
