@@ -460,11 +460,16 @@ expr returns [String stype, String resultVar, String scalarType, String sizeName
   		$stype = "vector";
   		$scalarType = $type.vecType;
   	}
+  	else if ($type.intervalType != null) {
+  		$stype = "interval";
+  		$scalarType = $type.intervalType;
+  	}
   	else {
   	  $stype = $type.st.toString();
   	}
   } 
     ->  {$type.vecType != null}? vec_arithmetic(expr1={$a.st}, expr2={$b.st}, operator={"sub"}, scalarType={$a.scalarType}, resultType={$type.st}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
+    ->  {$type.intervalType != null}? interval_arithmetic(expr1={$a.st}, expr2={$b.st}, operator={"sub"}, scalarType={$a.scalarType}, resultType={$type.st}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
     ->  arithmetic(expr1={$a.st}, expr2={$b.st}, operator={getArithOp($type.st.toString(), SubOp)}, type={$type.st}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
   | ^(Multiply type a=expr {tmpNum1 = counter;} b=expr {tmpNum2 = counter;})
   { if ($type.vecType != null)
@@ -472,11 +477,16 @@ expr returns [String stype, String resultVar, String scalarType, String sizeName
   		$stype = "vector";
   		$scalarType = $type.vecType;
   	}
+  	else if ($type.intervalType != null) {
+  		$stype = "interval";
+  		$scalarType = $type.intervalType;
+  	}
   	else {
   	  $stype = $type.st.toString();
   	}
   } 
     ->  {$type.vecType != null}? vec_arithmetic(expr1={$a.st}, expr2={$b.st}, operator={"mul"}, scalarType={$a.scalarType}, resultType={$type.st}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
+    ->  {$type.intervalType != null}? interval_arithmetic(expr1={$a.st}, expr2={$b.st}, operator={"mul"}, scalarType={$a.scalarType}, resultType={$type.st}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
     ->  arithmetic(expr1={$a.st}, expr2={$b.st}, operator={getArithOp($type.st.toString(), MulOp)}, type={$type.st}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
   | ^(Divide type a=expr {tmpNum1 = counter;} b=expr {tmpNum2 = counter;})
   { if ($type.vecType != null)
@@ -484,11 +494,16 @@ expr returns [String stype, String resultVar, String scalarType, String sizeName
   		$stype = "vector";
   		$scalarType = $type.vecType;
   	}
+  	else if ($type.intervalType != null) {
+  		$stype = "interval";
+  		$scalarType = $type.intervalType;
+  	}
   	else {
   	  $stype = $type.st.toString();
   	}
   } 
     ->  {$type.vecType != null}? vec_arithmetic(expr1={$a.st}, expr2={$b.st}, operator={"div"}, scalarType={$a.scalarType}, resultType={$type.st}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
+    ->  {$type.intervalType != null}? interval_arithmetic(expr1={$a.st}, expr2={$b.st}, operator={"div"}, scalarType={$a.scalarType}, resultType={$type.st}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
     ->  arithmetic(expr1={$a.st}, expr2={$b.st}, operator={getArithOp($type.st.toString(), DivOp)}, type={$type.st}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
   | ^(Mod type a=expr {tmpNum1 = counter;} b=expr {tmpNum2 = counter;})
   { if ($type.vecType != null)

@@ -142,13 +142,13 @@ public class SymbolTable {
     public Boolean arithmeticValidity(Type t1, Type t2) {
     	String basetype1 = "";
     	String basetype2 = "";
-    	if (t1.getName().equals("vector")) {
+    	if (t1.getName().equals("vector") || t1.getName().equals("interval")) {
     		VectorTypeSymbol vts = (VectorTypeSymbol) t1;
     		basetype1 = vts.getVectorType().getName();
     	} else {
     		basetype1 = t1.getName();
     	}
-    	if (t2.getName().equals("vector")) {
+    	if (t2.getName().equals("vector") || t2.getName().equals("interval")) {
     		VectorTypeSymbol vts = (VectorTypeSymbol) t2;
     		basetype2 = vts.getVectorType().getName();
     	} else {

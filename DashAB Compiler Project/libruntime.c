@@ -55,6 +55,34 @@ char print_i8(char x) {
     return 0;
 }
 
+void check_sizes(uint32_t a, uint32_t b) {
+	if (a != b) {
+		printf("Error: vector sizes must be the same.\n");
+		exit(-1);
+	}
+}
+
+void check_bounds(uint32_t size, uint32_t index_1) {
+	if (index_1 > size) {
+		printf("Error: indexing out of vector bounds.\n");
+		exit(-1);
+	}
+}
+
+void check_interval(int32_t lower, int32_t upper) {
+	if (lower > upper) {
+		printf("Error: interval must be non-decreasing.\n");
+		exit(-1);
+	}
+}
+
+void check_not_zero(int32_t value) {
+	if (value == 0) {
+		printf("Error: divide by zero\n");
+		exit(-1);
+	}
+}
+
 int32_t print_i32_vector(int32_t * x, uint32_t size) {
 	int32_t * num = x;
 	for (int i = 0; i < size; i++) {
@@ -101,10 +129,7 @@ char print_i8_vector(char * x, uint32_t size) {
 }
 
 int32_t print_i32_interval(int32_t lower, int32_t upper) {
-	if (lower > upper) {
-		printf("Error: interval must be non-decreasing.\n");
-		exit(-1);
-	}	
+	check_interval(lower, upper);
 
 	for (int32_t i = lower; i <= upper; i++) {
 		printf("%d", i);
@@ -146,20 +171,6 @@ char input_i8(char * x) {
     int result = scanf("%c", x);
     set_fail(result);
     return 0;
-}
-
-void check_sizes(uint32_t a, uint32_t b) {
-	if (a != b) {
-		printf("Error: vector sizes must be the same.\n");
-		exit(-1);
-	}
-}
-
-void check_bounds(uint32_t size, uint32_t index_1) {
-	if (index_1 > size) {
-		printf("Error: indexing out of vector bounds.\n");
-		exit(-1);
-	}
 }
 
 int32_t add_i32_vectors(int32_t * x, uint32_t x_size, int32_t * y, uint32_t y_size, int32_t * result) {
@@ -214,6 +225,7 @@ int32_t div_i32_vectors(int32_t * x, uint32_t x_size, int32_t * y, uint32_t y_si
 	for (int i = 0; i < x_size; i++) {
 		int32_t x_val = *x_vector;
 		int32_t y_val = *y_vector;
+		check_not_zero(y_val);
 		*result = x_val / y_val;
 		x_vector += 1;
 		y_vector += 1;
@@ -841,6 +853,93 @@ bool index_i1_vectors(bool * x, uint32_t x_size, uint32_t index_1) {
 int32_t add_i32_intervals(int32_t lower1, int32_t upper1, int32_t lower2, int32_t upper2, int32_t * lower_result, int32_t * upper_result) {
 	*lower_result = lower1 + lower2;
 	*upper_result = upper1 + upper2;
+	check_interval(*lower_result, *upper_result);
+	return 0;
+}
+
+int32_t sub_i32_intervals(int32_t lower1, int32_t upper1, int32_t lower2, int32_t upper2, int32_t * lower_result, int32_t * upper_result) {
+	*lower_result = lower1 - upper2;
+	*upper_result = upper1 - lower2;
+	check_interval(*lower_result, *upper_result);
+	return 0;
+}
+
+int32_t mul_i32_intervals(int32_t lower1, int32_t upper1, int32_t lower2, int32_t upper2, int32_t * lower_result, int32_t * upper_result) {
+	int32_t ac = lower1 * lower2;
+	int32_t ad = lower1 * upper2;
+	int32_t bc = upper1 * lower2;
+	int32_t bd = upper1 * upper2;	
+	
+	int32_t min = ac;
+	if (ad < min) {
+		min = ad;
+	}
+
+	if (bc < min) {
+		min = bc;
+	}
+
+	if (bd < min) {
+		min = bd;
+	}
+
+	int32_t max = ac;
+	if (ad > max) {
+		max = ad;
+	}
+
+	if (bc > max) {
+		max = bc;
+	}
+
+	if (bd > max) {
+		max = bd;
+	}
+
+
+	*lower_result = min;
+	*upper_result = max;
+	check_interval(*lower_result, *upper_result);
+	return 0;
+}
+
+int32_t div_i32_intervals(int32_t lower1, int32_t upper1, int32_t lower2, int32_t upper2, int32_t * lower_result, int32_t * upper_result) {
+	check_not_zero(lower2);
+	check_not_zero(upper2);	
+	int32_t ac = lower1 / lower2;
+	int32_t ad = lower1 / upper2;
+	int32_t bc = upper1 / lower2;
+	int32_t bd = upper1 / upper2;
+
+	int32_t min = ac;
+	if (ad < min) {
+		min = ad;
+	}
+
+	if (bc < min) {
+		min = bc;
+	}
+
+	if (bd < min) {
+		min = bd;
+	}
+
+	int32_t max = ac;
+	if (ad > max) {
+		max = ad;
+	}
+
+	if (bc > max) {
+		max = bc;
+	}
+
+	if (bd > max) {
+		max = bd;
+	}
+
+	*lower_result = min;
+	*upper_result = max;
+	check_interval(*lower_result, *upper_result);
 	return 0;
 }
 
