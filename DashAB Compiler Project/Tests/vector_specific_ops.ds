@@ -6,8 +6,8 @@ procedure main() returns integer {
 	integer vector d = a || b;
 	
 	d -> out;
-	"\n" -> out;
+	'\n' -> out;
 	
 	a ** c -> out;
-	"\n" -> out;
+	'\n' -> out;
 }
