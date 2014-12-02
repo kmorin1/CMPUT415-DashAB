@@ -22,6 +22,7 @@ tokens {
   VCONST;
   ROW;
   COLUMN;
+  INDEX;
 }
 
 @header
@@ -169,7 +170,8 @@ returnStatement
   ;
   
 assignment
-  : Identifier(index)? Assign expr SemiColon -> ^(Assign Identifier index? expr)
+  : Identifier Assign expr SemiColon -> ^(Assign Identifier expr)
+  | Identifier index Assign expr SemiColon -> ^(Assign ^(INDEX Identifier index) expr)
   ;
   
 ifstatement
@@ -259,12 +261,13 @@ rangeExpr
   ;
   
 indexExpr
-  : atom (index)?
+  : atom (index) -> ^(INDEX atom index)
+  | atom
   ;
 
 index
-  : (LBracket expr)=> LBracket! expr RBracket!
-  | LBracket! atom RBracket!
+  : (LBracket expr)=> LBracket! expr RBracket! //-> ^(INDEX expr)
+  | LBracket! atom RBracket! //-> ^(INDEX atom)
   ;   
   
 atom
@@ -294,6 +297,7 @@ atom
       else 
         toVConst.addChild((CommonTree) adaptor.create(Char, tokens[i]));
     }
+    toVConst.addChild((CommonTree) adaptor.create(Char, "\\0"));
   }
   -> ^(VCONST {toVConst})
   | Identifier Dot^ (Identifier|Number)
