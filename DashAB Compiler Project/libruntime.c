@@ -26,7 +26,7 @@ uint32_t stream_state() {
     return FAIL;
 }
 
-uint32_t power_i32(uint32_t base, uint32_t exp) {
+int32_t power_i32(int32_t base, int32_t exp) {
     int i, result = 1;
     for (i = 0; i < exp; i++)
         result *= base;
@@ -37,11 +37,11 @@ float power_float(float base, float exp) {
     return pow(base, exp);
 }
 
-uint32_t print_i32(uint32_t x) {
+int32_t print_i32(int32_t x) {
     return printf("%d", x);
 }
 
-uint32_t print_float(float x) {
+int32_t print_float(float x) {
     return printf("%g", x);
 }
 
@@ -55,8 +55,8 @@ char print_i8(char x) {
     return 0;
 }
 
-uint32_t print_i32_vector(uint32_t * x, uint32_t size) {
-	uint32_t * num = x;
+int32_t print_i32_vector(int32_t * x, uint32_t size) {
+	int32_t * num = x;
 	for (int i = 0; i < size; i++) {
 		printf("%d", *num);
 		num += 1;
@@ -100,8 +100,18 @@ char print_i8_vector(char * x, uint32_t size) {
 	return 0;
 }
 
-uint32_t input_i32(uint32_t * x) {
-    int result = scanf("%d", x);
+int32_t print_i32_interval(int32_t lower, int32_t upper) {
+	for (int32_t i = lower; i <= upper; i++) {
+		printf("%d", i);
+		if (i+1 <= upper) {
+			printf(" ");
+		}
+	}
+	return 0;
+}
+
+int32_t input_i32(int32_t * x) {
+    uint32_t result = scanf("%d", x);
     set_fail(result);
     return 0;
 }
@@ -147,13 +157,13 @@ void check_bounds(uint32_t size, uint32_t index_1) {
 	}
 }
 
-uint32_t add_i32_vectors(uint32_t * x, uint32_t x_size, uint32_t * y, uint32_t y_size, uint32_t * result) {
+int32_t add_i32_vectors(int32_t * x, uint32_t x_size, int32_t * y, uint32_t y_size, int32_t * result) {
 	check_sizes(x_size, y_size);	
-	uint32_t * x_vector = x;
-	uint32_t * y_vector = y;
+	int32_t * x_vector = x;
+	int32_t * y_vector = y;
 	for (int i = 0; i < x_size; i++) {
-		uint32_t x_val = *x_vector;
-		uint32_t y_val = *y_vector;
+		int32_t x_val = *x_vector;
+		int32_t y_val = *y_vector;
 		*result = x_val + y_val;
 		x_vector += 1;
 		y_vector += 1;
@@ -162,13 +172,13 @@ uint32_t add_i32_vectors(uint32_t * x, uint32_t x_size, uint32_t * y, uint32_t y
 	return 0;
 }
 
-uint32_t sub_i32_vectors(uint32_t * x, uint32_t x_size, uint32_t * y, uint32_t y_size, uint32_t * result) {
+int32_t sub_i32_vectors(int32_t * x, uint32_t x_size, int32_t * y, uint32_t y_size, int32_t * result) {
 	check_sizes(x_size, y_size);	
-	uint32_t * x_vector = x;
-	uint32_t * y_vector = y;
+	int32_t * x_vector = x;
+	int32_t * y_vector = y;
 	for (int i = 0; i < x_size; i++) {
-		uint32_t x_val = *x_vector;
-		uint32_t y_val = *y_vector;
+		int32_t x_val = *x_vector;
+		int32_t y_val = *y_vector;
 		*result = x_val - y_val;
 		x_vector += 1;
 		y_vector += 1;
@@ -177,13 +187,13 @@ uint32_t sub_i32_vectors(uint32_t * x, uint32_t x_size, uint32_t * y, uint32_t y
 	return 0;
 }
 
-uint32_t mul_i32_vectors(uint32_t * x, uint32_t x_size, uint32_t * y, uint32_t y_size, uint32_t * result) {
+int32_t mul_i32_vectors(int32_t * x, uint32_t x_size, int32_t * y, uint32_t y_size, int32_t * result) {
 	check_sizes(x_size, y_size);	
-	uint32_t * x_vector = x;
-	uint32_t * y_vector = y;
+	int32_t * x_vector = x;
+	int32_t * y_vector = y;
 	for (int i = 0; i < x_size; i++) {
-		uint32_t x_val = *x_vector;
-		uint32_t y_val = *y_vector;
+		int32_t x_val = *x_vector;
+		int32_t y_val = *y_vector;
 		*result = x_val * y_val;
 		x_vector += 1;
 		y_vector += 1;
@@ -192,13 +202,13 @@ uint32_t mul_i32_vectors(uint32_t * x, uint32_t x_size, uint32_t * y, uint32_t y
 	return 0;
 }
 
-uint32_t div_i32_vectors(uint32_t * x, uint32_t x_size, uint32_t * y, uint32_t y_size, uint32_t * result) {
+int32_t div_i32_vectors(int32_t * x, uint32_t x_size, int32_t * y, uint32_t y_size, int32_t * result) {
 	check_sizes(x_size, y_size);	
-	uint32_t * x_vector = x;
-	uint32_t * y_vector = y;
+	int32_t * x_vector = x;
+	int32_t * y_vector = y;
 	for (int i = 0; i < x_size; i++) {
-		uint32_t x_val = *x_vector;
-		uint32_t y_val = *y_vector;
+		int32_t x_val = *x_vector;
+		int32_t y_val = *y_vector;
 		*result = x_val / y_val;
 		x_vector += 1;
 		y_vector += 1;
@@ -207,13 +217,13 @@ uint32_t div_i32_vectors(uint32_t * x, uint32_t x_size, uint32_t * y, uint32_t y
 	return 0;
 }
 
-uint32_t mod_i32_vectors(uint32_t * x, uint32_t x_size, uint32_t * y, uint32_t y_size, uint32_t * result) {
+int32_t mod_i32_vectors(int32_t * x, uint32_t x_size, int32_t * y, uint32_t y_size, int32_t * result) {
 	check_sizes(x_size, y_size);	
-	uint32_t * x_vector = x;
-	uint32_t * y_vector = y;
+	int32_t * x_vector = x;
+	int32_t * y_vector = y;
 	for (int i = 0; i < x_size; i++) {
-		uint32_t x_val = *x_vector;
-		uint32_t y_val = *y_vector;
+		int32_t x_val = *x_vector;
+		int32_t y_val = *y_vector;
 		*result = x_val % y_val;
 		x_vector += 1;
 		y_vector += 1;
@@ -222,13 +232,13 @@ uint32_t mod_i32_vectors(uint32_t * x, uint32_t x_size, uint32_t * y, uint32_t y
 	return 0;
 }
 
-uint32_t pow_i32_vectors(uint32_t * x, uint32_t x_size, uint32_t * y, uint32_t y_size, uint32_t * result) {
+int32_t pow_i32_vectors(int32_t * x, uint32_t x_size, int32_t * y, uint32_t y_size, int32_t * result) {
 	check_sizes(x_size, y_size);	
-	uint32_t * x_vector = x;
-	uint32_t * y_vector = y;
+	int32_t * x_vector = x;
+	int32_t * y_vector = y;
 	for (int i = 0; i < x_size; i++) {
-		uint32_t x_val = *x_vector;
-		uint32_t y_val = *y_vector;
+		int32_t x_val = *x_vector;
+		int32_t y_val = *y_vector;
 		*result = power_i32(x_val, y_val);
 		x_vector += 1;
 		y_vector += 1;
@@ -237,10 +247,10 @@ uint32_t pow_i32_vectors(uint32_t * x, uint32_t x_size, uint32_t * y, uint32_t y
 	return 0;
 }
 
-uint32_t neg_i32_vectors(uint32_t * x, uint32_t x_size, uint32_t * result) {
-	uint32_t * x_vector = x;
+int32_t neg_i32_vectors(int32_t * x, uint32_t x_size, int32_t * result) {
+	int32_t * x_vector = x;
 	for (int i = 0; i < x_size; i++) {
-		uint32_t x_val = *x_vector;
+		int32_t x_val = *x_vector;
 		*result = -x_val;
 		x_vector += 1;
 		result += 1;		
@@ -248,13 +258,13 @@ uint32_t neg_i32_vectors(uint32_t * x, uint32_t x_size, uint32_t * result) {
 	return 0;
 }
 
-uint32_t less_i32_vectors(uint32_t * x, uint32_t x_size, uint32_t * y, uint32_t y_size, bool * result) {
+int32_t less_i32_vectors(int32_t * x, uint32_t x_size, int32_t * y, uint32_t y_size, bool * result) {
 	check_sizes(x_size, y_size);	
-	uint32_t * x_vector = x;
-	uint32_t * y_vector = y;
+	int32_t * x_vector = x;
+	int32_t * y_vector = y;
 	for (int i = 0; i < x_size; i++) {
-		uint32_t x_val = *x_vector;
-		uint32_t y_val = *y_vector;
+		int32_t x_val = *x_vector;
+		int32_t y_val = *y_vector;
 		*result = x_val < y_val;
 		x_vector += 1;
 		y_vector += 1;
@@ -263,13 +273,13 @@ uint32_t less_i32_vectors(uint32_t * x, uint32_t x_size, uint32_t * y, uint32_t 
 	return 0;
 }
 
-uint32_t greater_i32_vectors(uint32_t * x, uint32_t x_size, uint32_t * y, uint32_t y_size, bool * result) {
+int32_t greater_i32_vectors(int32_t * x, uint32_t x_size, int32_t * y, uint32_t y_size, bool * result) {
 	check_sizes(x_size, y_size);	
-	uint32_t * x_vector = x;
-	uint32_t * y_vector = y;
+	int32_t * x_vector = x;
+	int32_t * y_vector = y;
 	for (int i = 0; i < x_size; i++) {
-		uint32_t x_val = *x_vector;
-		uint32_t y_val = *y_vector;
+		int32_t x_val = *x_vector;
+		int32_t y_val = *y_vector;
 		*result = x_val > y_val;
 		x_vector += 1;
 		y_vector += 1;
@@ -278,13 +288,13 @@ uint32_t greater_i32_vectors(uint32_t * x, uint32_t x_size, uint32_t * y, uint32
 	return 0;
 }
 
-uint32_t lessequal_i32_vectors(uint32_t * x, uint32_t x_size, uint32_t * y, uint32_t y_size, bool * result) {
+int32_t lessequal_i32_vectors(int32_t * x, uint32_t x_size, int32_t * y, uint32_t y_size, bool * result) {
 	check_sizes(x_size, y_size);	
-	uint32_t * x_vector = x;
-	uint32_t * y_vector = y;
+	int32_t * x_vector = x;
+	int32_t * y_vector = y;
 	for (int i = 0; i < x_size; i++) {
-		uint32_t x_val = *x_vector;
-		uint32_t y_val = *y_vector;
+		int32_t x_val = *x_vector;
+		int32_t y_val = *y_vector;
 		*result = x_val <= y_val;
 		x_vector += 1;
 		y_vector += 1;
@@ -293,13 +303,13 @@ uint32_t lessequal_i32_vectors(uint32_t * x, uint32_t x_size, uint32_t * y, uint
 	return 0;
 }
 
-uint32_t greaterequal_i32_vectors(uint32_t * x, uint32_t x_size, uint32_t * y, uint32_t y_size, bool * result) {
+int32_t greaterequal_i32_vectors(int32_t * x, uint32_t x_size, int32_t * y, uint32_t y_size, bool * result) {
 	check_sizes(x_size, y_size);	
-	uint32_t * x_vector = x;
-	uint32_t * y_vector = y;
+	int32_t * x_vector = x;
+	int32_t * y_vector = y;
 	for (int i = 0; i < x_size; i++) {
-		uint32_t x_val = *x_vector;
-		uint32_t y_val = *y_vector;
+		int32_t x_val = *x_vector;
+		int32_t y_val = *y_vector;
 		*result = x_val >= y_val;
 		x_vector += 1;
 		y_vector += 1;
@@ -308,14 +318,14 @@ uint32_t greaterequal_i32_vectors(uint32_t * x, uint32_t x_size, uint32_t * y, u
 	return 0;
 }
 
-bool equal_i32_vectors(uint32_t * x, uint32_t x_size, uint32_t * y, uint32_t y_size) {
+bool equal_i32_vectors(int32_t * x, uint32_t x_size, int32_t * y, uint32_t y_size) {
 	check_sizes(x_size, y_size);	
-	uint32_t * x_vector = x;
-	uint32_t * y_vector = y;
+	int32_t * x_vector = x;
+	int32_t * y_vector = y;
 	bool equal = true;
 	for (int i = 0; i < x_size; i++) {
-		uint32_t x_val = *x_vector;
-		uint32_t y_val = *y_vector;
+		int32_t x_val = *x_vector;
+		int32_t y_val = *y_vector;
 		if (x_val != y_val) {
 			equal = false;
 			break;
@@ -326,7 +336,7 @@ bool equal_i32_vectors(uint32_t * x, uint32_t x_size, uint32_t * y, uint32_t y_s
 	return equal;
 }
 
-bool nequal_i32_vectors(uint32_t * x, uint32_t x_size, uint32_t * y, uint32_t y_size) {
+bool nequal_i32_vectors(int32_t * x, uint32_t x_size, int32_t * y, uint32_t y_size) {
 	return !equal_i32_vectors(x, x_size, y, y_size);;
 }
 
@@ -677,14 +687,14 @@ bool nequal_i1_vectors(bool * x, uint32_t x_size, bool * y, uint32_t y_size) {
 	return !equal_i1_vectors(x, x_size, y, y_size);
 }
 
-uint32_t dot_i32_vectors(uint32_t * x, uint32_t x_size, uint32_t * y, uint32_t y_size) {
+int32_t dot_i32_vectors(int32_t * x, uint32_t x_size, int32_t * y, uint32_t y_size) {
 	check_sizes(x_size, y_size);
-	uint32_t * x_vector = x;
-	uint32_t * y_vector = y;
-	uint32_t sum = 0;
+	int32_t * x_vector = x;
+	int32_t * y_vector = y;
+	int32_t sum = 0;
 	for (int i = 0; i < x_size; i++) {
-		uint32_t x_val = *x_vector;
-		uint32_t y_val = *y_vector;
+		int32_t x_val = *x_vector;
+		int32_t y_val = *y_vector;
 		sum += x_val * y_val;
 		x_vector += 1;
 		y_vector += 1;
@@ -707,18 +717,18 @@ float dot_float_vectors(float * x, uint32_t x_size, float * y, uint32_t y_size) 
 	return sum;
 }
 
-uint32_t cat_i32_vectors(uint32_t * x, uint32_t x_size, uint32_t * y, uint32_t y_size, uint32_t * result) {
-	uint32_t * x_vector = x;
-	uint32_t * y_vector = y;
+int32_t cat_i32_vectors(int32_t * x, uint32_t x_size, int32_t * y, uint32_t y_size, int32_t * result) {
+	int32_t * x_vector = x;
+	int32_t * y_vector = y;
 	for (int i = 0; i < x_size; i++) {
-		uint32_t x_val = *x_vector;
+		int32_t x_val = *x_vector;
 		*result = x_val;
 		x_vector += 1;
 		result += 1;
 	}
 
 	for (int i = 0; i < y_size; i++) {
-		uint32_t y_val = *y_vector;
+		int32_t y_val = *y_vector;
 		*result = y_val;
 		y_vector += 1;
 		result += 1;
@@ -783,11 +793,11 @@ bool cat_i1_vectors(bool * x, uint32_t x_size, bool * y, uint32_t y_size, bool *
 	return 0;
 }
 
-uint32_t index_i32_vectors(uint32_t * x, uint32_t x_size, uint32_t index_1) {
+int32_t index_i32_vectors(int32_t * x, uint32_t x_size, uint32_t index_1) {
 	check_bounds(x_size, index_1);	
 	uint32_t index_0 = index_1 - 1;
-	uint32_t * x_vector = x;
-	uint32_t val = 0;
+	int32_t * x_vector = x;
+	int32_t val = 0;
 	x_vector += index_0;
 	val = *x_vector;
 	return val;	
