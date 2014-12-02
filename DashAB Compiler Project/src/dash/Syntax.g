@@ -155,7 +155,7 @@ returnStatement
   ;
   
 assignment
-  : Identifier Assign expr SemiColon -> ^(Assign Identifier expr)
+  : Identifier(index)? Assign expr SemiColon -> ^(Assign Identifier index? expr)
   ;
   
 ifstatement
