@@ -108,6 +108,10 @@ declaration
     -> ^(DECL specifier? ^(Vector["vector"] type? size) Identifier)
   | (specifier | type | specifier type) Vector? Identifier (LBracket size RBracket)? Assign a=expr SemiColon
     -> ^(DECL specifier? ^(Vector["vector"] type? size?) ^(Assign Identifier $a))
+  | (specifier | Integer | specifier Integer) Interval Identifier SemiColon 
+    -> ^(DECL specifier? ^(Interval Integer["integer"]) Identifier)
+  | (specifier | Integer | specifier Integer) Interval Identifier Assign a=expr SemiColon
+    -> ^(DECL specifier? ^(Interval Integer["integer"]) ^(Assign Identifier $a))
   | (specifier | type | specifier type) Matrix? Identifier LBracket rowsize=size Comma columnsize=size RBracket SemiColon
     -> ^(DECL specifier? ^(Matrix["matrix"] type? $rowsize $columnsize) Identifier)  
   | (specifier | type | specifier type) Matrix? Identifier (LBracket rowsize=size Comma columnsize=size RBracket)?  Assign a=expr SemiColon
@@ -177,7 +181,6 @@ slist
 type
   : Boolean
   | Integer
-  | Interval
   | String -> ^(Vector["vector"] Character["character"])
   | Real
   | Character

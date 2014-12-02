@@ -190,7 +190,7 @@ type returns [String tsym, String scalarType]
   | Boolean {$tsym = "boolean";}
   | Integer {$tsym = "integer";}
   | Matrix {$tsym = "matrix";}
-  | Interval {$tsym = "interval";}
+  | ^(Interval scalar=type) {$tsym = "interval"; $scalarType = $scalar.tsym;}
   | String {$tsym = "string";}
   | ^(Vector scalar=type? size?) {$tsym = "vector"; $scalarType = $scalar.tsym;}
   | Real {$tsym = "real";}
@@ -283,7 +283,7 @@ expr returns [String stype, String scalarType]
   | type {$stype = $type.tsym;} streamstate
   | type {$stype = $type.tsym;} length
   | ^(VCONST type expr+) {$stype = "vector"; $scalarType = $type.scalarType;}
-  | ^(Range expr expr)
+  | ^(Range type expr expr) {$stype = "interval"; $scalarType = $type.scalarType;}
   | ^(Filter Identifier expr expr) 
   | ^(GENERATOR Identifier expr expr)
   | ^(GENERATOR ^(ROW Identifer expr) ^(COLUMN Identifier expr) expr)    

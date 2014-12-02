@@ -158,7 +158,7 @@ type
   : Boolean
   | Integer
   | Matrix
-  | Interval
+  | ^(Interval Integer)
   | String
   | ^(Vector type? size?)
   | Real

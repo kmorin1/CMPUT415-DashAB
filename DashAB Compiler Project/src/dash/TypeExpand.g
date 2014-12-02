@@ -494,7 +494,14 @@ type returns [Type tsym]
   : t=Boolean {$tsym = (Type) symtab.resolveType($t.text);}
   | t=Integer {$tsym = (Type) symtab.resolveType($t.text);}
   | t=Matrix {$tsym = (Type) symtab.resolveType($t.text);}
-  | t=Interval {$tsym = (Type) symtab.resolveType($t.text);}
+  | ^(Interval Integer) {
+    if (size == null)
+      size = adaptor.create(Identifier, "*");
+    
+    VectorTypeSymbol vts = new VectorTypeSymbol("interval", bits, vtype, size);
+    
+    $tsym = vts;
+  }
   | t=String {$tsym = (Type) symtab.resolveType($t.text);}
   | ^(Vector (vt=type {vtype = $vt.tree;})? (s=size {size = $s.tree;})? ) {
     
@@ -1151,7 +1158,11 @@ expr returns [Type stype]
     if (!$a.stype.getName().equals("integer") || !$b.stype.getName().equals("integer"))
       throw new RuntimeException(errorhead + "interval operands must be integer expressions");
     $stype = new VectorTypeSymbol("interval", new BuiltInTypeSymbol("integer"), null, adaptor.create(Identifier, "*"));
-  }
+    typetree = (CommonTree) adaptor.nil();
+    typetree.addChild((CommonTree) adaptor.create(Interval, "interval"));
+    CommonTree child = (CommonTree) typetree.getChild(0);
+    child.addChild((CommonTree) adaptor.create(Identifier, "integer"));
+  } -> ^(Range ^({typetree}) expr expr)
   | ^(Filter Identifier a=expr b=expr) 
   | ^(GENERATOR Identifier a=expr b=expr) {
     if ((symtab.lookup($a.stype, $b.stype) == null) && (symtab.lookup($b.stype, $a.stype) == null))

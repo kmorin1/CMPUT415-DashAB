@@ -205,6 +205,7 @@ statement
 outputstream
   : ^(RArrow expr stream=Identifier)
   -> {$expr.stype == "vector"}? print_vector(expr={$expr.st}, size={$expr.sizeName}, scalarType={$expr.scalarType}, result={counter})
+  -> {$expr.stype == "interval"}? print_interval(expr={$expr.st}, scalarType={$expr.scalarType}, result={counter})
   -> print(expr={$expr.st}, type={$expr.stype}, result={counter})
   
   ;
@@ -391,12 +392,12 @@ slist
   | declaration -> return(a={$declaration.st})
   ;
   
-type returns [String vecType, String sizeName, StringTemplate sizeExpr]
+type returns [String vecType, String sizeName, StringTemplate sizeExpr, String intervalType]
   : Identifier -> return(a={"ID"})
   | Boolean -> return(a={BoolType})
   | Integer -> return(a={IntType})
   | Matrix
-  | Interval
+  | ^(Interval scalar=type) {$intervalType = $scalar.st.toString();} -> return(a={$scalar.st})
   | String
   | ^(Vector scalar=type expr?) {$vecType = $scalar.st.toString(); $sizeName = $expr.resultVar; $sizeExpr = $expr.st;} -> return(a={$scalar.st})
   | Vector {$vecType = "???"; $sizeName = "??"; $sizeExpr = new StringTemplate("?");} -> return(a={$vecType})
@@ -710,7 +711,11 @@ expr returns [String stype, String resultVar, String scalarType, String sizeName
   	varTypes.add($e.stype);
   }
   )+) -> load_vector(tmpNum={++counter}, exprs={expressions}, varNames={varNums}, varType={$type.st}, size={numElements}, varIndices={varIndices})
-  | ^(Range expr expr)
+  | ^(Range type a=expr {tmpNum1 = counter;} b=expr {tmpNum2 = counter;})
+  {
+  	$stype = "interval";
+  	$scalarType = $type.intervalType;
+  } -> load_interval(tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, expr1={$a.st}, expr2={$b.st}, result={++counter}, scalarType={$scalarType})
   | ^(Filter Identifier expr expr) 
   | ^(GENERATOR Identifier expr expr)
   | ^(GENERATOR ^(ROW Identifer expr) ^(COLUMN Identifier expr) expr)  

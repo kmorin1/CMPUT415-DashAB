@@ -44,6 +44,8 @@ declare i1 @print_i1_vector(i1*, i32)
 
 declare i8 @print_i8_vector(i8*, i32)
 
+declare i32 @print_i32_interval(i32, i32)
+
 declare i32 @input_i32(i32*)
 
 declare float @input_float(float*)
@@ -283,6 +285,17 @@ store <varType> %.<name>, <varType>* %.tmp.<name>
 
 >>
 
+load_interval(tmpNum1, tmpNum2, expr1, expr2, result, scalarType) ::= <<
+;start load interval
+<expr1>
+<expr2>
+
+%.intervaltemp.<result> = insertvalue {<scalarType>, <scalarType>} undef, <scalarType> %.<tmpNum1>, 0
+%.<result> = insertvalue {<scalarType>, <scalarType>} %.intervaltemp.<result>, <scalarType> %.<tmpNum2>, 1
+;end load interval
+
+>>
+
 print(expr, type, result) ::= <<
 ;start print
 <expr>
@@ -301,6 +314,18 @@ print_vector(expr, size, scalarType, result) ::= <<
 
 call <scalarType> (<scalarType>*, i32)* @print_<scalarType>_vector(<scalarType>* %.vectortemp<result>, i32 %.size<result>)
 ;end print vector
+
+>>
+
+print_interval(expr, scalarType, result) ::= <<
+;start print interval
+<expr>
+
+%.lower.<result> = extractvalue {<scalarType>, <scalarType>} %.<result>, 0
+%.upper.<result> = extractvalue {<scalarType>, <scalarType>} %.<result>, 1
+
+call <scalarType> (<scalarType>, <scalarType>)* @print_<scalarType>_interval(<scalarType> %.lower.<result>, <scalarType> %.upper.<result>)
+;end print interval
 
 >>
 
