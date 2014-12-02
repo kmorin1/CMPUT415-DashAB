@@ -685,6 +685,26 @@ expr returns [Type stype]
         typetree.addChild((CommonTree) adaptor.create(Identifier, $stype.getName()));
     }
   } -> ^(Exponent ^({typetree}) expr expr)
+  | ^(Product a=expr b=expr) {
+    if ((!$a.stype.getName().equals("vector") ||
+      !$a.stype.getName().equals("matrix")) &&
+      (!$b.stype.getName().equals("vector") ||
+      !$b.stype.getName().equals("matrix")))
+        throw new RuntimeException(errorhead + "Product requires vector type expressions");
+    VectorTypeSymbol vts1 = (VectorTypeSymbol) $a.stype;
+    VectorTypeSymbol vts2 = (VectorTypeSymbol) $b.stype;
+    Boolean lua = symtab.lookup(vts1.getVectorType(), vts2.getVectorType());
+    Boolean lub = symtab.lookup(vts2.getVectorType(), vts1.getVectorType());
+    if (lua == null && lub == null)
+      throw new RuntimeException(errorhead + "invalid vector type");
+    if (lua != null)
+      $stype = $b.stype;
+    else if (lub != null)
+      $stype = $a.stype;
+    else 
+      throw new RuntimeException(errorhead + "type promotion error in product");
+    
+  } -> ^(Product Identifier[$stype.getName()] expr expr)
   | ^(Equals a=expr b=expr) {
     Boolean lua = symtab.lookup($a.stype, $b.stype);
     Boolean lub = symtab.lookup($b.stype, $a.stype);
@@ -1057,13 +1077,18 @@ expr returns [Type stype]
     RewriteRuleSubtreeStream rewriteexpr = new RewriteRuleSubtreeStream(adaptor, "temp");
     for (int i=0; i<vtypes.size(); i++) {
       exprtree = (CommonTree) stream_expr.nextTree();
-      
+      if (vtypes.get(i).getName().equals("vector") ||
+          vtypes.get(i).getName().equals("interval") ||
+          vtypes.get(i).getName().equals("matrix") ||
+          vtypes.get(i).getName().equals("tuple"))
+            throw new RuntimeException(errorhead + "cannot nest this type in constructors");
       Boolean lua = symtab.lookup(vtypes.get(i), comtype);
       Boolean lub = symtab.lookup(comtype, vtypes.get(i));
       if (lua == null && lub == null)
         throw new RuntimeException(errorhead = "cannot find common type in vector constructor");
       if (lub != null && lub) {
         comtype = (BuiltInTypeSymbol) vtypes.get(i);
+        
         i=-1;
         stream_expr.reset();
         rewriteexpr = new RewriteRuleSubtreeStream(adaptor, "temp");
