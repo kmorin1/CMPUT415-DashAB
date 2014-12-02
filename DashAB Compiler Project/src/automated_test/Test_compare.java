@@ -35,7 +35,7 @@ public class Test_compare {
 					System.out.println("Differences has been found:");
 					System.out.println(line);
 					error = -1;
-				
+				}
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
