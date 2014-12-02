@@ -1,0 +1,5 @@
+procedure main() returns integer {
+	character a = 'a';
+	boolean b = a and 'b';
+	return 0;
+}
