@@ -273,7 +273,6 @@ atom
     String[] tokens = temp.split("(?!^)");
  
     for (int i = 0; i < tokens.length; i++) {
-      System.out.println(tokens[i]);
       if (tokens[i].equals("\\") && ((i + 1) < tokens.length)) 
       {
         toVConst.addChild((CommonTree) adaptor.create(Char, tokens[i] + tokens[i+1]));
