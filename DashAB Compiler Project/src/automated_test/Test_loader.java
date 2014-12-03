@@ -13,6 +13,8 @@ public class Test_loader {
 
 	//Test result list
 	public static List <Integer> llc_result = new ArrayList<Integer>();
+	public static List <String> llc_result_works = new ArrayList<String>();
+	public static List <String> llc_result_nope = new ArrayList<String>();
 	public static List <Integer> dash_result = new ArrayList<Integer>();
 
 	public static void load(){
@@ -85,19 +87,30 @@ public class Test_loader {
 		System.out.println("\n### Summary ###");
 		if(Tester.llc_test == 1){
 			System.out.println("\nThe following tests does not work with llc: ");
+			/*
 			for(int i = 0; i < tests.size(); i++){
 				if(llc_result.get(i) == -1 && Tester.llc_test == 1){
 					System.out.println(" - " + tests.get(i));
 					llc_err++;
 				}
 			}
+			*/
+			for(int i = 0; i < llc_result_nope.size(); i++){
+				System.out.println(llc_result_nope.get(i));
+			}
+			llc_err = llc_result_nope.size();
 		}
 		if(Tester.llc_test == 1){
 			System.out.println("\nThe following tests works with llc: ");
+			/*
 			for(int i = 0; i < tests.size(); i++){
 				if(llc_result.get(i) == 0 && Tester.llc_test == 1){
 					System.out.println(" - " + tests.get(i));
 				}
+			}
+			*/
+			for(int i = 0; i < llc_result_works.size(); i++){
+				System.out.println(llc_result_works.get(i));
 			}
 		}
 		if(Tester.dash_test == 1){
