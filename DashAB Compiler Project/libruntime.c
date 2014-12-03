@@ -51,7 +51,9 @@ bool print_i1(bool x) {
 }
 
 char print_i8(char x) {
-    printf("%c", x);
+    if (x != 0) {
+    	printf("%c", x);
+    }
     return 0;
 }
 
@@ -133,9 +135,10 @@ bool print_i1_vector(bool * x, uint32_t size) {
 char print_i8_vector(char * x, uint32_t size) {
 	char * string = x;
 	for (int i = 0; i < size; i++) {
-		if (*string != 0) {
-			printf("%c", *string);
+		if (*string == 0) {
+			break;
 		}
+		printf("%c", *string);
 		string += 1;
 	}
 	return 0;
@@ -791,6 +794,9 @@ char cat_i8_vectors(char * x, uint32_t x_size, char * y, uint32_t y_size, char *
 	char * y_vector = y;
 	for (int i = 0; i < x_size; i++) {
 		char x_val = *x_vector;
+		if (x_val == 0) {
+			break;
+		}
 		*result = x_val;
 		x_vector += 1;
 		result += 1;

@@ -1,0 +1,107 @@
+procedure main() returns integer {
+	var out = std_output();
+	/*
+	['I', 'n', 't', 'e', 'g', 'e', 'r', 's'] -> out;
+	'\n' -> out;
+	[1,2,3]+[1,2,3] -> out;
+	[1,2,3]-[1,2,3] -> out;
+	[1,2,3]*[1,2,3] -> out;
+	[1,2,3]/[1,2,3] -> out;
+	[1,2,3]%[1,2,3] -> out;
+	[1,2,3]^[1,2,3] -> out;
+	[1,2,3]<[1,3,2] -> out;
+	[1,2,3]<=[1,3,2] -> out;
+	[1,2,3]>[1,3,2] -> out;
+	[1,2,3]>=[1,3,2] -> out;
+	[1,1]==[1,2] -> out;
+	'\n' -> out;
+	[1,1]!=[1,2] -> out;
+	'\n' -> out;
+	[1,2]==[1,2] -> out;
+	'\n' -> out;
+	[1,2]!=[1,2] -> out;
+	'\n' -> out;
+	-[1,2] -> out;
+	
+	['R', 'e', 'a', 'l', 's'] -> out;
+	'\n' -> out;
+	[1.1,2.2]+[1.1,2.2] -> out;
+	[1.1,2.2]-[1.1,2.2] -> out;
+	[1.1,2.2]*[1.1,2.2] -> out;
+	[1.1,2.2]/[1.1,2.2] -> out;
+	[1.1,2.2]%[1.1,2.2] -> out;
+	[1.1,2.2]^[1.1,2.2] -> out;
+	[1.1,2.2,3.3]<[1.1,3.3,2.2] -> out;
+	[1.1,2.2,3.3]<=[1.1,3.3,2.2] -> out;
+	[1.1,2.2,3.3]>[1.1,3.3,2.2] -> out;
+	[1.1,2.2,3.3]>=[1.1,3.3,2.2] -> out;
+	[1.1,2.1]==[1.1,2.2] -> out;
+	'\n' -> out;
+	[1.1,2.1]!=[1.1,2.2] -> out;
+	'\n' -> out;
+	[1.1,2.2]==[1.1,2.2] -> out;
+	'\n' -> out;
+	[1.1,2.2]!=[1.1,2.2] -> out;
+	'\n' -> out;
+	-[1.1,2.2] -> out;
+	
+	['C', 'h', 'a', 'r', 's'] -> out;
+	'\n' -> out;
+	['a','b','c']<['a','c','b'] -> out;
+	['a','b','c']<=['a','c','b'] -> out;
+	['a','b','c']>['a','c','b'] -> out;
+	['a','b','c']>=['a','c','b'] -> out;
+	['a','c']==['a','b'] -> out;
+	'\n' -> out;
+	['a','c']!=['a','b'] -> out;
+	'\n' -> out;
+	['a','b']==['a','b'] -> out;
+	'\n' -> out;
+	['a','b']!=['a','b'] -> out;
+	'\n' -> out;
+	
+	
+	['B', 'o', 'o', 'l', 's'] -> out;
+	'\n' -> out;
+	[true,true,false,false]or[true,false,true,false] -> out;
+	[true,true,false,false]and[true,false,true,false] -> out;
+	[true,true,false,false]xor[true,false,true,false] -> out;
+	[true,false]==[true,true] -> out;
+	'\n' -> out;
+	[true,false]!=[true,true] -> out;
+	'\n' -> out;
+	[true,true]==[true,true] -> out;
+	'\n' -> out;
+	[true,true]!=[true,true] -> out;
+	'\n' -> out;
+	not [true, false] -> out;
+	
+	[2]**[3] -> out;
+	'\n' -> out;
+	[1]||[1] -> out;
+
+	[2.1]**[2.1] -> out;
+	'\n' -> out;
+	[1.1]||[1.1] -> out;
+
+	['a']||['a'] -> out;
+	'\n' -> out;
+
+	[true]||[true] -> out;
+
+	[3, 2][1] -> out;
+	'\n' -> out;
+	[3.3, 2.2][1] -> out;
+	'\n' -> out;
+	['a', 'b'][1] -> out;
+	'\n' -> out;
+	[true, false][1] -> out;
+	'\n' -> out;
+	"hello"[2] -> out;
+	'\n' -> out;
+	(2..10)[4] -> out;
+	'\n' -> out;
+	*/
+	
+	return 0;
+}

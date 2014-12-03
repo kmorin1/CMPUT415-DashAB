@@ -13,16 +13,23 @@ public class TestFolderizer {
 		// TODO Auto-generated method stub
 		File testdir = new File("Tests");
 		File[] tests = testdir.listFiles();
-		for (int i=0; i<tests.length-1; i++) {
-			//System.out.println(testfile.getName());
-			if (tests[i].getName().endsWith(".ds") || tests[i].getName().endsWith(".in")) {
-				File newdir = new File(testdir.getName() + "\\" + tests[i].getName().substring(0, tests[i].getName().length()-3));
+		for (int i=0; i<tests.length; i++) {
+			if (tests[i].getName().endsWith(".ds") || tests[i].getName().endsWith(".in") || tests[i].getName().endsWith(".exp")) {
+				File newdir = null;
+				
+				if (tests[i].getName().endsWith(".ds") || tests[i].getName().endsWith(".in")) {
+				    newdir = new File(tests[i].getName().substring(0, tests[i].getName().length()-3));
+				}
+				else if (tests[i].getName().endsWith(".exp")) {
+				    newdir = new File(tests[i].getName().substring(0, tests[i].getName().length()-4));
+				}
+				
 				//System.out.println(newdir.getName());
 				if (!newdir.exists()) {
 					newdir.mkdir();
-				} 
+				}
 				
-				File dest = new File(testdir.getName() + "\\" + newdir.getName() + "\\" + tests[i].getName());
+				File dest = new File(newdir.getName() + "/" + tests[i].getName());
 				System.out.println(dest);
 				FileReader freader = new FileReader(tests[i]);
 				BufferedReader reader = new BufferedReader(freader);

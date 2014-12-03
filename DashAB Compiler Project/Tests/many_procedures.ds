@@ -1,0 +1,92 @@
+const out = std_output();
+
+procedure test(var integer interval x) {
+	x = 3..7;
+}
+
+procedure test2(var string y) {
+	y || " world!\n" -> out;
+	return;
+}
+
+procedure test3(var integer vector x) returns integer vector {
+	integer vector z = x + [1, 2, 3];
+	return z;
+}
+
+procedure test4() returns real vector {
+	real vector z = [1.1, 2.2, 3.3, 4.4];
+	return z;
+}
+
+procedure test5() returns character vector {
+	character vector z = ['a', 'b', 'c'];
+	return z;
+}
+
+procedure test6() returns boolean vector {
+	boolean vector z = [true, false, false];
+	return z;
+}
+
+procedure test7(var integer interval x) returns integer{
+	return x[2];
+}
+
+procedure test8(var string y) returns character{
+	return y[3];
+}
+
+procedure test9(var integer vector x) {
+	x = x + [1, 2, 3];
+}
+
+procedure test10(var integer vector array, var integer index) returns integer {
+	return array[index];
+}
+
+procedure main() returns integer {
+	integer vector z = [1, 2, 3];
+	integer interval x = 2..4;
+	string y = "hello";
+	integer vector a = test3(z);
+	real vector b = test4();
+	character vector c = test5();
+	boolean vector d = test6();
+	integer interval x2 = 2..4;
+	string y2 = "hello";
+	integer e = test7(x2);
+	integer f = -test7(x2);
+	character g = test8(y2);
+	integer r = 1;
+
+	x -> out;
+	call test(x);
+	x -> out;
+
+	call test2(y);
+	
+	a -> out;
+	b -> out;
+	c -> out;
+	'\n' -> out;
+	d -> out;
+
+	e -> out;
+	'\n' -> out;
+	f -> out;
+	'\n' -> out;
+	g -> out;
+	'\n' -> out;
+	
+	z -> out;
+	call test9(z);
+	z -> out;
+	
+	r = test10(z, r);
+	r -> out;
+	'\n' -> out;
+	
+	
+	return 0;
+}

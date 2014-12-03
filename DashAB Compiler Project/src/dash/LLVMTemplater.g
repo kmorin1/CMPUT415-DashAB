@@ -303,6 +303,9 @@ procedure
   ;
   
 function
+@init {
+	String returnType = null;
+}
 @after {
 	// Function Symbol won't have type information with it
 	FunctionSymbol fs = new FunctionSymbol($id.text, null);
@@ -310,8 +313,19 @@ function
 	currentscope = currentscope.getEnclosingScope();
 }
   : ^(Function id=Identifier paramlist ^(Returns type))
-  | ^(Function id=Identifier paramlist ^(Returns type) block) -> declareProcOrFunc(procName={$Identifier}, procVars={$paramlist.st}, procBody={$block.st}, retType={$type.st}, retNum={counter++})
-  | ^(Function id=Identifier paramlist ^(Returns type) ^(Assign expr)) -> declareProcOrFunc(procName={$Identifier}, procVars={$paramlist.st}, procBody={$expr.st}, retType={$type.st}, retNum={counter++})
+  | ^(Function id=Identifier paramlist ^(Returns type)
+  {
+  	if ($type.vecType != null) {
+  		returnType = "{i32, " + $type.vecType + "*}";
+  	}
+  	else if ($type.intervalType != null) {
+  		returnType = "{" + $type.intervalType + ", " + $type.intervalType + "}";
+  	}
+  	else {
+  		returnType = $type.st.toString();
+  	}
+  } block) -> declareProcOrFunc(procName={$Identifier}, procVars={$paramlist.st}, procBody={$block.st}, retType={returnType}, retNum={counter++})
+  | ^(Function id=Identifier paramlist ^(Returns type) ^(Assign expr)) -> declareFuncStatement(procName={$Identifier}, procVars={$paramlist.st}, procBody={$expr.st}, retType={$type.st}, retNum={counter++})
   ;
   
 paramlist

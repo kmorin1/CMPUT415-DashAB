@@ -254,6 +254,16 @@ entry:
 
 >>
 
+declareFuncStatement(procName, procVars, procBody, retType, retNum) ::= <<
+define <retType> @<procName>(<procVars>) {
+entry:
+  <procBody>
+  ret <retType> %.<retNum>
+}
+
+
+>>
+
 declareVoidProc(procName, procVars, procType, procBody) ::= <<
 define void @<procName>(<procVars>) {
 entry:

@@ -1,0 +1,14 @@
+const out = std_output();
+
+procedure main() returns integer {
+	length([1, 2, 3, 4, 5, 6]) -> out;
+	'\n' -> out;
+	length([3, 4, 5] || [7, 8]) -> out;
+	'\n' -> out;
+	
+	reverse(['h', 'e', 'l', 'l', 'o']) -> out;
+	'\n' -> out;
+	reverse([9, 8, 1]) -> out;
+	
+	return 0;
+}

@@ -1,0 +1,45 @@
+const out = std_output();
+
+function test(integer x) returns integer {
+	return x;
+}
+
+function test2(const integer x) returns integer {
+	return 2 * (x + 3);
+}
+
+function test3(real x) returns integer {
+	return as<integer>(x);
+}
+
+function test4(character x) returns character {
+	return x;
+}
+
+function test5(boolean x) returns boolean {
+	return not x;
+}
+
+function test6(integer x) returns integer = x ^ 2;
+
+function test7(real x) returns integer = as<integer>(x ^ x);
+
+
+
+procedure main() returns integer {
+	test(5+900) -> out;
+	'\n' -> out;
+	test2(10 - 7) -> out;
+	'\n' -> out;
+	test3(3.14) -> out;
+	'\n' -> out;
+	test4('M') -> out;
+	'\n' -> out;
+	test5(true) -> out;
+	'\n' -> out;
+	test6(7) -> out;
+	'\n' -> out;
+	test7(3.14) -> out;
+	
+	return 0;
+}
