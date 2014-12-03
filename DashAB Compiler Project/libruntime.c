@@ -57,21 +57,21 @@ char print_i8(char x) {
 
 void check_sizes(uint32_t a, uint32_t b) {
 	if (a != b) {
-		printf("Error: vector sizes must be the same.\n");
+		printf("Error: vector sizes (%d and %d) are different.\n", a, b);
 		exit(-1);
 	}
 }
 
 void check_bounds(uint32_t size, uint32_t index_1) {
 	if (index_1 > size || index_1 <= 0) {
-		printf("Error: indexing out of bounds.\n");
+		printf("Error: index [%d] is out of bounds of array with size %d.\n", index_1, size);
 		exit(-1);
 	}
 }
 
 void check_interval(int32_t lower, int32_t upper) {
 	if (lower > upper) {
-		printf("Error: interval must be non-decreasing.\n");
+		printf("Error: interval [%d,%d] must be non-decreasing.\n", lower, upper);
 		exit(-1);
 	}
 }
@@ -85,7 +85,7 @@ void check_not_zero(int32_t value) {
 
 void check_by(int32_t by) {
 	if (by < 1) {
-		printf("Error: by operator needs a positive integer.\n");
+		printf("Error: by operator has a non-positive integer (%d).\n", by);
 		exit(-1);
 	}
 }
@@ -857,6 +857,45 @@ int32_t index_interval_i32_vectors(uint32_t * x, uint32_t vector_size, int32_t l
 		check_bounds(vector_size, index_1);
 		uint32_t index_0 = index_1 - 1;
 		*result = *(vector+index_0);
+		result += 1;
+	}
+
+	return 0;
+}
+
+int32_t index_int_i32_intervals(int32_t lower, uint32_t upper, uint32_t index_1) {
+	check_interval(lower, upper);
+	check_bounds(upper - lower + 1, index_1);
+	uint32_t index_0 = index_1 - 1;
+	int32_t val = lower + index_0;
+	return val;	
+}
+
+int32_t index_vector_i32_intervals(int32_t lower, uint32_t upper, uint32_t * y, uint32_t num_indices, uint32_t * result) {
+	check_interval(lower, upper);
+	uint32_t * indices = y;
+
+	for (int i = 0; i < num_indices; i++) {
+		uint32_t index_1 = *indices;
+		check_bounds(upper - lower + 1, index_1);
+		uint32_t index_0 = index_1 - 1;
+		*result = lower+index_0;
+		result += 1;
+		indices += 1;
+	}
+
+	return 0;
+}
+
+int32_t index_interval_i32_intervals(int32_t lower1, uint32_t upper1, int32_t lower2, int32_t upper2, uint32_t * result) {
+	check_interval(lower1, upper1);
+	check_interval(lower2, upper2);
+
+	for (int i = lower2; i <= upper2; i++) {
+		uint32_t index_1 = i;
+		check_bounds(upper1 - lower1 + 1, index_1);
+		uint32_t index_0 = index_1 - 1;
+		*result = lower1+index_0;
 		result += 1;
 	}
 
