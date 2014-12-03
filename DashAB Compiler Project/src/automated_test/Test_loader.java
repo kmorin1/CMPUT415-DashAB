@@ -7,16 +7,18 @@ import java.util.*;
 
 public class Test_loader {
 
+
+	//List of tests to do
+	public static List <String> tests = new ArrayList<String>();
+
+	//Test result list
+	public static List <Integer> llc_result = new ArrayList<Integer>();
+	public static List <Integer> dash_result = new ArrayList<Integer>();
+	
 	public static void load(){
 
 		System.out.print("Getting list of tests... ");
 
-		//List of tests to do
-		List <String> tests = new ArrayList<String>();
-
-		//Test result list
-		List <Integer> llc_result = new ArrayList<Integer>();
-		List <Integer> dash_result = new ArrayList<Integer>();
 
 		//Error counters for statistics
 		int llc_err = 0;
@@ -42,17 +44,34 @@ public class Test_loader {
 		}
 
 		//Do the tests one by one...
-		for(int i = 0; i < tests.size(); i++){
-			if(Tester.llc_test == 1)
-				llc_result.add(Test_llc.run(tests.get(i)));
-			if(Tester.dash_test == 1)
-				dash_result.add(Test_dash.run(tests.get(i)));
-			try {
-				Thread.sleep(100); //Artificial lag
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+		if(Tester.multithread == 1){
+			for(int i = 0; i < tests.size(); i++){
+				if(Tester.llc_test == 1)
+					llc_result.add(Test_llc.run(tests.get(i), 0));
+				if(Tester.dash_test == 1)
+					dash_result.add(Test_dash.run(tests.get(i), 0));
+				try {
+					Thread.sleep(100); //Artificial lag
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
+		}else{
+			int parts = tests.size() / Tester.multithread;
+			 
+			 Test_thread[] threads = new Test_thread[Tester.multithread];
+			 for (int i = 0; i < threads.length; i++){
+				 threads[i] = (Test_thread) new Test_thread(parts * i, parts * (i+1) - 1);
+				 threads[i].start();
+			 }
+			 for(int y = 0; y < threads.length; y++)
+				try {
+					threads[y].join();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 		}
 
 

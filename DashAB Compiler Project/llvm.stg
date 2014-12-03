@@ -157,6 +157,14 @@ declare i32 @neg_i32_intervals(i32, i32, i32*, i32*)
 declare i1 @equal_i32_intervals(i32, i32, i32, i32)
 
 declare i1 @nequal_i32_intervals(i32, i32, i32, i32)
+
+declare i32* @malloc_i32_vector(i32)
+
+declare float* @malloc_float_vector(i32)
+
+declare i8* @malloc_i8_vector(i32)
+
+declare i1* @malloc_i1_vector(i32)
 >>
 
 globalDeclare(varName, varType, varValue, alignment) ::= <<
@@ -308,7 +316,8 @@ load_vector(tmpNum, exprs, varNames, varType, size, varIndices) ::= <<
 <exprs>
 %.constvector1.<tmpNum> = insertvalue {i32, <varType>*} undef, i32 <size>, 0
 
-%.vector<tmpNum> = alloca <varType>, i32 <size>, align 4
+%.vector<tmpNum> = call <varType>* (i32)* @malloc_<varType>_vector(i32 <size>)
+;%.vector<tmpNum> = alloca <varType>, i32 <size>, align 4
 <varNames, varIndices:
 { name, index |
 %.tmp.<name> = getelementptr inbounds <varType>* %.vector<tmpNum>, i32 <index>
@@ -490,7 +499,8 @@ vec_arithmetic(expr1, expr2, operator, scalarType, resultType, tmpNum1, tmpNum2,
 %.size.2.<result> = extractvalue {i32, <scalarType>*} %.<tmpNum2>, 0
 %.vectortemp.2.<result> = extractvalue {i32, <scalarType>*} %.<tmpNum2>, 1
 
-%.vector.<result> = alloca <resultType>, i32 %.size.1.<result>, align 4
+%.vector.<result> = call <resultType>* (i32)* @malloc_<resultType>_vector(i32 %.size.1.<result>)
+;%.vector.<result> = alloca <resultType>, i32 %.size.1.<result>, align 4
 
 call <scalarType> (<scalarType>*, i32, <scalarType>*, i32, <resultType>*)* @<operator>_<scalarType>_vectors(<scalarType>* %.vectortemp.1.<result>, i32 %.size.1.<result>, <scalarType>* %.vectortemp.2.<result>, i32 %.size.2.<result>, <resultType>* %.vector.<result>)
 
@@ -524,7 +534,8 @@ vec_unary(expr, operator, scalarType, tmpNum, result) ::= <<
 %.size.<result> = extractvalue {i32, <scalarType>*} %.<tmpNum>, 0
 %.vectortemp.<result> = extractvalue {i32, <scalarType>*} %.<tmpNum>, 1
 
-%.vector.<result> = alloca <scalarType>, i32 %.size.<result>, align 4
+;%.vector.<result> = alloca <scalarType>, i32 %.size.<result>, align 4
+%.vector.<result> = call <scalarType>* (i32)* @malloc_<scalarType>_vector(i32 %.size.<result>)
 
 call <scalarType> (<scalarType>*, i32, <scalarType>*)* @<operator>_<scalarType>_vectors(<scalarType>* %.vectortemp.<result>, i32 %.size.<result>, <scalarType>* %.vector.<result>)
 

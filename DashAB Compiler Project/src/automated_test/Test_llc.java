@@ -4,16 +4,21 @@ import java.io.*;
 
 public class Test_llc {
 
-	public static int run(String test){
+	public static int run(String test, long pid){
 		int error = 0;
 		int valid_test = 1;
 		System.out.println("\n"+test + " with LLC");
 		String line = null;
 		try{
+			//Filenames
+			String testllvm = "test"+ pid +".llvm";
+			String outputtxt = "output"+ pid +".txt";
+			String execname = pid+".out";
+			
 			//Initialize writer
-			PrintWriter writer = new PrintWriter("test.llvm", "UTF-8");
-			PrintWriter output = new PrintWriter("output.txt", "UTF-8");
-
+			PrintWriter writer = new PrintWriter(testllvm, "UTF-8");
+			PrintWriter output = new PrintWriter(outputtxt, "UTF-8");
+			
 			//Write llvm-ir to file
 			if(Tester.debug == 1)
 				System.out.println("***OUR COMPILER COMMAND EXECUTED >>> " + Tester.our + " Tests/" + test);
@@ -42,8 +47,8 @@ public class Test_llc {
 
 			//Take a look at the files before they are used (Debug purposes only)
 			if(Tester.debug == 1) {
-				System.out.println("***Showing test.llvm");
-				BufferedReader reader = new BufferedReader(new FileReader("test.llvm"));
+				System.out.println("***Showing "+testllvm);
+				BufferedReader reader = new BufferedReader(new FileReader(testllvm));
 				while ((line = reader.readLine()) != null) {
 					System.out.println(line);
 				}
@@ -51,13 +56,13 @@ public class Test_llc {
 
 			if (valid_test == 1) {
 				//See if the llvm works or not...
-				p = Runtime.getRuntime().exec(Tester.llc + " test.llvm -filetype=obj");			
+				p = Runtime.getRuntime().exec(Tester.llc + " "+testllvm+" -filetype=obj");			
 				boolean hadError = ProcessHadError(p);
 				if(Tester.debug == 1) {
 					System.out.println("***LLC likes it");
 				}
 				//Now we link it into an executable
-				p = Runtime.getRuntime().exec("clang test.llvm.o libruntime.a -lm");
+				p = Runtime.getRuntime().exec("clang "+ testllvm +".o libruntime.a -lm -o"+execname);
 				hadError |= ProcessHadError(p);
 				if(Tester.debug == 1) {
 					System.out.println("***Linking OK");
@@ -80,7 +85,7 @@ public class Test_llc {
 
 
 				if (!hadError) {
-					p = Runtime.getRuntime().exec("./a.out");
+					p = Runtime.getRuntime().exec("./"+execname);
 
 					BufferedWriter input = new BufferedWriter( new OutputStreamWriter(p.getOutputStream()) );
 
@@ -136,8 +141,8 @@ public class Test_llc {
 			}
 
 			if(Tester.debug == 1) {
-				System.out.println("***Showing output.txt");
-				BufferedReader reader = new BufferedReader(new FileReader("output.txt"));
+				System.out.println("***Showing "+outputtxt);
+				BufferedReader reader = new BufferedReader(new FileReader(outputtxt));
 				while ((line = reader.readLine()) != null) {
 					System.out.println(line);
 				}
@@ -145,9 +150,9 @@ public class Test_llc {
 			}
 
 			if(Tester.llc_compare_test == 1)
-				error = Test_compare.run(test);
+				error = Test_compare.run(test,outputtxt);
 
-			if (error == 0) {
+			if (error == 0 && Tester.multithread == 1) {
 				System.out.println("Ok");
 			}
 
@@ -156,10 +161,10 @@ public class Test_llc {
 			output.close();
 
 			//and clean-up...
-			p = Runtime.getRuntime().exec("rm test.llvm");
-			p = Runtime.getRuntime().exec("rm test.llvm.o");
-			p = Runtime.getRuntime().exec("rm a.out");
-			p = Runtime.getRuntime().exec("rm output.txt");
+			p = Runtime.getRuntime().exec("rm "+testllvm);
+			p = Runtime.getRuntime().exec("rm "+testllvm+".o");
+			p = Runtime.getRuntime().exec("rm "+execname);
+			p = Runtime.getRuntime().exec("rm "+outputtxt);
 
 		}catch (IOException e) {
 			System.out.println("Invalid LLVM code " + e);

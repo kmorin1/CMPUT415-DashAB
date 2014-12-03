@@ -209,22 +209,66 @@ declaration
     VariableSymbol temp = new VariableSymbol($id.text, type, spec);
     if ((type == null || type.getName().equals("vector") || type.getName().equals("interval")) && (temp.isVar() || temp.isConst())) {
       if (stream_type.hasNext()) {
-        CommonTree tre = (CommonTree) stream_type.nextTree();
-                              
-        List children = tre.getChildren();
-        CommonTree child1 = (CommonTree) children.get(0);
-        CommonTree child2 = null;
+        CommonTree rewrite = (CommonTree) stream_type.nextTree();
+        CommonTree outputtree = null;
+        VectorTypeSymbol vtsrewrite = (VectorTypeSymbol) type;
+        VectorTypeSymbol vexprtype = (VectorTypeSymbol) $e.stype;
+        List children = rewrite.getChildren();
+        CommonTree child1 = null;
+        try {
+          child1 = (CommonTree) children.get(0);
+        } catch (NullPointerException npe) {}
+        
+        if (rewrite.getChildCount() == 0) {
+          CommonTree exprtype = (CommonTree) adaptor.create(Identifier, vexprtype.getVectorType().getName());
+          CommonTree vsize = (CommonTree) vexprtype.getVectorSize();
+          rewrite.addChild(exprtype);
+          rewrite.addChild((CommonTree) adaptor.create(Identifier, "integer"));
+          rewrite.addChild(vsize.dupNode());
+          outputtree = rewrite;
+        } else if (symtab.resolveType(child1.toString()) != null) {
+          //System.out.println(child1);
+          
+          if (children.size() == 1) {
+            rewrite.replaceChildren(0, rewrite.getChildCount()-1, child1);
+            rewrite.addChild((CommonTree) adaptor.create(Identifier, "integer"));
+            CommonTree vsize = (CommonTree) vexprtype.getVectorSize();
+            rewrite.addChild(vsize.dupNode());
+            outputtree = rewrite;
+          } else if (children.size() == 2) {
+            CommonTree vsize = (CommonTree) rewrite.getChild(1);
+            if (vsize.getChildCount() == 0) {
+              CommonTree exprtype = (CommonTree) adaptor.create(Identifier, vexprtype.getVectorType().getName());
+              rewrite.replaceChildren(0, rewrite.getChildCount()-1, exprtype);
+              rewrite.addChild((CommonTree) adaptor.create(Identifier, "integer"));
+              rewrite.addChild(vsize);
+              outputtree = rewrite;
+            } else {
+              outputtree = rewrite;
+            }
+          } else {
+            outputtree = rewrite;
+          }
+        } else {
+          CommonTree exprtype = (CommonTree) adaptor.create(Identifier, vexprtype.getVectorType().getName());
+          CommonTree vsize = (CommonTree) rewrite.getChild(0);
+          rewrite.replaceChildren(0, rewrite.getChildCount()-1, exprtype);
+          rewrite.addChild(vsize);
+          outputtree = rewrite;
+        }
+        /*CommonTree child2 = null;
         if (children.size() == 2)
            child2 = (CommonTree) children.get(1);                      
-        tre.replaceChildren(0, tre.getChildCount()-1, adaptor.create(Identifier, "integer"));
-        adaptor.addChild(tre, (CommonTree) child1);
+        tre.replaceChildren(0, tre.getChildCount()-1, child1);
+        //adaptor.addChild(tre, (CommonTree) );
         if (children.size() == 2) {
           adaptor.addChild(tre, (CommonTree) child2);
         } else if (children.size() > 2) {
           throw new RuntimeException(getErrorHeader() + "a variable cannot have more than one type");
-        }
+        }*/
         stream_type=new RewriteRuleSubtreeStream(adaptor,"rule type");
-        stream_type.add(tre);
+        stream_type.add(outputtree); 
+        
       } else {
         stream_type.add((CommonTree) adaptor.create(Identifier, $e.stype.getName()));
       }
@@ -234,9 +278,7 @@ declaration
       } else {
         type = (BuiltInTypeSymbol) $e.stype;
       }
-    } else {
-      
-    }
+    } 
     
   } -> ^(DECL specifier? type ^(Assign $id $e))
     //-> ^(DECL specifier? type? ^(Assign $id $e))
@@ -1117,7 +1159,23 @@ expr returns [Type stype]
         typetree.addChild((CommonTree) adaptor.create(Identifier, $stype.getName()));
     }
   } -> ^(Not ^({typetree}) expr)
-  | ^(By a=expr b=expr) {$stype = $a.stype;} -> ^(By Identifier[$stype.getName()] expr expr)
+  | ^(By a=expr b=expr) {
+    if (procedurecall > 0) 
+      throw new RuntimeException(errorhead + "cannot use procedures in binary operations");
+    if (!$a.stype.getName().equals("vector") && !$a.stype.getName().equals("interval"))
+      throw new RuntimeException(errorhead + "by requires a vector or interval in left operand");
+    if (!$b.stype.getName().equals("integer"))
+      throw new RuntimeException(errorhead + "right operand of by requires integer type");
+    
+    typetree = (CommonTree) adaptor.nil();
+    VectorTypeSymbol vts = (VectorTypeSymbol) $a.stype;
+    VectorTypeSymbol output = new VectorTypeSymbol("vector", vts.getVectorType(), null, null);
+    $stype = output;
+    typetree.addChild((CommonTree) adaptor.create(Vector, "vector"));
+    CommonTree child = (CommonTree) typetree.getChild(0);
+    child.addChild((CommonTree) adaptor.create(Identifier, vts.getVectorType().getName()));
+    
+  } -> ^(By ^({typetree}) expr expr)
   | ^(CALL id=Identifier ^(ARGLIST (e=expr {argtypes.add($e.stype);})*)) {
     proc_ret_flag = true;
     ProcedureSymbol ps = symtab.resolveProcedure($id.text);
