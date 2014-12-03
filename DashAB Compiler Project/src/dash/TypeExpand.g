@@ -1400,8 +1400,27 @@ expr returns [Type stype]
     VectorTypeSymbol vts = new VectorTypeSymbol("vector", $a.stype, null, adaptor.create(Identifier, "*"));
     $stype = vts;
   }
-  | ^(GENERATOR ^(ROW Identifier a=expr) ^(COLUMN Identifier b=expr) c=expr)  {
+  | ^(GENERATOR ^(ROW Identifier a=expr) ^(COLUMN Identifier b=expr) c=expr)  
+  | ^(INDEX vector=expr indx=expr) {
+    typetree = (CommonTree) adaptor.nil();
+    if (!$vector.stype.getName().equals("vector") && !$vector.stype.getName().equals("interval"))
+      throw new RuntimeException(errorhead + "cannot index something that isn't a vector or interval");
+    VectorTypeSymbol vectortype = (VectorTypeSymbol) $vector.stype;
+    if (!$indx.stype.getName().equals("integer") && 
+      !$vector.stype.getName().equals("vector") &&
+      !$vector.stype.getName().equals("interval"))
+        throw new RuntimeException(errorhead + "invalid index");
+    if ($indx.stype.getName().equals("vector") || $indx.stype.getName().equals("interval")) {
+      VectorTypeSymbol indextype = (VectorTypeSymbol) $indx.stype;
+      if (!indextype.getVectorType().getName().equals("integer"))
+        throw new RuntimeException(errorhead + "vector and interval indexes need to be of integer type");
+      typetree.addChild((CommonTree) adaptor.create(Vector, "vector"));
+      CommonTree child = (CommonTree) typetree.getChild(0);
+      child.addChild((CommonTree) adaptor.create(Identifier, vectortype.getVectorType().getName()));
+    } else {
+      typetree.addChild((CommonTree) adaptor.create(Identifier, "integer"));
+    }
     
-  }  
+  } -> ^(INDEX ^({typetree}) expr expr)
   ;
   
