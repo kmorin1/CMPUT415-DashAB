@@ -13,7 +13,7 @@ public class Test_thread extends Thread{
 	public void run(){
 		System.out.println("This is thread - " + this.getId() + " processing range " + this.start + "-" + this.end);
 		
-		for(int i = start; i < end; i++){
+		for(int i = start; i <= end; i++){
 			if(Tester.llc_test == 1)
 				Test_loader.llc_result.add(Test_llc.run(Test_loader.tests.get(i),this.getId()));
 			if(Tester.dash_test == 1)
