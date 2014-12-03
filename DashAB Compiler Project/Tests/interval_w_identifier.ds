@@ -1,0 +1,13 @@
+procedure main() returns integer {
+var out = std_output();
+
+integer x = 1;
+integer y = 5;
+
+integer interval z = x..y;
+
+z -> out;
+'\n' -> out;
+
+return 0;
+}

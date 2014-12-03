@@ -1,0 +1,11 @@
+procedure main() returns integer {
+var out = std_output();
+
+string x = "Will it ";
+string y = "blend?";
+
+x || y -> out;
+'\n' -> out;
+
+return 0;
+}

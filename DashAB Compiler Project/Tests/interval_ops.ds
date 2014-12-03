@@ -1,0 +1,28 @@
+procedure main() returns integer {
+var out = std_output();
+
+integer interval i = 1..5;
+integer interval j = 5..10;
+
+i + j -> out;
+'\n' -> out;
+i - j -> out;
+'\n' -> out;
+i * j -> out;
+'\n' -> out;
+j / i -> out;
+'\n' -> out;
+i / j -> out;
+'\n' -> out;
+-i -> out;
+'\n' -> out;
++j -> out;
+'\n' -> out;
+
+i == j -> out;
+'\n' -> out;
+i != j -> out;
+'\n' -> out;
+
+return 0;
+}
