@@ -132,7 +132,9 @@ bool print_i1_vector(bool * x, uint32_t size) {
 char print_i8_vector(char * x, uint32_t size) {
 	char * string = x;
 	for (int i = 0; i < size; i++) {
-		printf("%c", *string);
+		if (*string != 0) {
+			printf("%c", *string);
+		}
 		string += 1;
 	}
 	return 0;

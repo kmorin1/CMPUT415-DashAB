@@ -433,11 +433,11 @@ assignment
   {
   	vs = (VariableSymbol) currentscope.resolve($Identifier.text);
   	Type vsType = vs.getType();
-  	if ($expr.stype == "vector") {
+  	if ($expr.stype.equals("vector")) {
   		VectorTypeSymbol vts = (VectorTypeSymbol)vsType;
   		variableType = "{i32, " + $expr.scalarType + "*}";
   	}
-  	else if ($expr.stype == "interval") {
+  	else if ($expr.stype.equals("interval")) {
   		VectorTypeSymbol vts = (VectorTypeSymbol)vsType;
   		variableType = "{" + $expr.scalarType + ", " + $expr.scalarType + "}";
   	}
@@ -768,12 +768,17 @@ expr returns [String stype, String resultVar, String scalarType, String sizeName
   {
   	if ($retType.vecType != null) {
   		returnType = "{ i32, " + $retType.st.toString() + "*}";
+  		$stype = "vector";
+  		$scalarType = $retType.vecType;
   	}
   	else if ($retType.intervalType != null) {
   		returnType = "{" + $retType.st.toString() + ", " + $retType.st.toString() + "}";
+  		$stype = "interval";
+  		$scalarType = $retType.intervalType;
   	}
   	else {
   		returnType = $retType.st.toString();
+  		$stype = $retType.st.toString();
   	}
   }
   id=Identifier ^(ARGLIST
@@ -861,7 +866,20 @@ expr returns [String stype, String resultVar, String scalarType, String sizeName
     ->  {$stype.equals("vector")}? vec_unary(expr={$a.st}, operator={"neg"}, scalarType={$a.scalarType}, resultType={$a.scalarType}, tmpNum={tmpNum1}, result={++counter})
     ->  {$stype.equals("interval")}? interval_unary(expr={$a.st}, operator={"neg"}, scalarType={$a.scalarType}, resultType={$a.scalarType}, tmpNum={tmpNum1}, result={++counter})
     -> negative(tmpNum={tmpNum1}, expr={$a.st}, zero={getEmptyValue($a.stype)}, result={++counter}, type={$a.stype}, operator={getArithOp($a.stype, SubOp)})
-  | ^(POS a=expr {tmpNum1 = counter;}) {$stype = $a.stype;} -> return(a={$a.st})
+  | ^(POS a=expr {tmpNum1 = counter;})
+  {
+  	if ($a.stype.equals("vector")) {
+  		$stype = "vector";
+  		$scalarType = $a.scalarType;
+  	}
+  	else if ($a.stype.equals("interval")) {
+  		$stype = "interval";
+  		$scalarType = $a.scalarType;
+  	}
+  	else {
+  	  $stype = $a.stype;
+  	}
+  } -> return(a={$a.st})
   | type streamstate {$stype = $type.st.toString();} -> return(a={$streamstate.st})
   | type length {$stype = $type.st.toString();} -> return(a={$length.st})
   | ^(VCONST vec=type (e=expr
