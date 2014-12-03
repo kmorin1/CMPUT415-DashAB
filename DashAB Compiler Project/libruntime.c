@@ -83,6 +83,13 @@ void check_not_zero(int32_t value) {
 	}
 }
 
+void check_by(int32_t by) {
+	if (by < 1) {
+		printf("Error: by operator needs a positive integer.\n");
+		exit(-1);
+	}
+}
+
 int32_t print_i32_vector(int32_t * x, uint32_t size) {
 	int32_t * num = x;
 	for (int i = 0; i < size; i++) {
@@ -976,5 +983,68 @@ char * malloc_i8_vector(uint32_t size) {
 bool * malloc_i1_vector(uint32_t size) {
 	bool * vector = malloc(size * sizeof(bool));
 	return vector;
+}
+
+
+uint32_t get_by_size(uint32_t size, uint32_t by) {
+	uint32_t result = (uint32_t)ceil((float)size / (float)by);
+	return result;
+}
+
+uint32_t by_i32_vector(uint32_t * x, uint32_t size, int32_t by, uint32_t * result) {
+	check_by(by);
+	uint32_t * vector = x;	
+	for (int i = 0; i < size; i+=by) {
+		*result = *vector;
+		result += 1;
+		vector += by;
+	}
+
+	return 0;
+}
+
+float by_float_vector(float * x, uint32_t size, int32_t by, float * result) {
+	check_by(by);
+	float * vector = x;	
+	for (int i = 0; i < size; i+=by) {
+		*result = *vector;
+		result += 1;
+		vector += by;
+	}
+
+	return 0;
+}
+
+char by_i8_vector(char * x, uint32_t size, int32_t by, char * result) {
+	check_by(by);
+	char * vector = x;	
+	for (int i = 0; i < size; i+=by) {
+		*result = *vector;
+		result += 1;
+		vector += by;
+	}
+
+	return 0;
+}
+
+bool by_i1_vector(bool * x, uint32_t size, int32_t by, bool * result) {
+	check_by(by);
+	bool * vector = x;
+	for (int i = 0; i < size; i+=by) {
+		*result = *vector;
+		result += 1;
+		vector += by;
+	}
+
+	return false;
+}
+
+uint32_t by_i32_interval(int32_t lower, int32_t upper, int32_t by, uint32_t * result) {
+	check_by(by);
+	for (int i = lower; i <= upper; i+=by) {
+		*result = i;
+		result += 1;
+	}
+	return 0;
 }
 

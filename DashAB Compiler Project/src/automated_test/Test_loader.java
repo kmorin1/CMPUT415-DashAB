@@ -14,7 +14,7 @@ public class Test_loader {
 	//Test result list
 	public static List <Integer> llc_result = new ArrayList<Integer>();
 	public static List <Integer> dash_result = new ArrayList<Integer>();
-	
+
 	public static void load(){
 
 		System.out.print("Getting list of tests... ");
@@ -59,13 +59,19 @@ public class Test_loader {
 			}
 		}else{
 			int parts = tests.size() / Tester.multithread;
-			 
-			 Test_thread[] threads = new Test_thread[Tester.multithread];
-			 for (int i = 0; i < threads.length; i++){
-				 threads[i] = (Test_thread) new Test_thread(parts * i, parts * (i+1) - 1);
-				 threads[i].start();
-			 }
-			 for(int y = 0; y < threads.length; y++)
+
+			Test_thread[] threads = new Test_thread[Tester.multithread];
+			int start = 0;
+			int end = 0;
+			for (int i = 0; i < threads.length; i++){
+				end = end + parts -1;
+				if(i == threads.length -1)
+					end = tests.size();
+				threads[i] = (Test_thread) new Test_thread(start, end);
+				threads[i].start();	
+				start = end +1;
+			}
+			for(int y = 0; y < threads.length; y++)
 				try {
 					threads[y].join();
 				} catch (InterruptedException e) {
@@ -78,7 +84,7 @@ public class Test_loader {
 		//Show warnings
 		System.out.println("\n### Summary ###");
 
-		if(Tester.llc_test == 1){
+		if(Tester.llc_test == 0){
 			System.out.println("\nThe following tests does not work with llc: ");
 			for(int i = 0; i < tests.size(); i++){
 				if(llc_result.get(i) == -1 && Tester.llc_test == 1){

@@ -751,7 +751,19 @@ expr returns [String stype, String resultVar, String scalarType, String sizeName
   } 
     -> {$type.vecType != null}? vec_unary(expr={$a.st}, operator={"not"}, scalarType={$a.scalarType}, resultType={$a.scalarType}, tmpNum={tmpNum1}, result={++counter})
     -> not(expr={$a.st}, type={$type.st}, tmpNum={tmpNum1}, result={++counter})
-  | ^(By type a=expr {tmpNum1 = counter;} b=expr {tmpNum2 = counter;}) {$stype = $type.st.toString();}
+  | ^(By type a=expr {tmpNum1 = counter;} b=expr {tmpNum2 = counter;})
+  {
+  	if ($type.vecType != null) {
+  		$stype = "vector";
+  		$scalarType = $type.vecType;
+  	}
+  	else if ($type.intervalType != null) {
+  		$stype = "interval";
+  		$scalarType = $type.intervalType;
+  	}
+  }
+    -> {$a.stype.equals("vector")}? vector_by(expr1={$a.st}, expr2={$b.st}, scalarType={$scalarType}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
+    -> interval_by(expr1={$a.st}, expr2={$b.st}, scalarType={$scalarType}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
   | ^(CALL retType=type 
   {
   	if ($retType.vecType != null) {
@@ -821,7 +833,7 @@ expr returns [String stype, String resultVar, String scalarType, String sizeName
   	}
   	
   }
-    -> {vs.isConst()}? load_const(tmpNum={++counter}, sym={getLLVMvarSymbol(vs.scopeNum)}, var={$Identifier}, scopeNum={vs.scopeNum}, varType={variableType})
+    -> {vs.isConst() && $type.vecType == null && $type.intervalType == null}? load_const(tmpNum={++counter}, sym={getLLVMvarSymbol(vs.scopeNum)}, var={$Identifier}, scopeNum={vs.scopeNum}, varType={variableType})
     -> load_var(tmpNum={++counter}, sym={getLLVMvarSymbol(vs.scopeNum)}, var={$Identifier}, scopeNum={vs.scopeNum}, varType={variableType})
   | type Number {$stype = $type.st.toString();} -> load_num(tmpNum={++counter}, value={$Number}, varType={$type.st})
   | type FPNumber {$stype = $type.st.toString();} -> load_num(tmpNum={++counter}, value={"0x"+Long.toHexString((Double.doubleToLongBits(Float.parseFloat($FPNumber.toString()))))}, varType={$type.st})
