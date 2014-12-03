@@ -99,6 +99,7 @@ int32_t print_i32_vector(int32_t * x, uint32_t size) {
 			printf(" ");
 		}
 	}
+	printf("\n");
 	return 0;
 }
 
@@ -111,6 +112,7 @@ float print_float_vector(float * x, uint32_t size) {
 			printf(" ");
 		}
 	}
+	printf("\n");
 	return 0;
 }
 
@@ -123,6 +125,7 @@ bool print_i1_vector(bool * x, uint32_t size) {
 			printf(" ");
 		}
 	}
+	printf("\n");
 	return 0;
 }
 
@@ -144,6 +147,7 @@ int32_t print_i32_interval(int32_t lower, int32_t upper) {
 			printf(" ");
 		}
 	}
+	printf("\n");
 	return 0;
 }
 
