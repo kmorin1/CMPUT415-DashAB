@@ -286,16 +286,19 @@ atom
   {
     toVConst = (CommonTree) adaptor.nil();
     String temp = $s.text.substring(1, $s.text.length()-1);
-    String[] tokens = temp.split("(?!^)");
+    if (temp.length() > 0) 
+    {
+      String[] tokens = temp.split("(?!^)");
  
-    for (int i = 0; i < tokens.length; i++) {
-      if (tokens[i].equals("\\") && ((i + 1) < tokens.length)) 
-      {
-        toVConst.addChild((CommonTree) adaptor.create(Char, tokens[i] + tokens[i+1]));
-        i++;
-      } 
-      else 
-        toVConst.addChild((CommonTree) adaptor.create(Char, tokens[i]));
+      for (int i = 0; i < tokens.length; i++) {
+        if (tokens[i].equals("\\") && ((i + 1) < tokens.length)) 
+        {
+          toVConst.addChild((CommonTree) adaptor.create(Char, tokens[i] + tokens[i+1]));
+          i++;
+          } 
+          else 
+          toVConst.addChild((CommonTree) adaptor.create(Char, tokens[i]));
+       }
     }
     toVConst.addChild((CommonTree) adaptor.create(Char, "\\0"));
   }
@@ -444,7 +447,7 @@ Char
   ;
   
 StringLiteral
-  : '"' SingleChar+ '"'
+  : '"' SingleChar* '"'
   ;
  
 MULTILINE_COMMENT : '/*' .* '*/' {$channel = HIDDEN;} ;
