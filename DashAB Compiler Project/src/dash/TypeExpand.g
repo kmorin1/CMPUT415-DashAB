@@ -1326,7 +1326,7 @@ expr returns [Type stype]
       $stype = $e.stype;
   }
   | ^(POS e=expr) {
-    if (!$e.stype.getName().equals("integer") && !$e.stype.getName().equals("real")) 
+    if (!$e.stype.getName().equals("integer") && !$e.stype.getName().equals("real") && !$e.stype.getName().equals("vector") && !$e.stype.getName().equals("interval")) 
       throw new RuntimeException(errorhead + " type error");
     else
       $stype = $e.stype;

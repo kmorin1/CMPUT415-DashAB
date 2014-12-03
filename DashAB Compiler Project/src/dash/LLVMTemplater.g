@@ -861,7 +861,20 @@ expr returns [String stype, String resultVar, String scalarType, String sizeName
     ->  {$stype.equals("vector")}? vec_unary(expr={$a.st}, operator={"neg"}, scalarType={$a.scalarType}, resultType={$a.scalarType}, tmpNum={tmpNum1}, result={++counter})
     ->  {$stype.equals("interval")}? interval_unary(expr={$a.st}, operator={"neg"}, scalarType={$a.scalarType}, resultType={$a.scalarType}, tmpNum={tmpNum1}, result={++counter})
     -> negative(tmpNum={tmpNum1}, expr={$a.st}, zero={getEmptyValue($a.stype)}, result={++counter}, type={$a.stype}, operator={getArithOp($a.stype, SubOp)})
-  | ^(POS a=expr {tmpNum1 = counter;}) {$stype = $a.stype;} -> return(a={$a.st})
+  | ^(POS a=expr {tmpNum1 = counter;})
+  {
+  	if ($a.stype.equals("vector")) {
+  		$stype = "vector";
+  		$scalarType = $a.scalarType;
+  	}
+  	else if ($a.stype.equals("interval")) {
+  		$stype = "interval";
+  		$scalarType = $a.scalarType;
+  	}
+  	else {
+  	  $stype = $a.stype;
+  	}
+  } -> return(a={$a.st})
   | type streamstate {$stype = $type.st.toString();} -> return(a={$streamstate.st})
   | type length {$stype = $type.st.toString();} -> return(a={$length.st})
   | ^(VCONST vec=type (e=expr
