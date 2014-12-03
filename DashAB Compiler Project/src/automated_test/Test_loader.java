@@ -76,7 +76,6 @@ public class Test_loader {
 			for(int y = 0; y < threads.length; y++)
 				try {
 					threads[y].join();
-					System.out.println("yay");
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();

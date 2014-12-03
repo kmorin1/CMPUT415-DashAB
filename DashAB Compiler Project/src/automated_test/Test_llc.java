@@ -98,6 +98,7 @@ public class Test_llc {
 
 							while ((input_line = inputReader.readLine()) != null) {
 								input.write(input_line);
+								input.write("\n");
 								input.flush();
 							}
 							input.close();
