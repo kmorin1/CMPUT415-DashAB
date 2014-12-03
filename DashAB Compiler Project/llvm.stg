@@ -207,6 +207,30 @@ declare i32 @index_int_i32_intervals(i32, i32, i32)
 declare i32 @index_vector_i32_intervals(i32, i32, i32*, i32, i32*)
 
 declare i32 @index_interval_i32_intervals(i32, i32, i32, i32, i32*)
+
+declare i32 @set_int_index_i32_vector(i32*, i32, i32, i32)
+
+declare float @set_int_index_float_vector(float*, i32, i32, float)
+
+declare i8 @set_int_index_i8_vector(i8*, i32, i32, i8)
+
+declare i1 @set_int_index_i1_vector(i1*, i32, i32, i1)
+
+declare i32 @set_vector_index_i32_vector(i32*, i32, i32*, i32, i32*, i32)
+
+declare float @set_vector_index_float_vector(float*, i32, i32*, i32, float*, i32)
+
+declare i8 @set_vector_index_i8_vector(i8*, i32, i32*, i32, i8*, i32)
+
+declare i1 @set_vector_index_i1_vector(i1*, i32, i32*, i32, i1*, i32)
+
+declare i32 @set_interval_index_i32_vector(i32*, i32, i32, i32, i32*, i32)
+
+declare float @set_interval_index_float_vector(float*, i32, i32, i32, float*, i32)
+
+declare i8 @set_interval_index_i8_vector(i8*, i32, i32, i32, i8*, i32)
+
+declare i1 @set_interval_index_i1_vector(i1*, i32, i32, i32, i1*, i32)
 >>
 
 globalDeclare(varName, varType, varValue, alignment) ::= <<
@@ -307,6 +331,75 @@ outputAssi(sym, varName, varType, scopeNum, expr, tmpNum) ::= <<
 
 store <varType> %.<tmpNum>, <varType>* <sym>.<varName>.<scopeNum>
 ;end outputAssi
+
+>>
+
+output_int_index_assi(sym, varName, varType, scalarType, scopeNum, expr1, expr2, tmpNum1, tmpNum2) ::= <<
+;start output_int_index_assi
+<expr1>
+<expr2>
+
+;tmpNum1 = int index
+;tmpNum2 = int value
+
+%.temp.struct.<result> = load <varType>* <sym>.<varName>.<scopeNum>
+%.size.<result> = extractvalue <varType> %.temp.struct.<result>, 0
+%.vector.temp.<result> = extractvalue <varType> %.temp.struct.<result>, 1
+
+call <scalarType> (<scalarType>*, i32, i32, <scalarType>)* @set_int_index_<scalarType>_vector(<scalarType>* %.vector.temp.<result>, i32 %.size.<result>, i32 %.<tmpNum1>, <scalarType> %.<tmpNum2>)
+
+;end output_int_index_assi
+
+
+>>
+
+output_vector_index_assi(sym, varName, varType, scalarType, scopeNum, expr1, expr2, tmpNum1, tmpNum2) ::= <<
+;start output_int_index_assi
+<expr1>
+<expr2>
+
+;tmpNum1 = vector index
+;tmpNum2 = vector value
+
+%.index.size.<result> = extractvalue {i32, i32*} %.<tmpNum1>, 0
+%.index.vector.<result> = extractvalue {i32, i32*} %.<tmpNum1>, 1
+
+%.value.size.<result> = extractvalue {i32, <scalarType>*} %.<tmpNum2>, 0
+%.value.vector.<result> = extractvalue {i32, <scalarType>*} %.<tmpNum2>, 1
+
+%.temp.struct.<result> = load <varType>* <sym>.<varName>.<scopeNum>
+%.var.size.<result> = extractvalue <varType> %.temp.struct.<result>, 0
+%.var.vector.<result> = extractvalue <varType> %.temp.struct.<result>, 1
+
+call <scalarType> (<scalarType>*, i32, i32*, i32, <scalarType>*, i32)* @set_vector_index_<scalarType>_vector(<scalarType>* %.var.vector.<result>, i32 %.var.size.<result>, i32* %.index.vector.<result>, i32 %.index.size.<result>, <scalarType>* %.value.vector.<result>, i32 %.value.size.<result>)
+
+;end output_int_index_assi
+
+
+>>
+
+output_interval_index_assi(sym, varName, varType, scalarType, scopeNum, expr1, expr2, tmpNum1, tmpNum2) ::= <<
+;start output_int_index_assi
+<expr1>
+<expr2>
+
+;tmpNum1 = interval index
+;tmpNum2 = vector value
+
+%.lower.<result> = extractvalue {i32, i32} %.<tmpNum1>, 0
+%.upper.<result> = extractvalue {i32, i32} %.<tmpNum1>, 1
+
+%.value.size.<result> = extractvalue {i32, <scalarType>*} %.<tmpNum2>, 0
+%.value.vector.<result> = extractvalue {i32, <scalarType>*} %.<tmpNum2>, 1
+
+%.temp.struct.<result> = load <varType>* <sym>.<varName>.<scopeNum>
+%.var.size.<result> = extractvalue <varType> %.temp.struct.<result>, 0
+%.var.vector.<result> = extractvalue <varType> %.temp.struct.<result>, 1
+
+call <scalarType> (<scalarType>*, i32, i32, i32, <scalarType>*, i32)* @set_interval_index_<scalarType>_vector(<scalarType>* %.var.vector.<result>, i32 %.var.size.<result>, i32 %.lower.<result>, i32 %.upper.<result>, <scalarType>* %.value.vector.<result>, i32 %.value.size.<result>)
+
+;end output_int_index_assi
+
 
 >>
 

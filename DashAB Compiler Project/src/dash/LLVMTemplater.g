@@ -428,25 +428,44 @@ assignment
 @init {
 	VariableSymbol vs = null;
 	String variableType = null;
+	String scalarType = null;
+	int tmpNum1 = 0;
+	int tmpNum2 = 0;
 }
-  : ^(Assign Identifier expr
+  : ^(Assign Identifier c=expr
   {
   	vs = (VariableSymbol) currentscope.resolve($Identifier.text);
   	Type vsType = vs.getType();
-  	if ($expr.stype.equals("vector")) {
+  	if ($c.stype.equals("vector")) {
   		VectorTypeSymbol vts = (VectorTypeSymbol)vsType;
-  		variableType = "{i32, " + $expr.scalarType + "*}";
+  		variableType = "{i32, " + $c.scalarType + "*}";
   	}
-  	else if ($expr.stype.equals("interval")) {
+  	else if ($c.stype.equals("interval")) {
   		VectorTypeSymbol vts = (VectorTypeSymbol)vsType;
-  		variableType = "{" + $expr.scalarType + ", " + $expr.scalarType + "}";
+  		variableType = "{" + $c.scalarType + ", " + $c.scalarType + "}";
   	}
   	else {
-  		variableType = $expr.stype;
+  		variableType = $c.stype;
   	}
   }
   )
-  -> outputAssi(sym={getLLVMvarSymbol(vs.scopeNum)}, varName={$Identifier}, varType={variableType}, scopeNum = {vs.scopeNum}, expr={$expr.st}, tmpNum={counter++})
+  -> outputAssi(sym={getLLVMvarSymbol(vs.scopeNum)}, varName={$Identifier}, varType={variableType}, scopeNum = {vs.scopeNum}, expr={$c.st}, tmpNum={counter++})
+  | ^(Assign ^(INDEX var=Identifier index=expr {tmpNum1 = counter;}) value=expr {tmpNum2 = counter;})
+  {
+  	vs = (VariableSymbol) currentscope.resolve($var.text);
+  	if (!$value.stype.equals("vector") && !$value.stype.equals("interval")) {
+  		scalarType = $value.stype;
+  	}
+  	else {
+  		scalarType = $value.scalarType;
+  	}
+  	variableType = "{i32, " + scalarType + "*}";
+  }
+  
+  -> {$index.stype.equals(IntType)}? output_int_index_assi(sym={getLLVMvarSymbol(vs.scopeNum)}, varName={$var.text}, varType={variableType}, scalarType={scalarType}, scopeNum={vs.scopeNum}, expr1={$index.st}, expr2={$value.st}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
+  -> {$index.stype.equals("vector")}? output_vector_index_assi(sym={getLLVMvarSymbol(vs.scopeNum)}, varName={$var.text}, varType={variableType}, scalarType={scalarType}, scopeNum={vs.scopeNum}, expr1={$index.st}, expr2={$value.st}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
+  -> {$index.stype.equals("interval")}? output_interval_index_assi(sym={getLLVMvarSymbol(vs.scopeNum)}, varName={$var.text}, varType={variableType}, scalarType={scalarType}, scopeNum={vs.scopeNum}, expr1={$index.st}, expr2={$value.st}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter})
+  -> return(a={"oopss!"})
   ;
   
 ifstatement

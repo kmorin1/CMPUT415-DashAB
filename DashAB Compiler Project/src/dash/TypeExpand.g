@@ -544,6 +544,26 @@ assignment
     if (symtab.lookup($e.stype, varVS.getType()) == null)
       throw new RuntimeException(errorhead + "assignment type error, expected " + varType + " but got " + $e.stype.getName());
   }
+  | ^(Assign ^(INDEX var=Identifier index=expr) value=expr)
+  {
+  	Symbol varSymbol = currentscope.resolve($var.text);
+    
+    if (varSymbol == null)
+      throw new RuntimeException(errorhead + $var.text + " is undefined");
+      
+    VariableSymbol varVS = (VariableSymbol) varSymbol;
+    if (varVS.isConst())
+      throw new RuntimeException(errorhead + "Cannot reassign a variable to a const");
+    
+    String varType = varVS.getType().getName();
+    
+    if (varType.equals("std_input") || varType.equals("std_output"))
+      throw new RuntimeException(errorhead + "Cannot assign to stream " + $var.text);
+      
+    //TODO: type checking
+    //if (symtab.lookup($e.stype, varVS.getType()) == null)
+      //throw new RuntimeException(errorhead + "assignment type error, expected " + varType + " but got " + $e.stype.getName());
+  }
   ;
   
 ifstatement

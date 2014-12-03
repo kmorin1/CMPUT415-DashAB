@@ -90,6 +90,7 @@ void check_by(int32_t by) {
 	}
 }
 
+
 int32_t print_i32_vector(int32_t * x, uint32_t size) {
 	int32_t * num = x;
 	for (int i = 0; i < size; i++) {
@@ -1210,6 +1211,154 @@ uint32_t by_i32_interval(int32_t lower, int32_t upper, int32_t by, uint32_t * re
 		*result = i;
 		result += 1;
 	}
+	return 0;
+}
+
+uint32_t set_int_index_i32_vector(uint32_t * x, uint32_t x_size, uint32_t index_1, int32_t value) {
+	check_bounds(x_size, index_1);
+	uint32_t index_0 = index_1 - 1;
+	*(x + index_0) = value;
+	return 0;
+}
+
+uint32_t set_vector_index_i32_vector(uint32_t * x, uint32_t x_size, uint32_t * indices, uint32_t num_indices, uint32_t * values, uint32_t values_size) {
+	check_sizes(num_indices, values_size);
+	for (int i = 0; i < num_indices; i++) {
+		uint32_t index_1 = *indices;
+		check_bounds(x_size, index_1);
+		uint32_t index_0 = index_1 - 1;
+		int32_t value = *values;
+		*(x + index_0) = value;
+		indices += 1;
+		values += 1;
+	}
+
+	return 0;
+}
+
+uint32_t set_interval_index_i32_vector(uint32_t * x, uint32_t x_size, uint32_t lower, uint32_t upper, uint32_t * values, uint32_t values_size) {
+	check_interval(lower, upper);
+	check_sizes(upper - lower + 1, values_size);
+	for (int i = lower; i <= upper; i++) {
+		uint32_t index_1 = i;
+		check_bounds(x_size, index_1);
+		uint32_t index_0 = index_1 - 1;
+		int32_t value = *values;
+		*(x + index_0) = value;
+		values += 1;
+	}
+
+	return 0;
+}
+
+float set_int_index_float_vector(float * x, uint32_t x_size, uint32_t index_1, float value) {
+	check_bounds(x_size, index_1);
+	uint32_t index_0 = index_1 - 1;
+	*(x + index_0) = value;
+	return 0;
+}
+
+float set_vector_index_float_vector(float * x, uint32_t x_size, uint32_t * indices, uint32_t num_indices, float * values, uint32_t values_size) {
+	check_sizes(num_indices, values_size);
+	for (int i = 0; i < num_indices; i++) {
+		uint32_t index_1 = *indices;
+		check_bounds(x_size, index_1);
+		uint32_t index_0 = index_1 - 1;
+		float value = *values;
+		*(x + index_0) = value;
+		indices += 1;
+		values += 1;
+	}
+
+	return 0;
+}
+
+float set_interval_index_float_vector(float * x, uint32_t x_size, uint32_t lower, uint32_t upper, float * values, uint32_t values_size) {
+	check_interval(lower, upper);
+	check_sizes(upper - lower + 1, values_size);
+	for (int i = lower; i <= upper; i++) {
+		uint32_t index_1 = i;
+		check_bounds(x_size, index_1);
+		uint32_t index_0 = index_1 - 1;
+		float value = *values;
+		*(x + index_0) = value;
+		values += 1;
+	}
+
+	return 0;
+}
+
+char set_int_index_i8_vector(char * x, uint32_t x_size, uint32_t index_1, char value) {
+	check_bounds(x_size, index_1);
+	uint32_t index_0 = index_1 - 1;
+	*(x + index_0) = value;
+	return 0;
+}
+
+char set_vector_index_i8_vector(char * x, uint32_t x_size, uint32_t * indices, uint32_t num_indices, char * values, uint32_t values_size) {
+	check_sizes(num_indices, values_size);
+	for (int i = 0; i < num_indices; i++) {
+		uint32_t index_1 = *indices;
+		check_bounds(x_size, index_1);
+		uint32_t index_0 = index_1 - 1;
+		char value = *values;
+		*(x + index_0) = value;
+		indices += 1;
+		values += 1;
+	}
+
+	return 0;
+}
+
+char set_interval_index_i8_vector(char * x, uint32_t x_size, uint32_t lower, uint32_t upper, char * values, uint32_t values_size) {
+	check_interval(lower, upper);
+	check_sizes(upper - lower + 1, values_size);
+	for (int i = lower; i <= upper; i++) {
+		uint32_t index_1 = i;
+		check_bounds(x_size, index_1);
+		uint32_t index_0 = index_1 - 1;
+		char value = *values;
+		*(x + index_0) = value;
+		values += 1;
+	}
+
+	return 0;
+}
+
+bool set_int_index_i1_vector(bool * x, uint32_t x_size, uint32_t index_1, bool value) {
+	check_bounds(x_size, index_1);
+	uint32_t index_0 = index_1 - 1;
+	*(x + index_0) = value;
+	return 0;
+}
+
+bool set_vector_index_i1_vector(bool * x, uint32_t x_size, uint32_t * indices, uint32_t num_indices, bool * values, uint32_t values_size) {
+	check_sizes(num_indices, values_size);
+	for (int i = 0; i < num_indices; i++) {
+		uint32_t index_1 = *indices;
+		check_bounds(x_size, index_1);
+		uint32_t index_0 = index_1 - 1;
+		bool value = *values;
+		*(x + index_0) = value;
+		indices += 1;
+		values += 1;
+	}
+
+	return 0;
+}
+
+bool set_interval_index_i1_vector(bool * x, uint32_t x_size, uint32_t lower, uint32_t upper, bool * values, uint32_t values_size) {
+	check_interval(lower, upper);
+	check_sizes(upper - lower + 1, values_size);
+	for (int i = lower; i <= upper; i++) {
+		uint32_t index_1 = i;
+		check_bounds(x_size, index_1);
+		uint32_t index_0 = index_1 - 1;
+		bool value = *values;
+		*(x + index_0) = value;
+		values += 1;
+	}
+
 	return 0;
 }
 

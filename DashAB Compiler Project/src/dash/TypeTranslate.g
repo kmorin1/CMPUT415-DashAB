@@ -120,6 +120,7 @@ returnStatement
   
 assignment
   : ^(Assign Identifier expr)
+  | ^(Assign ^(INDEX Identifier expr) expr)
   ;
   
 ifstatement
