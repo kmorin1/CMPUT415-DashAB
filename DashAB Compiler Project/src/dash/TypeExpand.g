@@ -1417,8 +1417,10 @@ expr returns [Type stype]
       typetree.addChild((CommonTree) adaptor.create(Vector, "vector"));
       CommonTree child = (CommonTree) typetree.getChild(0);
       child.addChild((CommonTree) adaptor.create(Identifier, vectortype.getVectorType().getName()));
+      $stype = new VectorTypeSymbol("vector", vectortype.getVectorType(), null, null);
     } else {
-      typetree.addChild((CommonTree) adaptor.create(Identifier, "integer"));
+      typetree.addChild((CommonTree) adaptor.create(Identifier, vectortype.getVectorType().getName()));
+      $stype = vectortype.getVectorType();
     }
     
   } -> ^(INDEX ^({typetree}) expr expr)
