@@ -14,11 +14,11 @@ public class Test_llc {
 			String testllvm = "test"+ pid +".llvm";
 			String outputtxt = "output"+ pid +".txt";
 			String execname = pid+".out";
-			
+
 			//Initialize writer
 			PrintWriter writer = new PrintWriter(testllvm, "UTF-8");
 			PrintWriter output = new PrintWriter(outputtxt, "UTF-8");
-			
+
 			//Write llvm-ir to file
 			if(Tester.debug == 1)
 				System.out.println("***OUR COMPILER COMMAND EXECUTED >>> " + Tester.our + " Tests/" + test);
@@ -116,7 +116,7 @@ public class Test_llc {
 						}
 						catch (Exception e) {
 							// Pipe might break if input is not needed?
-									//System.out.println("Exception: " + e.getMessage());
+							//System.out.println("Exception: " + e.getMessage());
 						}
 					}
 
