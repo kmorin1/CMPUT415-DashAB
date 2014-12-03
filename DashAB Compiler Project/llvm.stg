@@ -165,6 +165,18 @@ declare float* @malloc_float_vector(i32)
 declare i8* @malloc_i8_vector(i32)
 
 declare i1* @malloc_i1_vector(i32)
+
+declare i32 @get_by_size(i32, i32)
+
+declare i32 @by_i32_vector(i32*, i32, i32, i32*)
+
+declare float @by_float_vector(float*, i32, i32, float*)
+
+declare i8 @by_i8_vector(i8*, i32, i32, i8*)
+
+declare i1 @by_i1_vector(i1*, i32, i32, i1*)
+
+declare i32 @by_i32_interval(i32, i32, i32, i32*)
 >>
 
 globalDeclare(varName, varType, varValue, alignment) ::= <<
@@ -574,7 +586,8 @@ vec_cat(expr1, expr2, operator, scalarType, tmpNum1, tmpNum2, result) ::= <<
 
 %.catsize.<result> = add i32 %.size.1.<result>, %.size.2.<result>
 
-%.vector.<result> = alloca <scalarType>, i32 %.catsize.<result>, align 4
+%.vector.<result> = call <scalarType>* (i32)* @malloc_<scalarType>_vector(i32 %.catsize.<result>)
+;%.vector.<result> = alloca <scalarType>, i32 %.catsize.<result>, align 4
 
 call <scalarType> (<scalarType>*, i32, <scalarType>*, i32, <scalarType>*)* @<operator>_<scalarType>_vectors(<scalarType>* %.vectortemp.1.<result>, i32 %.size.1.<result>, <scalarType>* %.vectortemp.2.<result>, i32 %.size.2.<result>, <scalarType>* %.vector.<result>)
 
@@ -644,6 +657,52 @@ interval_equality(expr1, expr2, operator, scalarType, tmpNum1, tmpNum2, result) 
 %.<result> = call i1 (<scalarType>, <scalarType>, <scalarType>, <scalarType>)* @<operator>_<scalarType>_intervals(<scalarType> %.lower1.<result>, <scalarType> %.upper1.<result>, <scalarType> %.lower2.<result>, <scalarType> %.upper2.<result>)
 ;end vec equality
 
+
+>>
+
+vector_by(expr1, expr2, scalarType, tmpNum1, tmpNum2, result) ::= <<
+;start vector by
+<expr1>
+<expr2>
+
+
+%.vector.size.<result> = extractvalue {i32, <scalarType>*} %.<tmpNum1>, 0
+%.tempvector.<result> = extractvalue {i32, <scalarType>*} %.<tmpNum1>, 1
+%.result.size.<result> = call i32 (i32, i32)* @get_by_size(i32 %.vector.size.<result>, i32 %.<tmpNum2>)
+
+%.vector.<result> = call <scalarType>* (i32)* @malloc_<scalarType>_vector(i32 %.vector.size.<result>)
+
+
+
+call <scalarType> (<scalarType>*, i32, i32, <scalarType>*)* @by_<scalarType>_vector(<scalarType>* %.tempvector.<result>, i32 %.vector.size.<result>, i32 %.<tmpNum2>, <scalarType>* %.vector.<result>)
+
+%.temp.<result> = insertvalue {i32, <scalarType>*} undef, i32 %.result.size.<result>, 0
+%.<result> = insertvalue {i32, <scalarType>*} %.temp.<result>, <scalarType>* %.vector.<result>, 1
+;end vector by
+
+>>
+
+interval_by(expr1, expr2, scalarType, tmpNum1, tmpNum2, result) ::= <<
+;start vector by
+<expr1>
+<expr2>
+
+
+%.lower.<result> = extractvalue {<scalarType>, <scalarType>} %.<tmpNum1>, 0
+%.upper.<result> = extractvalue {<scalarType>, <scalarType>} %.<tmpNum1>, 1
+
+%.tempsize.<result> = sub i32 %.upper.<result>, %.lower.<result>
+%.size.<result> = add i32 %.tempsize.<result>, 1
+
+%.result.size.<result> = call i32 (i32, i32)* @get_by_size(i32 %.size.<result>, i32 %.<tmpNum2>)
+
+%.vector.<result> = call <scalarType>* (i32)* @malloc_<scalarType>_vector(i32 %.result.size.<result>)
+
+call <scalarType> (i32, i32, i32, <scalarType>*)* @by_<scalarType>_interval(i32 %.lower.<result>, i32 %.upper.<result>, i32 %.<tmpNum2>, <scalarType>* %.vector.<result>)
+
+%.temp.<result> = insertvalue {i32, <scalarType>*} undef, i32 %.result.size.<result>, 0
+%.<result> = insertvalue {i32, <scalarType>*} %.temp.<result>, <scalarType>* %.vector.<result>, 1
+;end vector by
 
 >>
 

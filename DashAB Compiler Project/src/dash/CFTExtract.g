@@ -222,5 +222,6 @@ expr
   | ^(Filter Identifier expr expr) 
   | ^(GENERATOR Identifier expr expr)
   | ^(GENERATOR ^(ROW Identifer expr) ^(COLUMN Identifier expr) expr)    
+  | ^(INDEX expr expr)
   ;
   

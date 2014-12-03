@@ -287,5 +287,6 @@ expr returns [String stype, String scalarType]
   | ^(Filter Identifier expr expr) 
   | ^(GENERATOR Identifier expr expr)
   | ^(GENERATOR ^(ROW Identifer expr) ^(COLUMN Identifier expr) expr)    
+  | ^(INDEX type expr expr)
   ;
   

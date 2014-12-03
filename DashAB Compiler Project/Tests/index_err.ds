@@ -1,0 +1,5 @@
+procedure main() returns integer {
+	integer vector v[2] = [1,2];
+	integer i = v[2.3];
+	return 0;
+}

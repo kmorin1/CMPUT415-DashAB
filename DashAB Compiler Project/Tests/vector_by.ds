@@ -1,0 +1,18 @@
+procedure main() returns integer {
+var out = std_output();
+
+integer vector x = [1,2,3,4,5,6,7,8,9] by 4;
+boolean vector y = [true, false, true, true] by 2;
+character vector z = ['y', 'o', 'l', 'o'] by 3;
+character vector v  = "swag\n" by 2;
+real vector q = [1.1,2.2,3.3,4.4,5.5] by 5;  
+
+x -> out;
+y -> out;
+z -> out;
+v -> out;
+q -> out;
+'\n' -> out;
+
+return 0;
+}
