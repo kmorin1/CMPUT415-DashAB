@@ -16,3 +16,6 @@ llc-3.0
 #9# Specific Test:
 #10# Specific Test name:
 bools.ds
+
+#11# Threads:
+1

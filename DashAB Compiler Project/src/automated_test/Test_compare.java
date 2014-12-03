@@ -5,7 +5,7 @@ import java.io.*;
 
 public class Test_compare {
 
-	public static int run(String test){
+	public static int run(String test, String outputtxt){
 
 		//Read filename
 		String[] filename = test.split("\\.");
@@ -16,10 +16,10 @@ public class Test_compare {
 
 		try {
 			if(Tester.debug == 1)
-				System.out.println("diff output.txt Tests/" + test + ".exp");
+				System.out.println("diff "+outputtxt+" Tests/" + test + ".exp");
 			//Send output.txt and expected output through diff
 			if(Tester.windows == 0){//we are Linux
-				Process p = Runtime.getRuntime().exec("diff output.txt Tests/" + test + ".exp");
+				Process p = Runtime.getRuntime().exec("diff "+outputtxt+" Tests/" + test + ".exp");
 				BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
 				while ((line = stdInput.readLine()) != null) {
 					//If we execute this part it means that diff found some differences
@@ -28,7 +28,7 @@ public class Test_compare {
 					error = -1;
 				}
 			}else{//we are Windows
-				Process p = Runtime.getRuntime().exec("fc output.txt Tests/" + test + ".exp");
+				Process p = Runtime.getRuntime().exec("fc "+outputtxt+" Tests/" + test + ".exp");
 				BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
 				while ((line = stdInput.readLine()) != null) {
 					//If we execute this part it means that diff found some differences

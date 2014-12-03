@@ -17,11 +17,12 @@ public class Tester {
 	public static int llc_compare_test;
 	public static int specific_test;
 	public static int windows = 0;
+	public static int multithread;
 
 	public static void main(String[] args) {
 
 		long exec_time = System.currentTimeMillis();
-		
+
 		String line = null;
 
 		//Read configuration file
@@ -67,6 +68,10 @@ public class Tester {
 				if(line.indexOf("#10# Specific Test name:") != -1){
 					specific = reader.readLine();
 				}
+				if(line.indexOf("#11# Threads:") != -1){
+					multithread = Integer.parseInt(reader.readLine());
+					System.out.println("Threads: "+multithread);
+				}
 			}
 		} catch (FileNotFoundException e) {
 			System.out.println("No config.txt found");
@@ -110,7 +115,8 @@ public class Tester {
 
 			//Start loading all the test files
 			System.out.println("Looks like they were valid commands, starting tests...");
-			Test_loader.load();
+			if(multithread != 0)
+				Test_loader.load();
 
 		} catch (IOException e) {
 			System.out.println("Error starting process " + e);

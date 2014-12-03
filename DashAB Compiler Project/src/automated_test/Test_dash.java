@@ -5,7 +5,7 @@ import java.io.*;
 
 public class Test_dash {
 
-	public static int run(String test){
+	public static int run(String test, long pid){
 		int error = 0;
 		int valid_test = 1;
 		System.out.println("\n"+test + " with dash");
@@ -103,7 +103,7 @@ public class Test_dash {
 			}
 
 			if(Tester.dash_compare_test == 1)
-				error = Test_compare.run(test);
+				error = Test_compare.run(test, "dummy thing to eliminate error");
 
 			if (error == 0) {
 				System.out.println("Ok");
