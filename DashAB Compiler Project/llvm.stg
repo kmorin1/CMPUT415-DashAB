@@ -178,13 +178,29 @@ declare i1 @by_i1_vector(i1*, i32, i32, i1*)
 
 declare i32 @by_i32_interval(i32, i32, i32, i32*)
 
-declare i32 @index_i32_vectors(i32*, i32, i32)
+declare i32 @index_int_i32_vectors(i32*, i32, i32)
 
-declare float @index_float_vectors(float*, i32, i32)
+declare float @index_int_float_vectors(float*, i32, i32)
 
-declare i8 @index_i8_vectors(i8*, i32, i32)
+declare i8 @index_int_i8_vectors(i8*, i32, i32)
 
-declare i1 @index_i1_vectors(i1*, i32, i32)
+declare i1 @index_int_i1_vectors(i1*, i32, i32)
+
+declare i32 @index_vector_i32_vectors(i32*, i32, i32*, i32, i32*)
+
+declare float @index_vector_float_vectors(float*, i32, i32*, i32, float*)
+
+declare i8 @index_vector_i8_vectors(i8*, i32, i32*, i32, i8*)
+
+declare i1 @index_vector_i1_vectors(i1*, i32, i32*, i32, i1*)
+
+declare i32 @index_interval_i32_vectors(i32*, i32, i32, i32, i32*)
+
+declare float @index_interval_float_vectors(float*, i32, i32, i32, float*)
+
+declare i8 @index_interval_i8_vectors(i8*, i32, i32, i32, i8*)
+
+declare i1 @index_interval_i1_vectors(i1*, i32, i32, i32, i1*)
 >>
 
 globalDeclare(varName, varType, varValue, alignment) ::= <<
@@ -723,7 +739,54 @@ vector_int_index(expr1, expr2, tmpNum1, tmpNum2, result, vecType) ::= <<
 %.vector.size.<result> = extractvalue {i32, <vecType>*} %.<tmpNum1>, 0
 %.vector.<result> = extractvalue {i32, <vecType>*} %.<tmpNum1>, 1
 
-%.<result> = call <vecType> (<vecType>*, i32, i32)* @index_<vecType>_vectors(<vecType>* %.vector.<result>, i32 %.vector.size.<result>, i32 %.<tmpNum2>)
+%.<result> = call <vecType> (<vecType>*, i32, i32)* @index_int_<vecType>_vectors(<vecType>* %.vector.<result>, i32 %.vector.size.<result>, i32 %.<tmpNum2>)
+
+;end vector index
+
+>>
+
+vector_vector_index(expr1, expr2, tmpNum1, tmpNum2, result, vecType) ::= <<
+;start vector index
+<expr1>
+<expr2>
+
+%.vector1.size.<result> = extractvalue {i32, <vecType>*} %.<tmpNum1>, 0
+%.vector1.<result> = extractvalue {i32, <vecType>*} %.<tmpNum1>, 1
+
+%.vector2.size.<result> = extractvalue {i32, i32*} %.<tmpNum2>, 0
+%.vector2.<result> = extractvalue {i32, i32*} %.<tmpNum2>, 1
+
+%.vectortemp.<result> = call <scalarType>* (i32)* @malloc_<scalarType>_vector(i32 %.vector2.size.<result>)
+
+call <vecType> (<vecType>*, i32, i32*, i32, <vecType>*)* @index_vector_<vecType>_vectors(<vecType>* %.vector1.<result>, i32 %.vector1.size.<result>, i32* %.vector2.<result>, i32 %.vector2.size.<result>, <vecType>* %.vectortemp.<result>)
+
+%.temp.<result> = insertvalue {i32, <scalarType>*} undef, i32 %.vector2.size.<result>, 0
+%.<result> = insertvalue {i32, <scalarType>*} %.temp.<result>, <scalarType>* %.vectortemp.<result>, 1
+
+;end vector index
+
+>>
+
+vector_interval_index(expr1, expr2, tmpNum1, tmpNum2, result, vecType) ::= <<
+;start vector index
+<expr1>
+<expr2>
+
+%.vector1.size.<result> = extractvalue {i32, <vecType>*} %.<tmpNum1>, 0
+%.vector1.<result> = extractvalue {i32, <vecType>*} %.<tmpNum1>, 1
+
+%.lower.<result> = extractvalue {i32, i32} %.<tmpNum2>, 0
+%.upper.<result> = extractvalue {i32, i32} %.<tmpNum2>, 1
+
+%.tempsize.<result> = sub i32 %.upper.<result>, %.lower.<result>
+%.size.<result> = add i32 %.tempsize.<result>, 1
+
+%.vectortemp.<result> = call <scalarType>* (i32)* @malloc_<scalarType>_vector(i32 %.size.<result>)
+
+call <vecType> (<vecType>*, i32, i32, i32, <vecType>*)* @index_interval_<vecType>_vectors(<vecType>* %.vector1.<result>, i32 %.vector1.size.<result>, i32 %.lower.<result>, i32 %.upper.<result>, <vecType>* %.vectortemp.<result>)
+
+%.temp.<result> = insertvalue {i32, <scalarType>*} undef, i32 %.size.<result>, 0
+%.<result> = insertvalue {i32, <scalarType>*} %.temp.<result>, <scalarType>* %.vectortemp.<result>, 1
 
 ;end vector index
 

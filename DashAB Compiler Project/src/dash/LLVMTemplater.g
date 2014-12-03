@@ -908,6 +908,17 @@ expr returns [String stype, String resultVar, String scalarType, String sizeName
   		$stype = $a.scalarType;
   		//System.out.println("type: " + $stype);
   	}
-  } -> vector_int_index(expr1={$a.st}, expr2={$b.st}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter}, vecType={$a.scalarType})
+  	else {
+  		$stype = "vector";
+  		$scalarType = $a.scalarType;
+  	}
+  } -> {$b.stype.equals(IntType) && $a.stype.equals("vector")}? vector_int_index(expr1={$a.st}, expr2={$b.st}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter}, vecType={$a.scalarType})
+    -> {$b.stype.equals("vector") && $a.stype.equals("vector")}? vector_vector_index(expr1={$a.st}, expr2={$b.st}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter}, vecType={$a.scalarType})
+    -> {$b.stype.equals("interval") && $a.stype.equals("vector")}? vector_interval_index(expr1={$a.st}, expr2={$b.st}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter}, vecType={$a.scalarType})
+    -> {$b.stype.equals(IntType) && $a.stype.equals("interval")}? interval_int_index(expr1={$a.st}, expr2={$b.st}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter}, vecType={$a.scalarType})
+    -> {$b.stype.equals("vector") && $a.stype.equals("interval")}? interval_vector_index(expr1={$a.st}, expr2={$b.st}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter}, vecType={$a.scalarType})
+    -> {$b.stype.equals("interval") && $a.stype.equals("interval")}? interval_interval_index(expr1={$a.st}, expr2={$b.st}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter}, vecType={$a.scalarType})
+    -> return(a={"oops!"})
+  
   ;
   
