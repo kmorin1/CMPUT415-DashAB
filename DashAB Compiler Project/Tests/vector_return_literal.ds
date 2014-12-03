@@ -5,7 +5,7 @@ procedure test() returns integer vector {
 
 procedure main() returns integer {
 	var out = std_output();
-	integer vector x;
+	integer vector x[5];
 	x = test();
 	x-> out;
 	return 0;

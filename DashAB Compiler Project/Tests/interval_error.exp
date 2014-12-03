@@ -1,2 +1,2 @@
 //pass
-Error: by operator needs a positive integer.
+Error: by operator has a non-positive integer (-1).

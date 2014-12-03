@@ -1,2 +1,2 @@
 //pass
-Error: indexing out of bounds.
+Error: index [5] is out of bounds of array with size 4.

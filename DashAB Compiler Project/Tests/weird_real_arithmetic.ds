@@ -5,6 +5,7 @@ var x = 1.;
 var y = .10e5;
 
 x + y -> out;
+'\n' -> out;
 
 return 0;
 }

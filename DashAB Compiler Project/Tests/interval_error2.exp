@@ -1,2 +1,2 @@
 //pass
-Error: interval must be non-decreasing.
+Error: interval [10,1] must be non-decreasing.
