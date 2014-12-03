@@ -1159,7 +1159,23 @@ expr returns [Type stype]
         typetree.addChild((CommonTree) adaptor.create(Identifier, $stype.getName()));
     }
   } -> ^(Not ^({typetree}) expr)
-  | ^(By a=expr b=expr) {$stype = $a.stype;} -> ^(By Identifier[$stype.getName()] expr expr)
+  | ^(By a=expr b=expr) {
+    if (procedurecall > 0) 
+      throw new RuntimeException(errorhead + "cannot use procedures in binary operations");
+    if (!$a.stype.getName().equals("vector") && !$a.stype.getName().equals("interval"))
+      throw new RuntimeException(errorhead + "by requires a vector or interval in left operand");
+    if (!$b.stype.getName().equals("integer"))
+      throw new RuntimeException(errorhead + "right operand of by requires integer type");
+    
+    typetree = (CommonTree) adaptor.nil();
+    VectorTypeSymbol vts = (VectorTypeSymbol) $a.stype;
+    VectorTypeSymbol output = new VectorTypeSymbol("vector", vts.getVectorType(), null, null);
+    $stype = output;
+    typetree.addChild((CommonTree) adaptor.create(Vector, "vector"));
+    CommonTree child = (CommonTree) typetree.getChild(0);
+    child.addChild((CommonTree) adaptor.create(Identifier, vts.getVectorType().getName()));
+    
+  } -> ^(By ^({typetree}) expr expr)
   | ^(CALL id=Identifier ^(ARGLIST (e=expr {argtypes.add($e.stype);})*)) {
     proc_ret_flag = true;
     ProcedureSymbol ps = symtab.resolveProcedure($id.text);
