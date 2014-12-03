@@ -66,7 +66,7 @@ public class Test_loader {
 			for (int i = 0; i < threads.length; i++){
 				end = end + parts -1;
 				if(i == threads.length -1)
-					end = tests.size();
+					end = tests.size()-1;
 				threads[i] = (Test_thread) new Test_thread(start, end);
 				threads[i].start();	
 				start = end +1;
@@ -83,7 +83,6 @@ public class Test_loader {
 
 		//Show warnings
 		System.out.println("\n### Summary ###");
-System.out.println(llc_result.size());
 		if(Tester.llc_test == 1){
 			System.out.println("\nThe following tests does not work with llc: ");
 			for(int i = 0; i < tests.size(); i++){
