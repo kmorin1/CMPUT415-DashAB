@@ -7,7 +7,6 @@ public class Test_llc {
 	public static int run(String test, long pid){
 		int error = 0;
 		int valid_test = 1;
-		System.out.println("\n"+test + " with LLC");
 		String line = null;
 		try{
 			//Filenames
@@ -99,6 +98,7 @@ public class Test_llc {
 
 							while ((input_line = inputReader.readLine()) != null) {
 								input.write(input_line);
+								input.write("\n");
 								input.flush();
 							}
 							input.close();

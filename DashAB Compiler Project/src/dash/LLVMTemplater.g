@@ -901,6 +901,13 @@ expr returns [String stype, String resultVar, String scalarType, String sizeName
   } -> load_interval(tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, expr1={$a.st}, expr2={$b.st}, result={++counter}, scalarType={$scalarType})
   | ^(Filter Identifier expr expr) 
   | ^(GENERATOR Identifier expr expr)
-  | ^(GENERATOR ^(ROW Identifer expr) ^(COLUMN Identifier expr) expr)  
+  | ^(GENERATOR ^(ROW Identifer expr) ^(COLUMN Identifier expr) expr)
+  | ^(INDEX type a=expr {tmpNum1 = counter;} b=expr {tmpNum2 = counter;})
+  {
+  	if ($b.stype.equals(IntType)) {
+  		$stype = $a.scalarType;
+  		//System.out.println("type: " + $stype);
+  	}
+  } -> vector_int_index(expr1={$a.st}, expr2={$b.st}, tmpNum1={tmpNum1}, tmpNum2={tmpNum2}, result={++counter}, vecType={$a.scalarType})
   ;
   

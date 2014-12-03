@@ -69,8 +69,13 @@ public class Tester {
 					specific = reader.readLine();
 				}
 				if(line.indexOf("#11# Threads:") != -1){
-					multithread = Integer.parseInt(reader.readLine());
-					System.out.println("Threads: "+multithread);
+					if(debug == 1){
+						System.out.println("[WARNING FORCED SINGLE THREAD BECAUSE DEBUG MODE IS ON]");
+						multithread = 1;
+					}else{
+						multithread = Integer.parseInt(reader.readLine());
+						System.out.println("Threads: "+multithread);
+					}
 				}
 			}
 		} catch (FileNotFoundException e) {

@@ -23,7 +23,8 @@ public class Test_compare {
 				BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
 				while ((line = stdInput.readLine()) != null) {
 					//If we execute this part it means that diff found some differences
-					System.out.println("Differences has been found:");
+					if(error == 0)
+						System.out.println("Differences has been found in: "+test);
 					System.out.println(line);
 					error = -1;
 				}
@@ -32,11 +33,13 @@ public class Test_compare {
 				BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
 				while ((line = stdInput.readLine()) != null) {
 					//If we execute this part it means that diff found some differences
-					System.out.println("Differences has been found:");
+					if(error == 0)
+						System.out.println("Differences has been found in: "+test);
 					System.out.println(line);
 					error = -1;
 				}
 			}
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

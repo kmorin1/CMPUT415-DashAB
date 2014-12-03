@@ -5,7 +5,7 @@ gcc
 java -cp antlr-3.3-complete.jar:bin/ dash.DashAB_Test
 
 #3# LLC that we are using:
-llc-3.0
+llc-3.2
 
 #4# DEBUG MODE: 
 #5# DASH testing: 
@@ -13,9 +13,9 @@ llc-3.0
 #7# LLC testing: ON
 #8# Compare output for LLC: ON
 
-#9# Specific Test:
+#9# Specific Test: 
 #10# Specific Test name:
-bools.ds
+loop3.ds
 
 #11# Threads:
 8
