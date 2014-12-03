@@ -1,0 +1,55 @@
+const out = std_output();
+
+
+procedure max(var integer vector x) returns integer {
+	integer maxNum = x[1];
+	integer size = length(x);
+	integer index = 1;
+	loop while (index < size) {
+		if (x[index] > maxNum) {
+			maxNum = x[index];
+		}
+		index = index + 1;
+	
+	}
+
+	return maxNum;
+}
+
+procedure min(var integer vector x) returns integer {
+	integer minNum = x[1];
+	integer size = length(x);
+	integer index = 1;
+	loop while (index < size) {
+		if (x[index] < minNum) {
+			minNum = x[index];
+		}
+		index = index + 1;
+	
+	}
+
+	return minNum;
+}
+
+procedure main() returns integer {
+	integer vector x = [10, 5, 8, 9, 2, 45, 7, 13];
+	integer vector y = [42, 94, 2, 9, 100, 3];
+	integer temp = 0;
+	
+	"Max of:\n" -> out;
+	x -> out;
+	"is: " -> out;
+	temp = max(x);
+	temp -> out;
+	'\n' -> out;
+	
+	"Min of:\n" -> out;
+	y -> out;
+	"is: " -> out;
+	temp = min(y);
+	temp -> out;
+	'\n' -> out;
+	
+
+	return 0;		
+}

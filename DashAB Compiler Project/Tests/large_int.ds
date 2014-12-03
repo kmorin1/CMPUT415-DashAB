@@ -1,0 +1,13 @@
+procedure main() returns integer {
+	var out = std_output();	
+	
+	integer x = 2 ^ 31 - 1;
+	integer y = -2 ^ 31;
+	
+	x -> out;
+	'\n' -> out;
+	y -> out;
+	'\n' -> out;
+
+	return 0;
+}

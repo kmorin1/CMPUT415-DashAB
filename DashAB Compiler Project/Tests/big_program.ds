@@ -1,0 +1,71 @@
+const out = std_output();
+
+procedure test(integer x) {
+	if (x > 10) {
+		"argument is bigger than ten!\n" -> out;
+	}
+	else {
+		"argument is less than or equal to ten!\n" -> out;
+	}
+}
+
+procedure test2(integer x, character y) {
+	if (x > 0) {
+		"argument was positive! " || [y, '\n'] -> out;
+	}
+	else if (x == 0) {
+		"argument was zero!" -> out;
+	}
+	else {
+		"argument was negative!" -> out;
+	}
+}
+
+procedure test3 (integer x, integer y, integer z) returns integer {
+	integer temp = 0;
+	integer counter = 0;
+	
+	temp = x;
+	while (x > y) {
+		x = x - 1;
+		counter = counter + 1;
+	}
+	x = temp;
+	
+	while (x < z) {
+		x = x + 1;
+		counter = counter + 1;
+	}
+	x = temp;
+	
+	if (counter > x) {
+		counter = counter + (counter - x);
+	}
+	
+	return counter;
+}
+
+procedure main() returns integer {
+	integer x = 100;
+	integer temp = 0;
+	
+	loop while x > 0 {
+		x = x - 1;
+		x -> out;
+	}
+	'\n' -> out;
+	
+	call test(11);
+	call test(10);
+	call test(9);
+	
+	call test2(1, 'a');
+	call test2(0, 'b');
+	call test2(-1, 'c');
+	
+	temp = test3(10, 5, 20);
+	temp -> out;
+	'\n' -> out;
+
+	return 0;		
+}
