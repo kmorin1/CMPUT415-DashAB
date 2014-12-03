@@ -32,8 +32,6 @@ public class Test_thread extends Thread{
 				e.printStackTrace();
 			}
 		}
-
-
 	}
 
 }
