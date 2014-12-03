@@ -63,7 +63,7 @@ void check_sizes(uint32_t a, uint32_t b) {
 }
 
 void check_bounds(uint32_t size, uint32_t index_1) {
-	if (index_1 > size) {
+	if (index_1 > size || index_1 <= 0) {
 		printf("Error: indexing out of vector bounds.\n");
 		exit(-1);
 	}
@@ -972,22 +972,22 @@ bool nequal_i32_intervals(int32_t lower1, int32_t upper1, int32_t lower2, int32_
 }
 
 uint32_t * malloc_i32_vector(uint32_t size) {
-	uint32_t * vector = malloc(size * sizeof(uint32_t));
+	uint32_t * vector = calloc(size, sizeof(uint32_t));
 	return vector;
 }
 
 float * malloc_float_vector(uint32_t size) {
-	float * vector = malloc(size * sizeof(float));
+	float * vector = calloc(size, sizeof(float));
 	return vector;
 }
 
 char * malloc_i8_vector(uint32_t size) {
-	char * vector = malloc(size * sizeof(char));
+	char * vector = calloc(size, sizeof(char));
 	return vector;
 }
 
 bool * malloc_i1_vector(uint32_t size) {
-	bool * vector = malloc(size * sizeof(bool));
+	bool * vector = calloc(size, sizeof(bool));
 	return vector;
 }
 
