@@ -1,0 +1,6 @@
+procedure main() returns integer {
+
+integer vector x = reverse(1);
+
+return 0;
+}

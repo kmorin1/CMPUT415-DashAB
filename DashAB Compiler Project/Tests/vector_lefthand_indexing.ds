@@ -1,0 +1,21 @@
+procedure main() returns integer {
+var out = std_output();
+
+integer vector x = [1,2,3,4];
+real vector y = [1.1,2.2,3.3,4.4]
+boolean vector z = [true];
+character vector q = ['f','o','o'];
+
+x[3] = 10;
+y[3] = 5.5;
+z[1] = false;
+q[2] = 'a';
+
+x -> out;
+y -> out;
+z -> out;
+q -> out;
+'\n' -> out;
+
+return 0;
+}

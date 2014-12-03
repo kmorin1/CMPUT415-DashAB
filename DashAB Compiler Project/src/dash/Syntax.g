@@ -99,6 +99,10 @@ streamstate
 length
 	: Length LParen expr RParen -> ^(Length expr)
 	;
+	
+reverse
+	: Reverse LParen expr RParen -> ^(Reverse expr)
+	;
 
 declaration
   : specifier? type+ Identifier SemiColon -> ^(DECL specifier? type+ Identifier)
@@ -307,6 +311,7 @@ atom
   | LParen (a=expr -> expr) (Comma b=expr -> ^(TUPLEEX $a $b))+ RParen
   | streamstate
   | length
+  | reverse
   | Identifier LParen expr? (Comma expr)* RParen -> ^(CALL Identifier ^(ARGLIST expr*))
   | Identifier
   | filter

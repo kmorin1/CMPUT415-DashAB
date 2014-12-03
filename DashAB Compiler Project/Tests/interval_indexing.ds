@@ -1,0 +1,9 @@
+procedure main() returns integer {
+var out = std_output();
+
+integer vector x = [1,2,3,4,5,6,7,8,9,10];
+
+x[4..7] -> out;
+
+return 0;
+}
