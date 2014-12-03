@@ -18,4 +18,4 @@ llc-3.0
 bools.ds
 
 #11# Threads:
-10
+4
