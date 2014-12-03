@@ -433,11 +433,11 @@ assignment
   {
   	vs = (VariableSymbol) currentscope.resolve($Identifier.text);
   	Type vsType = vs.getType();
-  	if ($expr.stype == "vector") {
+  	if ($expr.stype.equals("vector")) {
   		VectorTypeSymbol vts = (VectorTypeSymbol)vsType;
   		variableType = "{i32, " + $expr.scalarType + "*}";
   	}
-  	else if ($expr.stype == "interval") {
+  	else if ($expr.stype.equals("interval")) {
   		VectorTypeSymbol vts = (VectorTypeSymbol)vsType;
   		variableType = "{" + $expr.scalarType + ", " + $expr.scalarType + "}";
   	}
@@ -768,12 +768,17 @@ expr returns [String stype, String resultVar, String scalarType, String sizeName
   {
   	if ($retType.vecType != null) {
   		returnType = "{ i32, " + $retType.st.toString() + "*}";
+  		$stype = "vector";
+  		$scalarType = $retType.vecType;
   	}
   	else if ($retType.intervalType != null) {
   		returnType = "{" + $retType.st.toString() + ", " + $retType.st.toString() + "}";
+  		$stype = "interval";
+  		$scalarType = $retType.intervalType;
   	}
   	else {
   		returnType = $retType.st.toString();
+  		$stype = $retType.st.toString();
   	}
   }
   id=Identifier ^(ARGLIST
