@@ -64,6 +64,10 @@ streamstate
 length
 	: ^(Length expr)
 	;
+	
+reverse
+	: ^(Reverse expr)
+	;
 
 declaration returns [CFTNode cftn]
 @after {
@@ -218,6 +222,7 @@ expr
   | ^(POS a=expr)
   | streamstate
   | length
+  | reverse
   | ^(Dot Identifier)
   | ^(VCONST expr+)
   | ^(Filter Identifier expr expr) 

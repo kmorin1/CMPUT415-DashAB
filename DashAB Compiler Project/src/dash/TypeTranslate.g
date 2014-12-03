@@ -76,6 +76,10 @@ streamstate
 length
 	: ^(Length expr)
 	;
+	
+reverse returns [String scalarType]
+	: ^(Reverse type expr) {$scalarType = $type.scalarType;}
+	;
  
 declaration
   : ^(DECL specifier? type? Identifier) -> ^(DECL specifier? type? Identifier)
@@ -283,6 +287,7 @@ expr returns [String stype, String scalarType]
   | ^(POS a=expr) {$stype = $a.stype;}
   | type {$stype = $type.tsym;} streamstate
   | type {$stype = $type.tsym;} length
+  | reverse {$stype = "vector"; $scalarType = $reverse.scalarType;}
   | ^(VCONST type expr+) {$stype = "vector"; $scalarType = $type.scalarType;}
   | ^(Range type expr expr) {$stype = "interval"; $scalarType = $type.scalarType;}
   | ^(Filter Identifier expr expr) 

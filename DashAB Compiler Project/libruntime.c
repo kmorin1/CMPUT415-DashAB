@@ -1362,3 +1362,35 @@ bool set_interval_index_i1_vector(bool * x, uint32_t x_size, uint32_t lower, uin
 	return 0;
 }
 
+uint32_t reverse_i32_vector(uint32_t * x, uint32_t x_size, uint32_t * result) {
+	for (int i = 0; i < x_size; i++) {
+		*(result + x_size - 1 - i) = *(x + i);
+	}
+
+	return 0;
+}
+
+float reverse_float_vector(float * x, uint32_t x_size, float * result) {
+	for (int i = 0; i < x_size; i++) {
+		*(result + x_size - 1 - i) = *(x + i);
+	}
+
+	return 0;
+}
+
+char reverse_i8_vector(char * x, uint32_t x_size, char * result) {
+	for (int i = 0; i < x_size; i++) {
+		*(result + x_size - 1 - i) = *(x + i);
+	}
+
+	return 0;
+}
+
+bool reverse_i1_vector(bool * x, uint32_t x_size, bool * result) {
+	for (int i = 0; i < x_size; i++) {
+		*(result + x_size - 1 - i) = *(x + i);
+	}
+
+	return 0;
+}
+

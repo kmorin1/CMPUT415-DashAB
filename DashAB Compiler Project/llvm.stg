@@ -231,6 +231,14 @@ declare float @set_interval_index_float_vector(float*, i32, i32, i32, float*, i3
 declare i8 @set_interval_index_i8_vector(i8*, i32, i32, i32, i8*, i32)
 
 declare i1 @set_interval_index_i1_vector(i1*, i32, i32, i32, i1*, i32)
+
+declare i32 @reverse_i32_vector(i32*, i32, i32*)
+
+declare float @reverse_float_vector(float*, i32, float*)
+
+declare i8 @reverse_i8_vector(i8*, i32, i8*)
+
+declare i1 @reverse_i1_vector(i1*, i32, i1*)
 >>
 
 globalDeclare(varName, varType, varValue, alignment) ::= <<
@@ -339,9 +347,6 @@ output_int_index_assi(sym, varName, varType, scalarType, scopeNum, expr1, expr2,
 <expr1>
 <expr2>
 
-;tmpNum1 = int index
-;tmpNum2 = int value
-
 %.temp.struct.<result> = load <varType>* <sym>.<varName>.<scopeNum>
 %.size.<result> = extractvalue <varType> %.temp.struct.<result>, 0
 %.vector.temp.<result> = extractvalue <varType> %.temp.struct.<result>, 1
@@ -357,9 +362,6 @@ output_vector_index_assi(sym, varName, varType, scalarType, scopeNum, expr1, exp
 ;start output_int_index_assi
 <expr1>
 <expr2>
-
-;tmpNum1 = vector index
-;tmpNum2 = vector value
 
 %.index.size.<result> = extractvalue {i32, i32*} %.<tmpNum1>, 0
 %.index.vector.<result> = extractvalue {i32, i32*} %.<tmpNum1>, 1
@@ -382,9 +384,6 @@ output_interval_index_assi(sym, varName, varType, scalarType, scopeNum, expr1, e
 ;start output_int_index_assi
 <expr1>
 <expr2>
-
-;tmpNum1 = interval index
-;tmpNum2 = vector value
 
 %.lower.<result> = extractvalue {i32, i32} %.<tmpNum1>, 0
 %.upper.<result> = extractvalue {i32, i32} %.<tmpNum1>, 1
@@ -452,7 +451,7 @@ load_vector(tmpNum, exprs, varNames, varType, size, varIndices) ::= <<
 %.constvector1.<tmpNum> = insertvalue {i32, <varType>*} undef, i32 <size>, 0
 
 %.vector<tmpNum> = call <varType>* (i32)* @malloc_<varType>_vector(i32 <size>)
-;%.vector<tmpNum> = alloca <varType>, i32 <size>, align 4
+
 <varNames, varIndices:
 { name, index |
 %.tmp.<name> = getelementptr inbounds <varType>* %.vector<tmpNum>, i32 <index>
@@ -543,7 +542,6 @@ ret <type> %.<tmpNum>
 
 returnVoid() ::= "ret void"
 
-//?
 cast(func, expr) ::= <<
 ;start cast
 <expr>
@@ -557,6 +555,24 @@ length(result, scalarType, expr, tmpNum) ::= <<
 <expr>
 %.<result> = extractvalue {i32, <scalarType>*} %.<tmpNum>, 0
 ;end length
+
+>>
+
+reverse(expr, tmpNum1, scalarType, result) ::= <<
+;start reverse
+<expr>
+
+%.size.<result> = extractvalue {i32, <scalarType>*} %.<tmpNum1>, 0
+%.vectortemp.<result> = extractvalue {i32, <scalarType>*} %.<tmpNum1>, 1
+
+%.vector.<result> = call <scalarType>* (i32)* @malloc_<scalarType>_vector(i32 %.size.<result>)
+
+call <scalarType> (<scalarType>*, i32, <scalarType>*)* @reverse_<scalarType>_vector(<scalarType>* %.vectortemp.<result>, i32 %.size.<result>, <scalarType>* %.vector.<result>)
+
+%.temp.result.<result> = insertvalue {i32, <scalarType>*} undef, i32 %.size.<result>, 0
+%.<result> = insertvalue {i32, <scalarType>*} %.temp.result.<result>, <scalarType>* %.vector.<result>, 1
+
+;end reverse
 
 >>
 
@@ -635,7 +651,6 @@ vec_arithmetic(expr1, expr2, operator, scalarType, resultType, tmpNum1, tmpNum2,
 %.vectortemp.2.<result> = extractvalue {i32, <scalarType>*} %.<tmpNum2>, 1
 
 %.vector.<result> = call <resultType>* (i32)* @malloc_<resultType>_vector(i32 %.size.1.<result>)
-;%.vector.<result> = alloca <resultType>, i32 %.size.1.<result>, align 4
 
 call <scalarType> (<scalarType>*, i32, <scalarType>*, i32, <resultType>*)* @<operator>_<scalarType>_vectors(<scalarType>* %.vectortemp.1.<result>, i32 %.size.1.<result>, <scalarType>* %.vectortemp.2.<result>, i32 %.size.2.<result>, <resultType>* %.vector.<result>)
 
@@ -710,7 +725,6 @@ vec_cat(expr1, expr2, operator, scalarType, tmpNum1, tmpNum2, result) ::= <<
 %.catsize.<result> = add i32 %.size.1.<result>, %.size.2.<result>
 
 %.vector.<result> = call <scalarType>* (i32)* @malloc_<scalarType>_vector(i32 %.catsize.<result>)
-;%.vector.<result> = alloca <scalarType>, i32 %.catsize.<result>, align 4
 
 call <scalarType> (<scalarType>*, i32, <scalarType>*, i32, <scalarType>*)* @<operator>_<scalarType>_vectors(<scalarType>* %.vectortemp.1.<result>, i32 %.size.1.<result>, <scalarType>* %.vectortemp.2.<result>, i32 %.size.2.<result>, <scalarType>* %.vector.<result>)
 
@@ -794,8 +808,6 @@ vector_by(expr1, expr2, scalarType, tmpNum1, tmpNum2, result) ::= <<
 %.result.size.<result> = call i32 (i32, i32)* @get_by_size(i32 %.vector.size.<result>, i32 %.<tmpNum2>)
 
 %.vector.<result> = call <scalarType>* (i32)* @malloc_<scalarType>_vector(i32 %.vector.size.<result>)
-
-
 
 call <scalarType> (<scalarType>*, i32, i32, <scalarType>*)* @by_<scalarType>_vector(<scalarType>* %.tempvector.<result>, i32 %.vector.size.<result>, i32 %.<tmpNum2>, <scalarType>* %.vector.<result>)
 

@@ -151,6 +151,26 @@ length
       throw new RuntimeException(getErrorHeader() + "Expression in length() must evaluate to a vector");
   }
 	;
+	
+reverse returns [VectorTypeSymbol vts]
+@init {
+	CommonTree typetree = null;
+}
+	: ^(Reverse expr)
+	{
+		if (!$expr.stype.getName().equals("vector")) {
+			throw new RuntimeException(getErrorHeader() + "Expression in reverse() must evaluate to a vector");
+		}
+		
+		$vts = (VectorTypeSymbol) $expr.stype;
+		typetree = (CommonTree) adaptor.nil();
+       
+        typetree.addChild((CommonTree) adaptor.create(Vector, "vector"));
+        CommonTree child = (CommonTree) typetree.getChild(0);
+        if ($vts.getVectorType() != null)
+          child.addChild((CommonTree) adaptor.create(Identifier, $vts.getVectorType().getName()));
+	} -> ^(Reverse ^({typetree}) expr)
+	;
 
 declaration
 @init {
@@ -1353,6 +1373,7 @@ expr returns [Type stype]
   }
   | streamstate { $stype = new BuiltInTypeSymbol("integer");} -> Identifier[$stype.getName()] streamstate
   | length {$stype = new BuiltInTypeSymbol("integer");} -> Identifier[$stype.getName()] length
+  | reverse {$stype = $reverse.vts;}
   | ^(VCONST {vtypes.clear(); exprtree = (CommonTree) adaptor.nil();}
    (e=expr {vtypes.add($e.stype);})+) {
     if (vtypes.get(0).getName().equals("tuple") ||

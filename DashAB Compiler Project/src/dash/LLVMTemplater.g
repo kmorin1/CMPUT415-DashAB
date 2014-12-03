@@ -224,6 +224,16 @@ streamstate
 length
 	: ^(Length expr) -> length(result={++counter}, scalarType={$expr.scalarType}, expr={$expr.st}, tmpNum={$expr.resultVar})
 	;
+	
+reverse returns [String scalarType]
+@init {
+	int tmpNum1 = 0;
+}
+	: ^(Reverse type expr {tmpNum1=counter;})
+	{
+		$scalarType = $type.vecType;
+	} -> reverse(expr={$expr.st}, tmpNum1={tmpNum1}, scalarType={$scalarType}, result={++counter})
+	;
 
 declaration
 @init {
@@ -901,6 +911,7 @@ expr returns [String stype, String resultVar, String scalarType, String sizeName
   } -> return(a={$a.st})
   | type streamstate {$stype = $type.st.toString();} -> return(a={$streamstate.st})
   | type length {$stype = $type.st.toString();} -> return(a={$length.st})
+  | reverse {$stype = "vector"; $scalarType = $reverse.scalarType;} -> return(a={$reverse.st})
   | ^(VCONST vec=type (e=expr
   {
   	$stype = "vector";
