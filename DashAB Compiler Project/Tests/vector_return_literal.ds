@@ -1,0 +1,12 @@
+procedure test() returns integer vector {
+	return [1,2,3,4,5];
+}
+
+
+procedure main() returns integer {
+	var out = std_output();
+	integer vector x;
+	x = test();
+	x-> out;
+	return 0;
+}

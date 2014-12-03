@@ -1,0 +1,9 @@
+procedure main() returns integer {
+var out = std_output();
+
+integer interval x = 1..10;
+
+x by -1 -> out;
+
+return 0;
+}

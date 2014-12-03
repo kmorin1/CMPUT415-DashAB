@@ -1,0 +1,11 @@
+procedure main() returns integer {
+var out = std_output();
+
+integer vector y = [-1, -2, -3, 0];
+integer vector x = [1, 2, 3, 0];
+
+x ** y -> out;
+y ** x -> out;
+
+return 0;
+}
