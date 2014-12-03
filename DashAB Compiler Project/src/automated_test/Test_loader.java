@@ -83,7 +83,7 @@ public class Test_loader {
 
 		//Show warnings
 		System.out.println("\n### Summary ###");
-
+System.out.println(llc_result.size());
 		if(Tester.llc_test == 1){
 			System.out.println("\nThe following tests does not work with llc: ");
 			for(int i = 0; i < tests.size(); i++){
